@@ -16,7 +16,7 @@ DATA_FILES = [
     (os.path.join(SCRIPT_DIR, "Groundskeeper_Log.md"), UnstructuredMarkdownLoader),
 ]
 CHROMA_PATH = os.path.join(SCRIPT_DIR, "chroma_db")
-EMBEDDING_MODEL = "nomic-embed-text"
+EMBEDDING_MODEL = "nomic-embed-text:latest"
 
 def ingest_data():
     print("--- 1. Loading Documents ---")
