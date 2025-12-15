@@ -1,4 +1,4 @@
-langchain
+langchain==0.3.12
 langchain-chroma
 langchain-ollama
 langchain-community
