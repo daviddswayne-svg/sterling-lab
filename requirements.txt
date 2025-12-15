@@ -1,7 +1,9 @@
-langchain
-langchain-chroma
-langchain-ollama
-langchain-community
+langchain==0.3.12
+langchain-chroma==0.1.4
+langchain-ollama==0.2.0
+langchain-community==0.3.12
+langchain-core==0.3.25
+langchain-text-splitters==0.3.3
 unstructured
 streamlit
 pysqlite3-binary ; sys_platform == 'linux'
