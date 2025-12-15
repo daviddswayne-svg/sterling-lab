@@ -19,6 +19,18 @@ CHROMA_PATH = os.path.join(SCRIPT_DIR, "chroma_db")
 EMBEDDING_MODEL = "nomic-embed-text:latest"
 
 def ingest_data():
+    print("--- 0. DEBUG: Checking Ollama Connection ---")
+    import os
+    print(f"OLLAMA_HOST: {os.environ.get('OLLAMA_HOST', 'Not Set')}")
+    
+    try:
+        from ollama import Client
+        client = Client(host='http://localhost:11434')
+        print("Available Models (via ollama lib):")
+        print(client.list())
+    except Exception as e:
+        print(f"DEBUG: Ollama lib failed: {e}")
+
     print("--- 1. Loading Documents ---")
     documents = []
     for filename, LoaderClass in DATA_FILES:
