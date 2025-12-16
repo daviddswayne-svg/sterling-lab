@@ -1,0 +1,4 @@
+# Coolify Build Configuration
+# This forces Coolify to use Dockerfile instead of auto-detecting Python buildpack
+
+buildPack: dockerfile
