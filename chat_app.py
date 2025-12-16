@@ -213,9 +213,9 @@ def main():
     # --- DISTRIBUTED MODE TOGGLE ---
     st.sidebar.markdown("---")
     st.sidebar.subheader("⚡️ Compute Cluster")
-    use_distributed = st.sidebar.checkbox("Enable Worker Grid", value=True)
+    use_distributed = st.sidebar.checkbox("Enable Council Mode", value=True)
     if use_distributed:
-        st.sidebar.success(f"Linked: {WORKER_MODEL} @ {WORKER_IP}")
+        st.sidebar.success(f"Connected: {WORKER_MODEL} via Mac Studio")
     
     if show_history:
         st.sidebar.markdown("---")
@@ -405,7 +405,7 @@ Return JSON ONLY:
                             except Exception as e:
                                 # Fallback to Localhost if remote fails
                                 try:
-                                    status.write(f"⚠️ Connection to {WORKER_IP} failed. Retrying on localhost...")
+                                    status.write(f"⚠️ Primary connection attempt failed. Using local fallback...")
                                     worker_client = Client(host='http://localhost:11434')
                                     w_resp = worker_client.chat(model=model, messages=[
                                         {'role': 'system', 'content': sys},
@@ -443,9 +443,9 @@ Synthesize these into a single Final Answer. Use the structure:
                         token_msg = f"**Usage**: Manager ({m_tokens+c_tokens}) + Council ({total_worker_tokens}) tokens."
 
                     except Exception as e:
-                        status.update(label="❌ Worker Failed", state="error")
-                        st.error(f"Connection to M1 Worker failed: {e}")
-                        final_answer = "I attempted to contact the M1 Worker but the connection failed. Please check the Thunderbolt bridge."
+                        status.update(label="❌ Council Failed", state="error")
+                        st.error(f"Connection to AI backend failed: {e}")
+                        final_answer = "I attempted to contact the AI backend but the connection failed. Please verify the SSH tunnel to Mac Studio is active."
                 
                 # Display Final Logic
                 message_placeholder.markdown(final_answer)
