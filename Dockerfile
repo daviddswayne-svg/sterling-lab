@@ -7,6 +7,8 @@ RUN apt-get update && apt-get install -y \
   build-essential \
   curl \
   nginx \
+  dos2unix \
+  procps \
   && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first for better caching
@@ -19,8 +21,8 @@ COPY . .
 # Move nginx config
 COPY nginx.conf /etc/nginx/nginx.conf
 
-# Make start script executable
-RUN chmod +x start.sh
+# Make start script executable and fix line endings
+RUN dos2unix start.sh && chmod +x start.sh
 
 # Expose HTTP port
 EXPOSE 80
