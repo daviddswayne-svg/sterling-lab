@@ -6,5 +6,7 @@ langchain-core==0.3.25
 langchain-text-splitters==0.3.3
 unstructured
 streamlit
+requests
+ollama
 pysqlite3-binary ; sys_platform == 'linux'
 extra-streamlit-components==0.1.71
