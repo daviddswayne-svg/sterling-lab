@@ -6,5 +6,7 @@ venv/
 .env
 .DS_Store
 *.db
+# Ignore all SQLite files EXCEPT the ChromaDB one (needed for RAG)
 *.sqlite3
+!chroma_db/chroma.sqlite3
 
