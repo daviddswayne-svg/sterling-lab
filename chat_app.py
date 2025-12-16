@@ -288,17 +288,69 @@ def main():
     
     # Model Selector
     available_models = get_ollama_models()
-    try:
-        default_idx = available_models.index(DEFAULT_LLM)
-    except ValueError:
-        try:
-            default_idx = 0
-            # If our default isn't there but others are, just pick the first one
-        except:
-             default_idx = 0
-        
-    selected_model = st.sidebar.selectbox("Active Model", available_models, index=default_idx)
+    
+    # Ensure default is valid
+    if DEFAULT_LLM not in available_models:
+        if available_models:
+            default_index = 0
+        else:
+            default_index = 0
+            available_models = [DEFAULT_LLM] # Fallback
+    else:
+        default_index = available_models.index(DEFAULT_LLM)
+
+    # Use session state to persist selection
+    if "selected_model_name" not in st.session_state:
+        st.session_state["selected_model_name"] = available_models[default_index]
+
+    def update_model():
+        st.session_state["selected_model_name"] = st.session_state.temp_model_selector
+
+    selected_model = st.sidebar.selectbox(
+        "Active Model", 
+        available_models, 
+        index=default_index,
+        key="temp_model_selector",
+        on_change=update_model
+    )
+    # Sync if needed (though on_change handles it)
+    selected_model = st.session_state.get("selected_model_name", selected_model)
+
     st.sidebar.caption(f"Status: Online ({selected_model})")
+    
+    # --- DEBUG / HEALTH CHECK ---
+    st.sidebar.markdown("---")
+    with st.sidebar.expander("🛠 System Diagnostics"):
+        # 1. Check Ollama Reachability
+        try:
+            r = requests.get(f"{OLLAMA_HOST}/api/version", timeout=2)
+            if r.status_code == 200:
+                st.write(f"✅ Ollama: Connected ({r.json().get('version', 'Unknown')})")
+            else:
+                 st.write(f"❌ Ollama: Error {r.status_code}")
+        except Exception as e:
+            st.write(f"❌ Ollama: Unreachable ({str(e)[:20]}...)")
+            
+        # 2. Check Embedding Model
+        try:
+            tags = requests.get(f"{OLLAMA_HOST}/api/tags").json()
+            models = [m['name'] for m in tags['models']]
+            if "nomic-embed-text:latest" in models or "nomic-embed-text" in models:
+                 st.write("✅ Embeddings: 'nomic-embed-text' found")
+            else:
+                 st.write("⚠️ Embeddings: 'nomic-embed-text' MISSING on Host!")
+                 st.caption("RAG will fail without this model.")
+        except:
+            st.write("❌ Embeddings: Check Failed")
+
+        # 3. Check Vector DB
+        if os.path.exists(CHROMA_PATH):
+             st.write(f"✅ ChromaDB: Found at {CHROMA_PATH}")
+             # Peek file count
+             files = sum([len(files) for r, d, files in os.walk(CHROMA_PATH)])
+             st.write(f"   (Contains {files} DB files)")
+        else:
+             st.write("❌ ChromaDB: NOT FOUND")
     
     # History Toggle
     st.sidebar.markdown("---")
