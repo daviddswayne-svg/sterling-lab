@@ -141,11 +141,11 @@ def get_messages():
 def get_chain(model_name):
     """Initialize the Conversational RAG pipeline."""
     try:
-        embeddings = OllamaEmbeddings(model=EMBEDDING_MODEL)
+        embeddings = OllamaEmbeddings(model=EMBEDDING_MODEL, base_url="http://localhost:11434")
         db = Chroma(persist_directory=CHROMA_PATH, embedding_function=embeddings)
         
         # Use selected model
-        llm = ChatOllama(model=model_name, temperature=0, streaming=True)
+        llm = ChatOllama(model=model_name, temperature=0, streaming=True, base_url="http://localhost:11434")
         
         memory = ConversationBufferMemory(
             memory_key="chat_history",
