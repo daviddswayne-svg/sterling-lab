@@ -218,6 +218,21 @@ def check_password():
         label, p, h1, h2, h3 {
             color: white !important;
         }
+        /* Specific Button Styling to prevent weird state changes */
+        div[data-testid="stFormSubmitButton"] button {
+            background-color: #00f0ff !important;
+            color: #000000 !important;
+            border: none;
+            transition: all 0.3s ease;
+        }
+        div[data-testid="stFormSubmitButton"] button:hover {
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+            background-color: #fff !important;
+        }
+        /* Override p color inside button to be black */
+        div[data-testid="stFormSubmitButton"] button p {
+            color: #000000 !important;
+        }
     </style>
     """, unsafe_allow_html=True)
 
