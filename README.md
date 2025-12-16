@@ -1,35 +1,56 @@
-# Project Sterling: Lab Ingestion Test Kit
+# Sterling Lab - AI-Powered Estate Intelligence
 
-## Contents
-This directory contains the "Sterling Estate" dummy data and the ingestion script for the Lab Test.
+Intelligent RAG (Retrieval-Augmented Generation) system for the Sterling Estate, powered by multiple LLM models through a distributed "Council Mode" architecture.
 
-### Data Files
-1.  **Last_Will_2020.txt**: The official will disinheriting the son.
-2.  **Assets_Estimate.csv**: List of assets and significant debts.
-3.  **Secret_Email.eml**: A hidden email reversing the will's intent.
-4.  **Groundskeeper_Log.md**: Contains the clue to the "Blue Envelope".
+## Features
 
-### Scripts
-- **ingest_sterling.py**: The Python script to ingest these files into a local Chroma vector database and perform a test query ("Where is the blue envelope?").
+- **Council Mode**: Multi-agent system with specialized AI personas (Consultant, Analyst, Maverick)
+- **RAG Pipeline**: ChromaDB vector database with 8+ estate documents
+- **Real-time Streaming**: Live AI responses with token counting
+- **Distributed Architecture**: Mac Studio AI backend via SSH tunnel
+- **Knowledge Sources**: Internal ChromaDB + PrivateGPT integration
 
-## Usage Instructions (Mac)
-Run these commands in this directory:
+## Architecture
 
-1.  **Create Virtual Environment** (Optional but recommended):
-    ```bash
-    python3 -m venv venv
-    source venv/bin/activate
-    ```
+- **Frontend**: Streamlit web interface
+- **AI Backend**: Mac Studio M3 via SSH tunnel (port 11434)
+- **Models**: llama3.3:70b, qwen2.5-coder:32b, dolphin-llama3, nomic-embed-text
+- **Database**: ChromaDB for vector storage, SQLite for chat history
 
-2.  **Install Dependencies**:
-    ```bash
-    pip install langchain-chroma langchain-ollama langchain-community unstructured
-    ```
+## Deployment
 
-3.  **Run Ingestion**:
-    ```bash
-    python3 ingest_sterling.py
-    ```
+### Docker (Coolify)
+```bash
+# Automatic deployment via Coolify
+# Push to main branch → auto-deploys
+```
 
-## Expected Result
-The script will output the top retrieved answer, which should point to the location of the hidden Blue Envelope based on the Groundskeeper's Log.
+### Manual (Traditional)
+```bash
+git push live main  # Deploys to swaynesystems.ai:8443
+```
+
+## Environment Variables
+
+```env
+OLLAMA_HOST=http://host.docker.internal:11434  # For Docker deployment
+```
+
+## Live Site
+
+- **Production**: https://swaynesystems.ai (via Coolify)
+- **Legacy**: https://swaynesystems.ai:8443 (direct Caddy)
+
+## AI Agent Workflow
+
+AI agents can auto-update by:
+```bash
+git add .
+git commit -m "AI update: [description]"
+git push origin main
+```
+→ Coolify automatically deploys changes
+
+---
+
+Built with ❤️ for the Sterling Estate
