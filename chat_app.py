@@ -180,7 +180,12 @@ def check_password():
     cookie_manager = get_manager()
     
     # Check for existing cookie
-    if cookie_manager.get(cookie="swayne_auth_token") == "valid_token":
+    cookie_val = cookie_manager.get(cookie="swayne_auth_token")
+    if cookie_val == "valid_token":
+        return True
+        
+    # Check for session state bridge (prevents loop while cookie sets)
+    if st.session_state.get("auth_success", False):
         return True
 
     # Custom CSS for Login
@@ -204,6 +209,15 @@ def check_password():
             text-transform: uppercase;
             letter-spacing: 2px;
         }
+        /* Force Input Text White */
+        input[type="text"], input[type="password"] {
+            color: white !important;
+            -webkit-text-fill-color: white !important;
+        }
+        /* Labels and Text */
+        label, p, h1, h2, h3 {
+            color: white !important;
+        }
     </style>
     """, unsafe_allow_html=True)
 
@@ -219,9 +233,10 @@ def check_password():
             
             if submitted:
                 if user == "admin" and password == "sterling":
-                    cookie_manager.set("swayne_auth_token", "valid_token", expires_at=None) # Session cookie or set date
-                    st.success("Access Granted. Redirecting...")
-                    time.sleep(1) # Give cookie time to set
+                    cookie_manager.set("swayne_auth_token", "valid_token", expires_at=None)
+                    st.session_state["auth_success"] = True # Bridge the gap
+                    st.success("Access Granted. Loading...")
+                    time.sleep(1) 
                     st.rerun()
                 else:
                     st.error("⛔️ Access Denied: Invalid Credentials")
