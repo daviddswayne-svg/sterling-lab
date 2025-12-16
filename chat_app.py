@@ -115,20 +115,26 @@ def get_vitals():
     """Polls the local Mac Studio vitals server."""
     """Polls the local Mac Studio vitals server."""
     endpoints = [
-        "http://host.docker.internal:8999/vitals", # Docker -> Host
-        "http://localhost:8999/vitals"             # Local dev
+        "http://host.docker.internal:8999/vitals", # Standard Docker
+        "http://172.17.0.1:8999/vitals",           # Linux Docker Bridge
+        "http://localhost:8999/vitals"             # Localhost Fallback
     ]
+    
+    errors = []
     
     for url in endpoints:
         try:
-            response = requests.get(url, timeout=1)
+            response = requests.get(url, timeout=0.5)
             if response.status_code == 200:
-                return response.json()
-        except Exception:
+                data = response.json()
+                data["_source"] = url # Internal debug tag
+                return data
+        except Exception as e:
+            errors.append(f"{url}: {e}")
             continue
             
-    # Return None to indicate connection failure
-    return None
+    # Return None to indicate connection failure, but pass errors if helpful
+    return {"_error": errors}
 
 
 # --- Database Functions ---
@@ -368,12 +374,22 @@ def main():
     def status_dot(active):
         return "🟢" if active else "🔴"
         
+    # Auto-refresh vitals (every 5 seconds roughly, on interaction)
+    vitals = get_vitals()
+    
+    # helper for status dot
+    def status_dot(active):
+        return "🟢" if active else "🔴"
+        
     # Mac Link logic
-    link_active = (vitals is not None)
+    link_active = (vitals is not None and "_error" not in vitals)
     
     # Safely get values
     if not link_active:
+        debug_errors = vitals.get("_error", []) if vitals else ["No response"]
         vitals = {"ollama_status": False, "ssh_connections": 0, "load_avg": [0,0,0]}
+    else:
+        debug_errors = []
 
     c1, c2 = st.sidebar.columns(2)
     with c1:
@@ -387,8 +403,15 @@ def main():
         st.sidebar.caption(f"Active SSH Sessions: **{vitals.get('ssh_connections', 0)}**")
         if vitals.get('load_avg'):
             st.sidebar.progress(min(vitals['load_avg'][0] / 10.0, 1.0), text=f"Load: {vitals['load_avg'][0]:.2f}")
+        # Debug Source
+        # st.sidebar.caption(f"Src: {vitals.get('_source', 'Unknown')}")
     else:
         st.sidebar.caption("System Offline")
+        with st.sidebar.expander("Network Debug", expanded=False):
+            st.error("Connection Failed")
+            for err in debug_errors:
+                st.code(err, language="text")
+            st.info("Check SSH Tunnel & Port 8999")
     
     # --- DEBUG / HEALTH CHECK ---
     st.sidebar.markdown("---")
