@@ -1,5 +1,21 @@
 # Coolify Deployment Guide for Sterling Lab
 
+> [!CAUTION]
+> **CRITICAL: Dual Git Remote Setup**  
+> This repository has TWO remotes:
+> - `origin` → GitHub (https://github.com/daviddswayne-svg/sterling-lab.git) - **BACKUP ONLY**
+> - `live` → Server (root@165.22.146.182:/var/www/swaynesystems.ai.git) - **ACTUAL DEPLOYMENT SOURCE**
+> 
+> **Always push to BOTH remotes:**
+> ```bash
+> git push origin main  # Backup to GitHub
+> git push live main    # Deploy to server (THIS ONE MATTERS!)
+> ```
+> 
+> Coolify deploys from the `live` remote, NOT GitHub. Changes pushed only to GitHub will NOT deploy.
+
+---
+
 ## Step 1: Access Coolify
 Open your browser to: **http://165.22.146.182:8000**
 

@@ -1,5 +1,15 @@
 # Sterling Lab - AI-Powered Estate Intelligence
 
+> [!CAUTION]
+> **CRITICAL: This repo has TWO Git remotes**  
+> - `origin` → GitHub (**BACKUP ONLY** - does NOT deploy)
+> - `live` → Server (**ACTUAL DEPLOYMENT** - this deploys to swaynesystems.ai)
+> 
+> **Always push to BOTH:**
+> ```bash
+> git push origin main && git push live main
+> ```
+
 Intelligent RAG (Retrieval-Augmented Generation) system for the Sterling Estate, powered by multiple LLM models through a distributed "Council Mode" architecture.
 
 ## Features
@@ -19,16 +29,20 @@ Intelligent RAG (Retrieval-Augmented Generation) system for the Sterling Estate,
 
 ## Deployment
 
-### Docker (Coolify)
+**IMPORTANT:** Must push to `live` remote for deployment (Coolify uses this, NOT GitHub)
+
 ```bash
-# Automatic deployment via Coolify
-# Push to main branch → auto-deploys
+# Correct deployment workflow:
+git add .
+git commit -m "Your message"
+git push origin main  # Backup to GitHub
+git push live main    # Deploy to swaynesystems.ai (REQUIRED!)
+
+# Or shorthand to push to both:
+git push --all
 ```
 
-### Manual (Traditional)
-```bash
-git push live main  # Deploys to swaynesystems.ai:8443
-```
+See [COOLIFY_DEPLOY.md](COOLIFY_DEPLOY.md) for full deployment guide.
 
 ## Environment Variables
 
@@ -47,9 +61,10 @@ AI agents can auto-update by:
 ```bash
 git add .
 git commit -m "AI update: [description]"
-git push origin main
+git push origin main  # Backup
+git push live main    # Deploy (REQUIRED!)
 ```
-→ Coolify automatically deploys changes
+→ Coolify automatically deploys from `live` remote
 
 ---
 
