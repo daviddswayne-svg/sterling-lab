@@ -1,14 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Swayne Systems | Central Command</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;600;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;600;700&family=Rajdhani:wght@300;500;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <div class="overlay"></div>
     <div class="scanline"></div>
@@ -28,7 +32,7 @@
             <div class="hero-section">
                 <h2>MISSION ACCOMPLISHED</h2>
                 <p class="subtitle">INFRASTRUCTURE DEPLOYMENT SUCCESSFUL</p>
-                
+
                 <div class="stats-grid">
                     <div class="stat-card">
                         <span class="label">SSL SECURE</span>
@@ -44,11 +48,21 @@
                     </div>
                 </div>
 
+                <div class="control-panel">
+                    <button id="logout-btn" class="action-btn">
+                        <span class="btn-icon">🔒</span> TERMINATE SESSION (LOGOUT)
+                    </button>
+                </div>
+
                 <div class="terminal-logs">
-                    <div class="log-entry"><span class="timestamp">[19:04:23]</span> Initializing secure connection...</div>
-                    <div class="log-entry"><span class="timestamp">[19:04:24]</span> Handshake established with Mac Studio (Ollama)</div>
-                    <div class="log-entry"><span class="timestamp">[19:04:25]</span> "Zombie" containers neutralized.</div>
-                    <div class="log-entry"><span class="timestamp">[19:04:26]</span> Sterling Lab v1.0 Ready for user input.</div>
+                    <div class="log-entry"><span class="timestamp">[19:04:23]</span> Initializing secure connection...
+                    </div>
+                    <div class="log-entry"><span class="timestamp">[19:04:24]</span> Handshake established with Mac
+                        Studio (Ollama)</div>
+                    <div class="log-entry"><span class="timestamp">[19:04:25]</span> "Zombie" containers neutralized.
+                    </div>
+                    <div class="log-entry"><span class="timestamp">[19:04:26]</span> Sterling Lab v1.0 Ready for user
+                        input.</div>
                 </div>
 
                 <a href="/lab" class="enter-btn">
@@ -62,7 +76,7 @@
             <p>© 2025 Swayne Systems. Authorized Personnel Only.</p>
         </footer>
     </div>
-    
+
     <script>
         // Simple animation or status check simulation
         document.addEventListener('DOMContentLoaded', () => {
@@ -73,7 +87,19 @@
                     log.style.opacity = '1';
                 }, index * 200); // Staggered fade in
             });
+
+            // Logout Logic
+            const logoutBtn = document.getElementById('logout-btn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', () => {
+                    // Clear Cookie
+                    document.cookie = "swayne_auth_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+                    alert("SESSION TERMINATED: Cookie Deleted.");
+                    window.location.reload();
+                });
+            }
         });
     </script>
 </body>
+
 </html>

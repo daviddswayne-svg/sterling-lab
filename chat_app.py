@@ -258,12 +258,13 @@ def main():
     if "db_history" not in st.session_state:
         st.session_state.db_history = get_messages()
 
-    # Sidebar: App Controls
+    # --- Sidebar ---
     logo_path = os.path.join(SCRIPT_DIR, "assets", "logo.png")
     if os.path.exists(logo_path):
         st.sidebar.image(logo_path, use_container_width=True)
     
     st.sidebar.markdown("[← Swayne Systems Dashboard](/)")
+
     st.sidebar.title("Swayne Intelligence")
     st.sidebar.caption("Central Command Node")
     
