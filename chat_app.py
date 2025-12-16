@@ -185,6 +185,7 @@ def main():
     if os.path.exists(logo_path):
         st.sidebar.image(logo_path, use_container_width=True)
     
+    st.sidebar.markdown("[← Swayne Systems Dashboard](/)")
     st.sidebar.title("Swayne Intelligence")
     st.sidebar.caption("Central Command Node")
     
