@@ -169,41 +169,70 @@ def get_chain(model_name):
         st.error(f"Failed to initialize RAG pipeline: {e}")
         return None
 
-# --- Authentication ---
+import extra_streamlit_components as stx
+
+# --- Authentication & UI ---
+def get_manager():
+    return stx.CookieManager()
+
 def check_password():
-    """Returns `True` if the user had the correct password."""
-
-    def password_entered():
-        """Checks whether a password entered by the user is correct."""
-        if st.session_state["username"] == "admin" and st.session_state["password"] == "sterling":
-            st.session_state["password_correct"] = True
-            del st.session_state["password"]  # don't store password
-            del st.session_state["username"]
-        else:
-            st.session_state["password_correct"] = False
-
-    if "password_correct" not in st.session_state:
-        # First run, show input for password.
-        st.text_input("Username", key="username")
-        st.text_input("Password", type="password", on_change=password_entered, key="password")
-        return False
+    """Checks for cookie or validates password."""
+    cookie_manager = get_manager()
     
-    elif not st.session_state["password_correct"]:
-        # Password not correct, show input + error.
-        st.text_input("Username", key="username")
-        st.text_input("Password", type="password", on_change=password_entered, key="password")
-        st.error("😕 User not authorized")
-        return False
-    
-    else:
-        # Password correct.
+    # Check for existing cookie
+    if cookie_manager.get(cookie="swayne_auth_token") == "valid_token":
         return True
+
+    # Custom CSS for Login
+    st.markdown("""
+    <style>
+        .stApp {
+            background-color: #050505;
+        }
+        div[data-testid="stForm"] {
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(25, 25, 25, 0.5);
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.1);
+        }
+        .login-header {
+            font-family: 'Courier New', monospace;
+            color: #00f0ff;
+            text-align: center;
+            margin-bottom: 2rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+
+    # Login Container
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        st.markdown('<div class="login-header"><h3>Swayne Systems<br>Secure Access</h3></div>', unsafe_allow_html=True)
+        
+        with st.form("login_form"):
+            user = st.text_input("Username", key="username")
+            password = st.text_input("Password", type="password", key="password")
+            submitted = st.form_submit_button("Authenticate", use_container_width=True)
+            
+            if submitted:
+                if user == "admin" and password == "sterling":
+                    cookie_manager.set("swayne_auth_token", "valid_token", expires_at=None) # Session cookie or set date
+                    st.success("Access Granted. Redirecting...")
+                    time.sleep(1) # Give cookie time to set
+                    st.rerun()
+                else:
+                    st.error("⛔️ Access Denied: Invalid Credentials")
+
+    return False
 
 # --- Main App ---
 def main():
     st.set_page_config(page_title="Swayne Intelligence", layout="wide", page_icon="📡")
     
-    # Check Authentication
+    # Check Authentication (with Cookies)
     if not check_password():
         st.stop()
     
