@@ -3,7 +3,7 @@
 > [!CAUTION]
 > **CRITICAL: This repo has TWO Git remotes**  
 > - `origin` → GitHub (**BACKUP ONLY** - does NOT deploy)
-> - `live` → Server (**ACTUAL DEPLOYMENT** - this deploys to swaynesystems.ai)
+> - `live` → Server (root@165.22.146.182:/var/www/swaynesystems.ai.git) - **ACTUAL DEPLOYMENT SOURCE**
 > 
 > **Always push to BOTH:**
 > ```bash
