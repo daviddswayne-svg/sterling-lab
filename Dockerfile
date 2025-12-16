@@ -24,7 +24,11 @@ COPY nginx.conf /etc/nginx/nginx.conf
 # Make start script executable and fix line endings
 RUN dos2unix start.sh && chmod +x start.sh
 
-# Expose HTTP port
+# Create directory for Nginx PID file
+RUN mkdir -p /var/run && chmod 755 /var/run
+
+# CRITICAL: Coolify MUST route to port 80 (Nginx), NOT 8501 (Streamlit)
+# Port 80 serves: Dashboard at / and Streamlit at /lab via proxy
 EXPOSE 80
 
 # Health check (check Nginx)

@@ -16,7 +16,9 @@ Open your browser to: **http://165.22.146.182:8000**
 
 ## Step 4: Configure Build Settings
 1. **Build Pack**: Select **"Dockerfile"**
-2. **Port**: `8501`
+2. **Port**: `80` ⚠️ **CRITICAL: Must be 80, NOT 8501!**
+   - Port 80 = Nginx (serves dashboard + proxies Streamlit)
+   - Port 8501 = Streamlit only (bypasses dashboard)
 3. **Domain**: `swaynesystems.ai` (or click to auto-generate)
 
 ## Step 5: Environment Variables
@@ -66,6 +68,48 @@ Since you're using SSH tunnel to Mac Studio for Ollama, you have 2 options:
 - Slower performance than Mac Studio
 
 Recommend **Option A** - I can help configure after initial Coolify setup.
+
+---
+
+## Verifying Successful Deployment
+
+### Check Startup Logs
+
+After deployment, immediately check if all services started correctly:
+
+```bash
+# Find container
+docker ps | grep sterling
+
+# View startup sequence
+docker logs <container_id> --tail 100
+```
+
+**Expected Output:**
+```
+==================================
+🚀 STERLING LAB STARTUP SEQUENCE
+==================================
+
+[1/7] Running RAG System Diagnostics...
+[2/7] Verifying Dashboard Files...
+✅ Dashboard files verified at /app/dashboard
+[3/7] Testing Nginx Configuration...
+✅ Nginx config is valid
+[4/7] Starting Streamlit on port 8501...
+✅ Streamlit started with PID: 123
+[5/7] Waiting for Streamlit to be ready...
+✅ Streamlit is responding on port 8501
+[6/7] Starting Nginx on port 80...
+✅ Nginx started with PID: 456
+[7/7] Verifying Nginx is serving traffic...
+✅ Dashboard is accessible at /
+✅ Streamlit proxy is accessible at /lab
+==================================
+✅ ALL SERVICES STARTED SUCCESSFULLY
+```
+
+> **If you see any ❌ FATAL errors**, the logs will show exactly what failed.
 
 ---
 

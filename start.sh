@@ -1,21 +1,117 @@
 #!/bin/bash
 set -e
 
-echo "🔍 Running RAG System Diagnostics..."
-python rag_diagnostics.py || echo "⚠️  Warning: Some diagnostic checks failed. Check logs above."
+echo "=================================="
+echo "🚀 STERLING LAB STARTUP SEQUENCE"
+echo "=================================="
+echo ""
+
+# Step 1: Run Diagnostics
+echo "[1/7] Running RAG System Diagnostics..."
+python rag_diagnostics.py || echo "⚠️  Warning: Some diagnostic checks failed."
+echo ""
+
+# Step 2: Verify Dashboard Exists
+echo "[2/7] Verifying Dashboard Files..."
+if [ ! -d "/app/dashboard" ]; then
+    echo "❌ FATAL: /app/dashboard directory not found!"
+    exit 1
+fi
+
+if [ ! -f "/app/dashboard/index.html" ]; then
+    echo "❌ FATAL: /app/dashboard/index.html not found!"
+    exit 1
+fi
+
+echo "✅ Dashboard files verified at /app/dashboard"
+ls -lah /app/dashboard/
+echo ""
+
+# Step 3: Test Nginx Configuration
+echo "[3/7] Testing Nginx Configuration..."
+nginx -t
+echo "✅ Nginx config is valid"
+echo ""
+
+# Step 4: Start Streamlit
+echo "[4/7] Starting Streamlit on port 8501..."
+streamlit run chat_app.py \
+    --server.port=8501 \
+    --server.address=0.0.0.0 \
+    --server.headless=true \
+    --server.baseUrlPath=/lab \
+    2>&1 | tee /tmp/streamlit.log &
+
+STREAMLIT_PID=$!
+echo "✅ Streamlit started with PID: $STREAMLIT_PID"
+echo ""
+
+# Step 5: Wait for Streamlit to be Ready
+echo "[5/7] Waiting for Streamlit to be ready..."
+MAX_WAIT=30
+COUNTER=0
+while [ $COUNTER -lt $MAX_WAIT ]; do
+    if curl -s http://127.0.0.1:8501/_stcore/health > /dev/null 2>&1; then
+        echo "✅ Streamlit is responding on port 8501"
+        break
+    fi
+    echo "   Still waiting... ($COUNTER/$MAX_WAIT)"
+    sleep 1
+    COUNTER=$((COUNTER + 1))
+done
+
+if [ $COUNTER -eq $MAX_WAIT ]; then
+    echo "❌ FATAL: Streamlit failed to start within ${MAX_WAIT}s"
+    echo "Streamlit logs:"
+    tail -20 /tmp/streamlit.log
+    exit 1
+fi
+echo ""
+
+# Step 6: Start Nginx
+echo "[6/7] Starting Nginx on port 80..."
+nginx -g 'daemon off;' &
+NGINX_PID=$!
+echo "✅ Nginx started with PID: $NGINX_PID"
+echo ""
+
+# Step 7: Verify Nginx is Actually Running
+echo "[7/7] Verifying Nginx is serving traffic..."
+sleep 2  # Give Nginx time to initialize
+
+# Check if Nginx process is still alive
+if ! ps -p $NGINX_PID > /dev/null 2>&1; then
+    echo "❌ FATAL: Nginx process died immediately after starting!"
+    echo "Nginx error log should be visible above. Checking pid..."
+    ps aux | grep nginx
+    exit 1
+fi
+
+# Test dashboard route
+if curl -s -H "X-Test: Internal" http://127.0.0.1:80/ | grep -q "Sterling"; then
+    echo "✅ Dashboard is accessible at /"
+else
+    echo "⚠️  WARNING: Dashboard test failed - check nginx error logs above"
+fi
+
+# Test Streamlit proxy route
+if curl -s -I http://127.0.0.1:80/lab/ 2>&1 | head -1 | grep -q "HTTP"; then
+    echo "✅ Streamlit proxy is accessible at /lab"
+else
+    echo "⚠️  WARNING: Streamlit proxy test failed"
+fi
 
 echo ""
-echo "🚀 Starting Sterling Lab Services..."
+echo "=================================="
+echo "✅ ALL SERVICES STARTED SUCCESSFULLY"
+echo "Streamlit PID: $STREAMLIT_PID"
+echo "Nginx PID: $NGINX_PID"
+echo "=================================="
+echo ""
+echo "📡 Monitoring Nginx (foreground)..."
+echo "   Dashboard: http://localhost/"
+echo "   Lab: http://localhost/lab"
+echo ""
 
-# Verify Nginx config before starting
-echo "Testing Nginx configuration..."
-nginx -t
-
-echo "Starting Streamlit on port 8501..."
-# Start Streamlit in the background
-# We set baseUrlPath to /lab so Streamlit knows it's serving from a subdirectory
-streamlit run chat_app.py --server.port=8501 --server.address=0.0.0.0 --server.headless=true --server.baseUrlPath=/lab &
-
-echo "Starting Nginx on port 80..."
-# Start Nginx in the foreground
-exec nginx -g 'daemon off;'
+# Keep Nginx running in foreground
+wait $NGINX_PID
