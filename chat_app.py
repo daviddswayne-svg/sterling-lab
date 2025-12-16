@@ -20,7 +20,8 @@ DEFAULT_LLM = "qwen2.5-coder:32b"
 DB_PATH = "chat_history.db"
 
 # Remote Worker Config
-WORKER_IP = "127.0.0.1"
+OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
+WORKER_IP = "127.0.0.1" # Still used for fallback logic if needed, but primary is OLLAMA_HOST
 WORKER_PORT = "11434"
 WORKER_MODEL = "llama3.3"
 
@@ -28,7 +29,7 @@ WORKER_MODEL = "llama3.3"
 def get_ollama_models():
     """Fetch available models from local Ollama instance."""
     try:
-        response = requests.get("http://localhost:11434/api/tags")
+        response = requests.get(f"{OLLAMA_HOST}/api/tags")
         if response.status_code == 200:
             models = [model['name'] for model in response.json()['models']]
             return models
@@ -89,6 +90,7 @@ class TokenCallbackHandler(BaseCallbackHandler):
 # --- PrivateGPT Integration ---
 def query_private_gpt(prompt):
     """Query the running PrivateGPT server."""
+    # Note: PrivateGPT might also need env var configuration eventually
     url = "http://localhost:8001/v1/completions"
     payload = {
         "prompt": prompt,
@@ -141,11 +143,11 @@ def get_messages():
 def get_chain(model_name):
     """Initialize the Conversational RAG pipeline."""
     try:
-        embeddings = OllamaEmbeddings(model=EMBEDDING_MODEL, base_url="http://localhost:11434")
+        embeddings = OllamaEmbeddings(model=EMBEDDING_MODEL, base_url=OLLAMA_HOST)
         db = Chroma(persist_directory=CHROMA_PATH, embedding_function=embeddings)
         
         # Use selected model
-        llm = ChatOllama(model=model_name, temperature=0, streaming=True, base_url="http://localhost:11434")
+        llm = ChatOllama(model=model_name, temperature=0, streaming=True, base_url=OLLAMA_HOST)
         
         memory = ConversationBufferMemory(
             memory_key="chat_history",
@@ -191,7 +193,11 @@ def main():
     try:
         default_idx = available_models.index(DEFAULT_LLM)
     except ValueError:
-        default_idx = 0
+        try:
+            default_idx = 0
+            # If our default isn't there but others are, just pick the first one
+        except:
+             default_idx = 0
         
     selected_model = st.sidebar.selectbox("Active Model", available_models, index=default_idx)
     st.sidebar.caption(f"Status: Online ({selected_model})")
@@ -320,7 +326,7 @@ def main():
                     try:
                         # Step 1: Manager Planning (COUNCIL MODE)
                         status.write(f"🧠 Manager ({selected_model}) is convening the Council...")
-                        manager_client = Client(host='http://localhost:11434')
+                        manager_client = Client(host=OLLAMA_HOST)
                         
                         council_prompt = """You are the Council Chairman. Select the best team of 1-3 Personas to answer the user:
 1. "Consultant" (Balanced): Best for advice, explanations, and nuance.
@@ -394,7 +400,7 @@ Return JSON ONLY:
 {prompt}"""
                             
                             try:
-                                worker_client = Client(host=f'http://{WORKER_IP}:{WORKER_PORT}')
+                                worker_client = Client(host=OLLAMA_HOST)
                                 w_resp = worker_client.chat(model=model, messages=[
                                     {'role': 'system', 'content': sys},
                                     {'role': 'user', 'content': worker_payload}
