@@ -611,10 +611,11 @@ Synthesize these into a single Final Answer. Use the structure:
                     save_message("assistant", answer)
                     
                     # Sources
-                    with st.expander("View Source Documents"):
-                        for i, doc in enumerate(source_docs):
-                            st.markdown(f"**Source {i+1}:** {doc.metadata.get('source', 'Unknown')}")
-                            st.text(doc.page_content[:500] + "...")
+                    if source_docs:
+                        with st.expander("View Source Documents"):
+                            for i, doc in enumerate(source_docs):
+                                st.markdown(f"**Source {i+1}:** {doc.metadata.get('source', 'Unknown')}")
+                                st.text(doc.page_content[:500] + "...")
                                     
                 except Exception as e:
                     st.error(f"Error: {e}")
