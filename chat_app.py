@@ -209,10 +209,13 @@ def check_password():
             text-transform: uppercase;
             letter-spacing: 2px;
         }
-        /* Force Input Text White */
+        /* Force Input Text White & Dark Background */
         input[type="text"], input[type="password"] {
             color: white !important;
+            background-color: #0e0e0e !important;
+            border: 1px solid #00f0ff !important;
             -webkit-text-fill-color: white !important;
+            border-radius: 5px;
         }
         /* Labels and Text */
         label, p, h1, h2, h3 {
