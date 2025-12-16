@@ -219,7 +219,7 @@ def main():
     # --- DISTRIBUTED MODE TOGGLE ---
     st.sidebar.markdown("---")
     st.sidebar.subheader("⚡️ Compute Cluster")
-    use_distributed = st.sidebar.checkbox("Enable Council Mode", value=True)
+    use_distributed = st.sidebar.checkbox("Enable Council Mode", value=False)
     if use_distributed:
         st.sidebar.success(f"Connected: {WORKER_MODEL} via Mac Studio")
     
