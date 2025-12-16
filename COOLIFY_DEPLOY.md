@@ -66,3 +66,104 @@ Since you're using SSH tunnel to Mac Studio for Ollama, you have 2 options:
 - Slower performance than Mac Studio
 
 Recommend **Option A** - I can help configure after initial Coolify setup.
+
+---
+
+## Troubleshooting RAG Issues
+
+### Pre-Deployment Checklist
+
+Before deploying, ensure these requirements are met:
+
+1. **✅ Embedding Model on Mac Studio**
+   ```bash
+   # SSH to Mac Studio
+   ollama list | grep nomic
+   ```
+   - Should show: `nomic-embed-text` or `nomic-embed-text:latest`
+   - If missing: `ollama pull nomic-embed-text`
+
+2. **✅ SSH Tunnel Active**
+   ```bash
+   # On deployment server
+   curl http://localhost:11434/api/version
+   ```
+   - Should return: `{"version":"0.x.x"}`
+   - Verify tunnel in `/var/log/sterling-tunnel.log`
+
+3. **✅ ChromaDB Populated**
+   ```bash
+   # Local machine
+   ls -la chroma_db/
+   ```
+   - Should show: `chroma.sqlite3` and UUID directory
+   - If empty: Run `python ingest_sterling.py`
+
+### Diagnostic Commands
+
+Run these inside the deployed container:
+
+```bash
+# Find container ID
+docker ps | grep sterling
+
+# Run diagnostics
+docker exec <container_id> python rag_diagnostics.py
+
+# Check logs
+docker logs <container_id> --tail 100
+```
+
+### Common Issues
+
+#### Issue: "RAG returns zero documents"
+
+**Symptom**: "View Source Documents" expander is empty
+**Cause**: Embedding model unavailable on Mac Studio
+**Fix**:
+```bash
+# On Mac Studio
+ollama pull nomic-embed-text
+
+# Verify from droplet
+curl -X POST http://localhost:11434/api/embeddings \
+  -d '{"model":"nomic-embed-text","prompt":"test"}'
+# Should return: {"embedding":[...]}
+```
+
+#### Issue: "Connection to Ollama failed"
+
+**Symptom**: `❌ Ollama: Unreachable` in System Diagnostics
+**Cause**: SSH tunnel down or `OLLAMA_HOST` misconfigured
+**Fix**:
+1. Check environment variable in Coolify:
+   - Go to Application → Environment
+   - Verify: `OLLAMA_HOST=http://host.docker.internal:11434`
+2. Restart tunnel on Mac Studio:
+   ```bash
+   ssh -R 11434:localhost:11434 root@165.22.146.182
+   ```
+
+#### Issue: "ChromaDB not found"
+
+**Symptom**: `❌ ChromaDB: NOT FOUND` 
+**Cause**: `chroma_db/` not committed to Git or `.gitignore` blocking it
+**Fix**:
+```bash
+# Check if in Git
+git ls-files | grep chroma_db
+
+# If missing, add and push
+git add chroma_db/
+git commit -m "Add populated ChromaDB"
+git push origin main
+```
+
+### Debug Mode
+
+To get verbose RAG output, add this to Coolify environment:
+```
+STREAMLIT_LOGGER_LEVEL=debug
+```
+
+Then check container logs for detailed ChromaDB queries.

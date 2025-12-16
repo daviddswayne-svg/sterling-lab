@@ -1,5 +1,11 @@
 #!/bin/bash
 
+echo "🔍 Running RAG System Diagnostics..."
+python rag_diagnostics.py || echo "⚠️  Warning: Some diagnostic checks failed. Check logs above."
+
+echo ""
+echo "🚀 Starting Sterling Lab..."
+
 # Start Streamlit in the background
 # We set baseUrlPath to /lab so Streamlit knows it's serving from a subdirectory
 streamlit run chat_app.py --server.port=8501 --server.address=0.0.0.0 --server.headless=true --server.baseUrlPath=/lab &

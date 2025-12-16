@@ -146,8 +146,22 @@ def get_messages():
 def get_chain(model_name):
     """Initialize the Conversational RAG pipeline."""
     try:
-        embeddings = OllamaEmbeddings(model=EMBEDDING_MODEL, base_url=OLLAMA_HOST)
-        db = Chroma(persist_directory=CHROMA_PATH, embedding_function=embeddings)
+        # Initialize embeddings with detailed error handling
+        try:
+            embeddings = OllamaEmbeddings(model=EMBEDDING_MODEL, base_url=OLLAMA_HOST)
+        except Exception as emb_error:
+            st.error(f"❌ Failed to initialize embeddings model '{EMBEDDING_MODEL}': {emb_error}")
+            st.warning(f"💡 Ensure '{EMBEDDING_MODEL}' is available on {OLLAMA_HOST}")
+            st.code(f"ollama pull {EMBEDDING_MODEL}", language="bash")
+            return None
+        
+        # Load ChromaDB
+        try:
+            db = Chroma(persist_directory=CHROMA_PATH, embedding_function=embeddings)
+        except Exception as db_error:
+            st.error(f"❌ Failed to load ChromaDB from {CHROMA_PATH}: {db_error}")
+            st.warning("💡 Try re-running ingestion: python ingest_sterling.py")
+            return None
         
         # Use selected model
         llm = ChatOllama(model=model_name, temperature=0, streaming=True, base_url=OLLAMA_HOST)
@@ -169,7 +183,9 @@ def get_chain(model_name):
         )
         return qa_chain
     except Exception as e:
-        st.error(f"Failed to initialize RAG pipeline: {e}")
+        st.error(f"❌ Failed to initialize RAG pipeline: {e}")
+        import traceback
+        st.code(traceback.format_exc(), language="python")
         return None
 
 import extra_streamlit_components as stx
@@ -336,15 +352,33 @@ def main():
             
         # 2. Check Embedding Model
         try:
-            tags = requests.get(f"{OLLAMA_HOST}/api/tags").json()
+            tags = requests.get(f"{OLLAMA_HOST}/api/tags", timeout=2).json()
             models = [m['name'] for m in tags['models']]
-            if "nomic-embed-text:latest" in models or "nomic-embed-text" in models:
-                 st.write("✅ Embeddings: 'nomic-embed-text' found")
+            
+            # Check for any variant of the embedding model
+            found = any(EMBEDDING_MODEL in m for m in models)
+            
+            if found:
+                matched = [m for m in models if EMBEDDING_MODEL in m][0]
+                st.write(f"✅ Embeddings: '{matched}' found")
+                
+                # Test embedding generation
+                try:
+                    test_payload = {"model": EMBEDDING_MODEL, "prompt": "test"}
+                    emb_resp = requests.post(f"{OLLAMA_HOST}/api/embeddings", json=test_payload, timeout=5)
+                    if emb_resp.status_code == 200:
+                        vec_dim = len(emb_resp.json().get('embedding', []))
+                        st.write(f"   ✓ Test embedding: {vec_dim}D vector")
+                    else:
+                        st.write(f"   ⚠️ Embedding test failed: HTTP {emb_resp.status_code}")
+                except:
+                    st.write("   ⚠️ Could not test embedding generation")
             else:
-                 st.write("⚠️ Embeddings: 'nomic-embed-text' MISSING on Host!")
-                 st.caption("RAG will fail without this model.")
-        except:
-            st.write("❌ Embeddings: Check Failed")
+                st.write(f"❌ Embeddings: '{EMBEDDING_MODEL}' MISSING!")
+                st.error("⚠️ RAG will fail without this model.")
+                st.code(f"# Run on Mac Studio:\nollama pull {EMBEDDING_MODEL}", language="bash")
+        except Exception as e:
+            st.write(f"❌ Embeddings: Check Failed ({str(e)[:30]}...)")
 
         # 3. Check Vector DB
         if os.path.exists(CHROMA_PATH):

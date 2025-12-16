@@ -16,7 +16,7 @@ DATA_FILES = [
     (os.path.join(SCRIPT_DIR, "Groundskeeper_Log.md"), UnstructuredMarkdownLoader),
 ]
 CHROMA_PATH = os.path.join(SCRIPT_DIR, "chroma_db")
-EMBEDDING_MODEL = "nomic-embed-text:latest"
+EMBEDDING_MODEL = "nomic-embed-text"  # Must match chat_app.py
 
 def ingest_data():
     print("--- 0. DEBUG: Checking Ollama Connection ---")
