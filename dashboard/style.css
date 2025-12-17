@@ -141,6 +141,12 @@ body {
 }
 
 .card-glow {
+    position: relative;
+    overflow: hidden;
+}
+
+.card-glow::before {
+    content: '';
     position: absolute;
     top: -50%;
     left: -50%;
@@ -149,6 +155,12 @@ body {
     background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
     animation: rotate-glow 20s linear infinite;
     pointer-events: none;
+    z-index: 0;
+}
+
+.card-content, .hero-image {
+    position: relative;
+    z-index: 1;
 }
 
 @keyframes rotate-glow {
