@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>CSS Test</title>
+    <style>
+        body {
+            background: #0f172a;
+            color: white;
+            padding: 50px;
+        }
+
+        .hero-card {
+            position: relative;
+            /* From style.css .hero-card */
+            padding: 3rem;
+            margin-bottom: 2rem;
+            overflow: hidden;
+            /* Added via .hero-card rule in style.css? No, wait. */
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            border-radius: 24px;
+        }
+
+        /* The conflicting class */
+        .card-glow {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-glow::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
+            animation: rotate-glow 20s linear infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .card-content,
+        .hero-image {
+            position: relative;
+            z-index: 1;
+        }
+
+        @keyframes rotate-glow {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <section class="hero-card card-glow">
+        <div class="card-content">
+            <h1>Testing content stability</h1>
+            <p>This text should NOT spin.</p>
+        </div>
+    </section>
+</body>
+
+</html>

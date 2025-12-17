@@ -227,3 +227,57 @@ STREAMLIT_LOGGER_LEVEL=debug
 ```
 
 Then check container logs for detailed ChromaDB queries.
+
+## Hybrid Deployment Strategy (Hotfix + Push)
+
+This strategy allows you to fix issues **instantly** (Hotfix) while ensuring they persist in future builds (Push).
+
+### When to use:
+- Critical bugs (e.g., CSS broken, site down, image missing).
+- You want to verify a fix on the live site *before* waiting 5 minutes for a full build.
+
+### The Workflow:
+
+#### 1. Push Code (Persistence)
+First, ensure your code is saved to Git so the *next* automated build includes it.
+```bash
+git add .
+git commit -m "Fix critical issue"
+# Pushes to both GitHub (Backup/Build Trigger) and Server (Deploy Source)
+./deploy.sh 
+```
+*Note: This starts a Coolify build in the background, which takes time.*
+
+#### 2. Identify Active Container
+SSH into the server to find the currently running container.
+```bash
+# SSH into Droplet
+ssh -i ~/.ssh/sterling_tunnel root@swaynesystems.ai
+
+# Find Container ID
+docker ps | grep swaynesystems
+# Copy the alphanumeric ID (e.g., d7f28d5d58b3)
+```
+
+#### 3. Hot-Patch (Immediate Fix)
+Inject your fixed files directly into the running container.
+```bash
+# Syntax: docker cp <local_path_on_server> <container_id>:<app_path>
+
+# Example: Fixing CSS and HTML
+docker cp /var/www/swaynesystems.ai/dashboard/style.css <container_id>:/app/dashboard/style.css
+docker cp /var/www/swaynesystems.ai/dashboard/bedrock/index.html <container_id>:/app/dashboard/bedrock/index.html
+```
+*Note: The source files (`/var/www/...`) are updated when you ran `./deploy.sh` (git push live).*
+
+#### 4. Verify
+Check the live site. The fix should be visible **immediately**.
+
+#### 5. Cache Busting (If needed)
+If the fix involves CSS/JS and isn't showing up, update the query parameter in your HTML before deploying:
+```html
+<!-- index.html -->
+<link rel="stylesheet" href="/style.css?v=fix_version">
+```
+Then repeat steps 1 & 3 to update the HTML file in the container.
+

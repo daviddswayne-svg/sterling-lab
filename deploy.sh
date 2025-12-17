@@ -21,4 +21,7 @@ fi
 echo "📦 Pushing to Live Server..."
 git push live main
 
+echo "☁️  Syncing with GitHub Backup..."
+git push origin main
+
 echo "✅ Deployment Triggered! Check Coolify for build status."

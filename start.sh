@@ -33,6 +33,13 @@ nginx -t
 echo "✅ Nginx config is valid"
 echo ""
 
+# Step 3.5: Start Bedrock Chat API
+echo "[3.5/7] Starting Bedrock Chat API..."
+python bedrock_api.py > /tmp/bedrock_api.log 2>&1 &
+API_PID=$!
+echo "✅ Bedrock API started with PID: $API_PID"
+echo ""
+
 # Step 4: Start Streamlit
 echo "[4/7] Starting Streamlit on port 8501..."
 streamlit run chat_app.py \

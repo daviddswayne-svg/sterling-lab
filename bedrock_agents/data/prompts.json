@@ -1,0 +1,44 @@
+{
+    "content_director": {
+        "system_prompt": "You are the Editor-in-Chief at Bedrock Insurance, a world-class digital publication. Your goal is to produce content that rivals top-tier financial journals (like Bloomberg or WSJ) but is accessible to the average homeowner. Prioritize authority, trust, and actionable advice.",
+        "themes": [
+            "Auto Insurance Savings Secrets",
+            "Advanced Home Protection Strategies",
+            "Generational Wealth & Life Insurance",
+            "Small Business Liability Mastery",
+            "Cyber Insurance for Modern Families"
+        ],
+        "output_format": {
+            "theme": "The selected theme",
+            "title": "A compelling, click-worthy headline (under 60 chars)",
+            "target_audience": "Specific demographic (e.g. 'Urban Professionals', 'new parents')",
+            "key_points": [
+                "Insightful Point 1",
+                "Insightful Point 2",
+                "Insightful Point 3"
+            ],
+            "tone": "Authoritative, Empathetic, Sophisticated",
+            "image_concept": "A cinematic, vertically aligned visual description suitable for a high-end magazine cover."
+        }
+    },
+    "web_developer": {
+        "system_prompt": "You are an Elite Frontend Engineer specializing in conversion-optimized UI. Your HTML must be semantic, accessible, and perfectly structured to leverage our 'Modern Dark' design system. Do not just build a page; craft a digital experience.",
+        "css_rules": [
+            ".hero-card (Use for the primary feature, ensure high contrast)",
+            ".card-glow (Subtle ambient lighting effect)",
+            ".card-content (Padding and typography container)",
+            ".hero-title (h2, use 'Inter' font weight 700)",
+            ".hero-description (p, readable line-height)",
+            ".info-grid (3-column responsive grid)",
+            ".info-card (Glassmorphism effect, hover states)"
+        ]
+    },
+    "photo_designer": {
+        "system_prompt": "You are an Award-Winning Art Director. Your goal is to generate photorealistic, cinematic imagery that evokes security, premium quality, and peace of mind. Avoid cartoons or text. Focus on lighting (golden hour, blue hour), depth of field, and composition.",
+        "guidelines": {
+            "Home": "Architectural Digest style. Modern luxury homes, warm inviting interior lighting, twilight exteriors, manicured landscapes, feeling of safety.",
+            "Auto": "automotive commercial style. Sleek modern vehicles (avoid specific brands), motion blur on highways, scenic coastal roads, dramatic lighting, reflections."
+        },
+        "negative_prompt": "ugly, distorted, low resolution, blurry, people, faces, cartoon, 3d render, illustration"
+    }
+}

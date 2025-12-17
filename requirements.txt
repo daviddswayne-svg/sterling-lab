@@ -10,3 +10,5 @@ requests
 ollama
 pysqlite3-binary ; sys_platform == 'linux'
 extra-streamlit-components==0.1.71
+flask
+flask-cors
