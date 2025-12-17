@@ -115,8 +115,8 @@ def get_vitals():
     """Polls the local Mac Studio vitals server."""
     """Polls the local Mac Studio vitals server."""
     endpoints = [
+        "http://165.22.146.182:8999/vitals",      # Public IP (Most Reliable)
         "http://host.docker.internal:8999/vitals", # Standard Docker
-        "http://172.17.0.1:8999/vitals",           # Linux Docker Bridge
         "http://localhost:8999/vitals"             # Localhost Fallback
     ]
     
