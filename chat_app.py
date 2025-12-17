@@ -23,7 +23,7 @@ DEFAULT_LLM = "qwen2.5-coder:32b"
 DB_PATH = "chat_history.db"
 
 # Remote Worker Config
-OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
+OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://host.docker.internal:11434")
 WORKER_IP = "127.0.0.1" # Still used for fallback logic if needed, but primary is OLLAMA_HOST
 WORKER_PORT = "11434"
 WORKER_MODEL = "llama3.3"
@@ -337,57 +337,7 @@ def main():
 
     st.sidebar.caption(f"Status: Online ({selected_model})")
     
-    # --- DEBUG / HEALTH CHECK ---
-    st.sidebar.markdown("---")
-    with st.sidebar.expander("🛠 System Diagnostics"):
-        # 1. Check Ollama Reachability
-        try:
-            r = requests.get(f"{OLLAMA_HOST}/api/version", timeout=2)
-            if r.status_code == 200:
-                st.write(f"✅ Ollama: Connected ({r.json().get('version', 'Unknown')})")
-            else:
-                 st.write(f"❌ Ollama: Error {r.status_code}")
-        except Exception as e:
-            st.write(f"❌ Ollama: Unreachable ({str(e)[:20]}...)")
-            
-        # 2. Check Embedding Model
-        try:
-            tags = requests.get(f"{OLLAMA_HOST}/api/tags", timeout=2).json()
-            models = [m['name'] for m in tags['models']]
-            
-            # Check for any variant of the embedding model
-            found = any(EMBEDDING_MODEL in m for m in models)
-            
-            if found:
-                matched = [m for m in models if EMBEDDING_MODEL in m][0]
-                st.write(f"✅ Embeddings: '{matched}' found")
-                
-                # Test embedding generation
-                try:
-                    test_payload = {"model": EMBEDDING_MODEL, "prompt": "test"}
-                    emb_resp = requests.post(f"{OLLAMA_HOST}/api/embeddings", json=test_payload, timeout=5)
-                    if emb_resp.status_code == 200:
-                        vec_dim = len(emb_resp.json().get('embedding', []))
-                        st.write(f"   ✓ Test embedding: {vec_dim}D vector")
-                    else:
-                        st.write(f"   ⚠️ Embedding test failed: HTTP {emb_resp.status_code}")
-                except:
-                    st.write("   ⚠️ Could not test embedding generation")
-            else:
-                st.write(f"❌ Embeddings: '{EMBEDDING_MODEL}' MISSING!")
-                st.error("⚠️ RAG will fail without this model.")
-                st.code(f"# Run on Mac Studio:\nollama pull {EMBEDDING_MODEL}", language="bash")
-        except Exception as e:
-            st.write(f"❌ Embeddings: Check Failed ({str(e)[:30]}...)")
-
-        # 3. Check Vector DB
-        if os.path.exists(CHROMA_PATH):
-             st.write(f"✅ ChromaDB: Found at {CHROMA_PATH}")
-             # Peek file count
-             files = sum([len(files) for r, d, files in os.walk(CHROMA_PATH)])
-             st.write(f"   (Contains {files} DB files)")
-        else:
-             st.write("❌ ChromaDB: NOT FOUND")
+    # --- DEBUG REMOVED ---
     
     # History Toggle
     st.sidebar.markdown("---")
