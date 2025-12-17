@@ -14,7 +14,6 @@ LOCAL_PORT="11434"
 exec autossh -M 0 \
   -N \
   -R 0.0.0.0:${REMOTE_PORT}:localhost:${LOCAL_PORT} \
-  -R 0.0.0.0:8999:localhost:8999 \
   -o ServerAliveInterval=30 \
   -o ServerAliveCountMax=3 \
   -o ExitOnForwardFailure=yes \

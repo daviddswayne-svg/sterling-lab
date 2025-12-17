@@ -110,28 +110,6 @@ def query_private_gpt(prompt):
     except Exception as e:
         return {"error": f"Connection Failed: {e}"}
 
-# --- System Vitals ---
-def get_vitals():
-    """Polls the local Mac Studio vitals server."""
-    """Polls the local Mac Studio vitals server."""
-    endpoints = [
-        "http://165.22.146.182:8999/vitals",      # Public IP (Most Reliable)
-        "http://host.docker.internal:8999/vitals", # Standard Docker
-        "http://localhost:8999/vitals"             # Localhost Fallback
-    ]
-    
-    for url in endpoints:
-        try:
-            response = requests.get(url, timeout=0.5)
-            if response.status_code == 200:
-                data = response.json()
-                return data
-        except Exception:
-            continue
-            
-    # Return None to indicate connection failure
-    return None
-
 
 # --- Database Functions ---
 def init_db():
@@ -358,46 +336,6 @@ def main():
     selected_model = st.session_state.get("selected_model_name", selected_model)
 
     st.sidebar.caption(f"Status: Online ({selected_model})")
-
-    # --- VITALS MONITOR ---
-    st.sidebar.markdown("---")
-    st.sidebar.subheader("🖥 Mac Studio Vitals")
-    
-    # Auto-refresh vitals (every 5 seconds roughly, on interaction)
-    vitals = get_vitals()
-    
-    # helper for status dot
-    def status_dot(active):
-        return "🟢" if active else "🔴"
-        
-    # Auto-refresh vitals (every 5 seconds roughly, on interaction)
-    vitals = get_vitals()
-    
-    # helper for status dot
-    def status_dot(active):
-        return "🟢" if active else "🔴"
-        
-    # Mac Link logic
-    link_active = (vitals is not None)
-    
-    # Safely get values
-    if not link_active:
-        vitals = {"ollama_status": False, "ssh_connections": 0, "load_avg": [0,0,0]}
-
-    c1, c2 = st.sidebar.columns(2)
-    with c1:
-        st.caption("Probe")
-        st.markdown(f"**{status_dot(link_active)} Link**")
-    with c2:
-        st.caption("Ollama")
-        st.markdown(f"**{status_dot(vitals.get('ollama_status', False))} Active**")
-
-    if link_active:
-        st.sidebar.caption(f"Active SSH Sessions: **{vitals.get('ssh_connections', 0)}**")
-        if vitals.get('load_avg'):
-            st.sidebar.progress(min(vitals['load_avg'][0] / 10.0, 1.0), text=f"Load: {vitals['load_avg'][0]:.2f}")
-    else:
-        st.sidebar.caption("System Offline")
     
     # --- DEBUG / HEALTH CHECK ---
     st.sidebar.markdown("---")
