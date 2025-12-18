@@ -1,5 +1,19 @@
+[theme]
+# Primary colors matching swaynesystems.ai dashboard
+primaryColor = "#6366f1"        # Indigo accent (matches var(--primary))
+backgroundColor = "#0f1419"     # Dark background (matches dashboard)
+secondaryBackgroundColor = "#1a1f2e"  # Card background
+textColor = "#e5e7eb"          # Light text (matches var(--text-primary))
+
+# Font
+font = "sans serif"
+
 [server]
 headless = true
+port = 8501
 enableCORS = false
-enableXsrfProtection = false
+enableXsrfProtection = true
 
+[browser]
+gatherUsageStats = false
+serverAddress = "localhost"
