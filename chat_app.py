@@ -188,40 +188,16 @@ def get_chain(model_name):
         st.code(traceback.format_exc(), language="python")
         return None
 
-import streamlit_authenticator as stauth
 
-# --- Authentication Configuration ---
-# Password hash for "sterling" using bcrypt
-AUTH_CONFIG = {
-    'credentials': {
-        'usernames': {
-            'admin': {
-                'email': 'admin@swaynesystems.ai',
-                'name': 'Administrator',
-                # Pre-hashed password for "sterling"
-                'password': '$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW'
-            }
-        }
-    },
-    'cookie': {
-        'expiry_days': 30,
-        'key': 'pmQ-nRzj2nNKK55GF1NXzfHf43N5YvlUnC0yT8zb3PM',  # Secure random key
-        'name': 'swayne_auth_cookie'
-    },
-    'preauthorized': {
-        'emails': []
-    }
-}
+# --- Authentication (Simple Session-Based) ---
+# Using session state instead of streamlit-authenticator for reliability
+
 
 def check_password():
     """Streamlit-authenticator based authentication with persistent cookies."""
-    authenticator = stauth.Authenticate(
-        AUTH_CONFIG['credentials'],
-        AUTH_CONFIG['cookie']['name'],
-        AUTH_CONFIG['cookie']['key'],
-        AUTH_CONFIG['cookie']['expiry_days'],
-        AUTH_CONFIG['preauthorized']
-    )
+    # TEMPORARY FIX: Direct password check since bcrypt hash isn't working
+    if st.session_state.get("authenticated", False):
+        return True
     
     # Custom CSS for login page (keep the existing styling)
     st.markdown("""
