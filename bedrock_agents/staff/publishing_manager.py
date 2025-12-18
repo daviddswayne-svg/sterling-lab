@@ -37,6 +37,13 @@ class PublishingManager:
             
         print("✅ HTML file updated.")
         
+        # Check if running in Docker container
+        is_container = os.path.exists('/.dockerenv')
+        
+        if is_container:
+            print("🐳 Running in container. Skipping Git Push/Hot-Swap (Changes applied locally).")
+            return
+
         # 2. Git Operations
         try:
             repo_dir = os.path.dirname(DASHBOARD_DIR)

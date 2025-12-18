@@ -33,31 +33,36 @@
 
         <!-- Main content -->
         <main class="main-content">
-<section class="hero-card card-glow">
-    <img src='/assets/bedrock_latest.png' class='hero-image' alt='Safe Haven'>
-    <div class="card-content">
-      <h2 class="hero-title">Safe Haven</h2>
-      <p class="hero-description">Discover advanced home protection strategies tailored for suburban homeowners. Implement smart security, understand flood insurance, and enhance safety through landscape design.</p>
-      <button class="cta-button">Get a Quote</button>
-      <button class="cta-button secondary-cta">Contact Advisor</button>
-    </div>
-  </section>
+            <section class="hero-card card-glow">
+                <img src='/assets/bedrock_latest.png' class='hero-image' alt='Safe Haven'>
+                <div class="card-content">
+                    <h2 class="hero-title">Safe Haven</h2>
+                    <p class="hero-description">Discover advanced home protection strategies tailored for suburban
+                        homeowners. Implement smart security, understand flood insurance, and enhance safety through
+                        landscape design.</p>
+                    <button class="cta-button">Get a Quote</button>
+                    <button class="cta-button secondary-cta">Contact Advisor</button>
+                </div>
+            </section>
 
-  <section class="info-grid">
-    <div class="info-card">
-      <h3>Smart Home Security</h3>
-      <p>Deter intruders with state-of-the-art smart home security systems designed to keep your family safe.</p>
-    </div>
-    <div class="info-card">
-      <h3>Flood Insurance</h3>
-      <p>Incorporate flood insurance into your protection plan for comprehensive coverage against unexpected water damage.</p>
-    </div>
-    <div class="info-card">
-      <h3>Landscaping & Safety</h3>
-      <p>Leverage well-designed outdoor spaces to create a natural barrier and enhance the overall safety of your home.</p>
-    </div>
-  </section>
-</main>
+            <section class="info-grid">
+                <div class="info-card">
+                    <h3>Smart Home Security</h3>
+                    <p>Deter intruders with state-of-the-art smart home security systems designed to keep your family
+                        safe.</p>
+                </div>
+                <div class="info-card">
+                    <h3>Flood Insurance</h3>
+                    <p>Incorporate flood insurance into your protection plan for comprehensive coverage against
+                        unexpected water damage.</p>
+                </div>
+                <div class="info-card">
+                    <h3>Landscaping & Safety</h3>
+                    <p>Leverage well-designed outdoor spaces to create a natural barrier and enhance the overall safety
+                        of your home.</p>
+                </div>
+            </section>
+        </main>
 
         <!-- Footer -->
         <footer class="footer">
@@ -109,15 +114,12 @@
 
             if (!userText) return;
 
-            // Add User Message
             addMessage(userText, 'user');
             input.value = '';
 
-            // Show Thinking
             const thinkingId = addMessage('Analyzing...', 'bot thinking');
 
             try {
-                // Call API
                 const response = await fetch('/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -125,8 +127,6 @@
                 });
 
                 const data = await response.json();
-
-                // Remove Thinking
                 document.getElementById(thinkingId).remove();
 
                 if (data.error) {
@@ -150,7 +150,99 @@
             messages.scrollTop = messages.scrollHeight;
             return div.id;
         }
+
+        // Staff Meeting Logic
+        function startMeeting() {
+            document.getElementById('staffModal').classList.add('active');
+            const log = document.getElementById('meetingLog');
+            log.innerHTML = '<div>Connecting to HQ...</div>';
+
+            const evtSource = new EventSource("/api/meeting");
+
+            evtSource.onmessage = function (event) {
+                const data = JSON.parse(event.data);
+                const agent = data.agent;
+                const msg = data.message;
+
+                // Log
+                const entry = document.createElement('div');
+                entry.textContent = `[${agent.toUpperCase()}] ${msg}`;
+                log.appendChild(entry);
+                log.scrollTop = log.scrollHeight;
+
+                // Reset Active States
+                document.querySelectorAll('.staff-member').forEach(el => el.classList.remove('active'));
+
+                // Set Active Agent
+                const agentMap = {
+                    'director': 'agent-director',
+                    'designer': 'agent-designer',
+                    'developer': 'agent-developer',
+                    'publisher': 'agent-publisher'
+                };
+
+                if (agentMap[agent]) {
+                    const el = document.getElementById(agentMap[agent]);
+                    if (el) {
+                        el.classList.add('active');
+                        el.querySelector('.staff-status').textContent = msg.substring(0, 30) + "...";
+                    }
+                }
+
+                if (msg === "Meeting Adjourned") {
+                    evtSource.close();
+                    setTimeout(() => {
+                        location.reload();
+                    }, 2000);
+                }
+            };
+
+            evtSource.onerror = function () {
+                log.innerHTML += '<div style="color:red">Connection lost.</div>';
+                evtSource.close();
+                setTimeout(() => {
+                    document.getElementById('staffModal').classList.remove('active');
+                }, 3000);
+            };
+        }
     </script>
+
+    <!-- Staff Meeting Modal -->
+    <div class="staff-modal" id="staffModal">
+        <h2 style="color:white; margin-bottom: 2rem;">Bedrock Staff Meeting</h2>
+
+        <div class="staff-grid">
+            <!-- Director -->
+            <div class="staff-member" id="agent-director">
+                <div class="staff-avatar">📝</div>
+                <div class="staff-name">Content Director</div>
+                <div class="staff-status">Waiting...</div>
+            </div>
+            <!-- Designer -->
+            <div class="staff-member" id="agent-designer">
+                <div class="staff-avatar">🎨</div>
+                <div class="staff-name">Photo Designer</div>
+                <div class="staff-status">Waiting...</div>
+            </div>
+            <!-- Developer -->
+            <div class="staff-member" id="agent-developer">
+                <div class="staff-avatar">👨‍💻</div>
+                <div class="staff-name">Web Developer</div>
+                <div class="staff-status">Waiting...</div>
+            </div>
+            <!-- Publisher -->
+            <div class="staff-member" id="agent-publisher">
+                <div class="staff-avatar">🚀</div>
+                <div class="staff-name">Publisher</div>
+                <div class="staff-status">Waiting...</div>
+            </div>
+        </div>
+
+        <div class="meeting-log" id="meetingLog"></div>
+    </div>
+
+    <!-- Admin Trigger (Hidden in Header) -->
+    <button class="admin-trigger" onclick="startMeeting()" title="Call Staff Meeting">⚡</button>
 </body>
 
 </html>

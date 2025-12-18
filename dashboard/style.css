@@ -540,3 +540,116 @@ body {
 .chat-send:hover {
     background: var(--primary-dark);
 }
+/* Staff Meeting Modal */
+.staff-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(10px);
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.staff-modal.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.staff-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.staff-member {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    opacity: 0.3;
+    transition: all 0.3s ease;
+}
+
+.staff-member.active {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.staff-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--bg-card), var(--bg-dark));
+    border: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+}
+
+.staff-member.active .staff-avatar {
+    border-color: var(--primary);
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.6);
+    animation: pulse-speak 1s infinite alternate;
+}
+
+@keyframes pulse-speak {
+    from { box-shadow: 0 0 10px rgba(99, 102, 241, 0.4); }
+    to { box-shadow: 0 0 25px rgba(99, 102, 241, 0.8); }
+}
+
+.staff-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.staff-status {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    max-width: 150px;
+    text-align: center;
+    height: 40px; /* Fixed height for text stability */
+}
+
+.meeting-log {
+    width: 600px;
+    height: 200px;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+    overflow-y: auto;
+    font-family: monospace;
+    font-size: 0.9rem;
+    color: var(--success);
+}
+
+.admin-trigger {
+    position: absolute;
+    top: 1rem;
+    right: 3rem; /* Left of the chat close button? No, chat is bottom right. */
+    right: 1rem; /* Header position */
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    opacity: 0.2;
+    transition: opacity 0.3s;
+}
+
+.admin-trigger:hover {
+    opacity: 1;
+}

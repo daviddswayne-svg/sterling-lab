@@ -53,5 +53,22 @@ def chat():
         print(f"❌ Error in chat endpoint: {e}")
         return jsonify({"error": str(e)}), 500
 
+@app.route('/meeting', methods=['GET'])
+def run_meeting():
+    def generate():
+        try:
+            # Import here to avoid circular dependencies if any
+            from bedrock_agents.orchestrator import run_meeting_generator
+            import json
+            
+            for agent, message in run_meeting_generator():
+                data = json.dumps({"agent": agent, "message": message})
+                yield f"data: {data}\n\n"
+        except Exception as e:
+            yield f"data: {{\"agent\": \"error\", \"message\": \"{str(e)}\"}}\n\n"
+
+    from flask import stream_with_context, Response
+    return Response(stream_with_context(generate()), mimetype='text/event-stream')
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
