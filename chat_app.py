@@ -253,20 +253,24 @@ def check_password():
     # Add custom header
     st.markdown('<div class="login-header"><h3>Swayne Systems<br>Secure Access</h3></div>', unsafe_allow_html=True)
     
-    # Login widget (centered)
+    # Login form (centered)
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        name, authentication_status, username = authenticator.login(location='main', fields={'Form name': 'Login'})
+        with st.form("login_form"):
+            username = st.text_input("Username")
+            password = st.text_input("Password", type="password")
+            submit = st.form_submit_button("Authenticate", use_container_width=True)
+            
+            if submit:
+                if username == "admin" and password == "sterling":
+                    st.session_state["authenticated"] = True
+                    st.success("✅ Access Granted. Loading...")
+                    time.sleep(0.5)
+                    st.rerun()
+                else:
+                    st.error("⛔️ Access Denied: Invalid Credentials")
     
-    if authentication_status:
-        # Successfully authenticated
-        return True
-    elif authentication_status == False:
-        st.error('⛔️ Access Denied: Invalid Credentials')
-        return False
-    else:
-        # None - login form displayed, waiting for input
-        return False
+    return False
 
 # --- Main App ---
 def main():
