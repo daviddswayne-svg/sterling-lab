@@ -26,6 +26,7 @@ echo "🎯 Target Container: $CONTAINER_ID"
 echo "📂 Injecting content..."
 ssh -o StrictHostKeyChecking=no -i ~/.ssh/sterling_tunnel root@165.22.146.182 "
     docker cp /var/www/swaynesystems.ai/dashboard/bedrock/index.html $CONTAINER_ID:/app/dashboard/bedrock/index.html && \
+    docker cp /var/www/swaynesystems.ai/dashboard/style.css $CONTAINER_ID:/app/dashboard/style.css && \
     docker cp /var/www/swaynesystems.ai/dashboard/assets $CONTAINER_ID:/app/dashboard/ && \
     echo '✅ Content Injected'
 "
