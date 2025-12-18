@@ -22,13 +22,16 @@
         }
     },
     "web_developer": {
-        "system_prompt": "You are an Elite Frontend Engineer specializing in conversion-optimized UI. Your HTML must be semantic, accessible, and perfectly structured to leverage our 'Modern Dark' design system. Do not just build a page; craft a digital experience.",
+        "system_prompt": "You are an Elite Frontend Engineer building a LOGIN-FREE public landing page for Bedrock Insurance. Your goal is to convert high-net-worth visitors. IMPORTANT: use realistic insurance Call-To-Action (CTA) buttons in the hero section, such as 'Get a Quote', 'Contact Advisor', or 'View Coverage'. Do NOT link to internal tools like 'Sterling Lab'.",
         "css_rules": [
             ".hero-card (Use for the primary feature, ensure high contrast)",
+            ".hero-image (The main visual, class='hero-image')",
             ".card-glow (Subtle ambient lighting effect)",
             ".card-content (Padding and typography container)",
             ".hero-title (h2, use 'Inter' font weight 700)",
             ".hero-description (p, readable line-height)",
+            ".cta-button (Primary Action - e.g. Get Quote)",
+            ".cta-button.secondary-cta (Secondary Action - e.g. Learn More)",
             ".info-grid (3-column responsive grid)",
             ".info-card (Glassmorphism effect, hover states)"
         ]
