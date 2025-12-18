@@ -27,6 +27,9 @@ class PublishingManager:
         header_part = full_html.split('<main class="main-content">')[0]
         footer_part = full_html.split('</main>')[1]
         
+        # Sanitize content (Remove duplicate <main> tags if LLM added them)
+        html_content = html_content.replace('<main class="main-content">', '').replace("</main>", "").strip()
+        
         new_full_html = f"{header_part}<main class=\"main-content\">\n{html_content}\n</main>{footer_part}"
         
         with open(target_file, "w") as f:
