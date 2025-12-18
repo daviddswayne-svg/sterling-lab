@@ -540,6 +540,7 @@ body {
 .chat-send:hover {
     background: var(--primary-dark);
 }
+
 /* Staff Meeting Modal */
 .staff-modal {
     position: fixed;
@@ -595,7 +596,7 @@ body {
     align-items: center;
     justify-content: center;
     font-size: 2.5rem;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
     transition: all 0.3s ease;
 }
 
@@ -606,8 +607,13 @@ body {
 }
 
 @keyframes pulse-speak {
-    from { box-shadow: 0 0 10px rgba(99, 102, 241, 0.4); }
-    to { box-shadow: 0 0 25px rgba(99, 102, 241, 0.8); }
+    from {
+        box-shadow: 0 0 10px rgba(99, 102, 241, 0.4);
+    }
+
+    to {
+        box-shadow: 0 0 25px rgba(99, 102, 241, 0.8);
+    }
 }
 
 .staff-name {
@@ -621,13 +627,14 @@ body {
     color: var(--text-secondary);
     max-width: 150px;
     text-align: center;
-    height: 40px; /* Fixed height for text stability */
+    height: 40px;
+    /* Fixed height for text stability */
 }
 
 .meeting-log {
     width: 600px;
     height: 200px;
-    background: rgba(0,0,0,0.3);
+    background: rgba(0, 0, 0, 0.3);
     border: 1px solid var(--border);
     border-radius: 8px;
     padding: 1rem;
@@ -640,8 +647,10 @@ body {
 .admin-trigger {
     position: absolute;
     top: 1rem;
-    right: 3rem; /* Left of the chat close button? No, chat is bottom right. */
-    right: 1rem; /* Header position */
+    right: 3rem;
+    /* Left of the chat close button? No, chat is bottom right. */
+    right: 1rem;
+    /* Header position */
     background: none;
     border: none;
     font-size: 1.5rem;
@@ -652,4 +661,341 @@ body {
 
 .admin-trigger:hover {
     opacity: 1;
+}
+
+/* Antigravity Admin Panel Styles */
+.ag-trigger {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    border: none;
+    border-radius: 50%;
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+    transition: all 0.3s ease;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ag-trigger:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 30px rgba(99, 102, 241, 0.6);
+}
+
+.ag-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(10px);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.ag-modal.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.ag-container {
+    width: 90%;
+    max-width: 900px;
+    height: 80vh;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.ag-header {
+    padding: 1.5rem;
+    background: rgba(99, 102, 241, 0.1);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.ag-header-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.ag-logo {
+    font-size: 2rem;
+    animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+
+    0%,
+    100% {
+        filter: drop-shadow(0 0 10px rgba(99, 102, 241, 0.6));
+    }
+
+    50% {
+        filter: drop-shadow(0 0 20px rgba(99, 102, 241, 1));
+    }
+}
+
+.ag-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.ag-header p {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.ag-close {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 2rem;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.ag-close:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+}
+
+.ag-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.ag-message {
+    display: flex;
+    gap: 1rem;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.ag-message.ag-user {
+    justify-content: flex-end;
+}
+
+.ag-message.ag-user .ag-text {
+    background: var(--primary);
+    color: white;
+    padding: 1rem 1.25rem;
+    border-radius: 16px 16px 4px 16px;
+    max-width: 70%;
+}
+
+.ag-message.ag-assistant {
+    justify-content: flex-start;
+}
+
+.ag-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.ag-content {
+    flex: 1;
+    max-width: 70%;
+}
+
+.ag-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.ag-text {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 1rem 1.25rem;
+    border-radius: 16px 16px 16px 4px;
+    line-height: 1.6;
+    color: var(--text-primary);
+}
+
+.ag-text code {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+}
+
+.ag-text pre {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 1rem;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin: 0.5rem 0;
+}
+
+.ag-text pre code {
+    background: none;
+    padding: 0;
+}
+
+.ag-message.ag-system .ag-text {
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.ag-system-badge {
+    display: inline-block;
+    background: var(--success);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.ag-typing-indicator {
+    display: flex;
+    gap: 0.5rem;
+    padding: 1rem;
+}
+
+.ag-typing-indicator span {
+    width: 8px;
+    height: 8px;
+    background: var(--primary);
+    border-radius: 50%;
+    animation: typing 1.4s infinite;
+}
+
+.ag-typing-indicator span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.ag-typing-indicator span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes typing {
+
+    0%,
+    60%,
+    100% {
+        opacity: 0.3;
+        transform: scale(0.8);
+    }
+
+    30% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.ag-input-area {
+    padding: 1.5rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 1rem;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.ag-input-area textarea {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem;
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 1rem;
+    resize: none;
+    outline: none;
+    transition: all 0.2s;
+}
+
+.ag-input-area textarea:focus {
+    border-color: var(--primary);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.ag-send {
+    width: 48px;
+    height: 48px;
+    background: var(--primary);
+    border: none;
+    border-radius: 12px;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.ag-send:hover {
+    background: var(--primary-dark);
+    transform: scale(1.05);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .ag-container {
+        width: 100%;
+        height: 100vh;
+        border-radius: 0;
+    }
+
+    .ag-content {
+        max-width: 85%;
+    }
+
+    .ag-message.ag-user .ag-text {
+        max-width: 85%;
+    }
 }

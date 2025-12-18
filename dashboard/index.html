@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <script src="assets/antigravity.js" defer></script>
 </head>
 
 <body>
@@ -123,6 +124,42 @@
         <footer class="footer">
             <p>© 2025 Swayne Systems • Authorized Personnel Only</p>
         </footer>
+    </div>
+
+    <!-- Antigravity Admin Panel -->
+    <button id="antigravity-trigger" class="ag-trigger" style="display: none;" title="Antigravity Admin">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M12 1v6m0 6v6M1 12h6m6 0h6" />
+            <path d="M4.2 4.2l4.2 4.2m5.6 0l4.2-4.2M4.2 19.8l4.2-4.2m5.6 0l4.2 4.2" />
+        </svg>
+    </button>
+
+    <div id="antigravity-modal" class="ag-modal">
+        <div class="ag-container">
+            <div class="ag-header">
+                <div class="ag-header-content">
+                    <div class="ag-logo">⚙️</div>
+                    <div>
+                        <h3>Antigravity AI</h3>
+                        <p>Admin Console</p>
+                    </div>
+                </div>
+                <button id="antigravity-close" class="ag-close">×</button>
+            </div>
+
+            <div id="antigravity-messages" class="ag-messages"></div>
+
+            <div class="ag-input-area">
+                <textarea id="antigravity-input" placeholder="Ask Antigravity anything about Sterling Lab..."
+                    rows="1"></textarea>
+                <button id="antigravity-send" class="ag-send">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
     </div>
 </body>
 
