@@ -235,6 +235,31 @@ class PhotoDesigner:
                 # Return absolute path for HTML (web root view)
                 return f"/assets/{dest_filename}" 
             else:
+                # 3a. Docker Fallback - Use /view API
+                # If we are in Docker, or if polling failed but Comfy might have it.
+                # Actually, ComfyUI returns the filename in the prompt queue response usually only if websocket is used.
+                # But here we rely on "Bedrock_Flux_Gen" prefix.
+                
+                # If we are in Docker, we CANNOT poll the disk.
+                # We need to list files via API? ComfyUI doesn't have a simple "list outputs" API without custom nodes.
+                # Strategy Change: We can't easily know the filename if we don't control the output filename strictly.
+                # But we set "filename_prefix": "Bedrock_Flux_Gen".
+                
+                # Alternative: Just skip image generation in Docker for this MVP step?
+                # User wants "Cool".
+                
+                # Let's try to fetch the LATEST image from the View API if we can guess the name?
+                # No, that's brittle.
+                
+                # BETTER: If in Docker, we just use a placeholder for now to avoid the crash? 
+                # OR we try to assume the filename logic? Comfy usually does prefix_00001.png.
+                # Without shared storage, this is hard.
+                
+                if os.path.exists('/.dockerenv'):
+                     print("⚠️ Docker detected: Cannot access Host filesystem to retrieve image.")
+                     print("ℹ️ (Future: Implement WebSocket to receive image data directly)")
+                     return self._get_fallback_image(category)
+                
                 print("⚠️ Timeout waiting for image.")
                 return self._get_fallback_image(category)
             

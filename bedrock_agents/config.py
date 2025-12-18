@@ -3,11 +3,13 @@ import os
 # Configuration for Bedrock Insurance Agents
 
 # Local Ollama Instance
-OLLAMA_HOST = "http://localhost:11434"
+# Use OLLAMA_HOST env var, default to localhost if not set (but in Docker it's usually host.docker.internal)
+OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
 
 # Local ComfyUI Instance
-# Assuming standard ComfyUI port, can be overridden if Night Shift uses different one
-COMFYUI_HOST = "http://127.0.0.1:8188" 
+# In Docker, we need to talk to the Host.
+default_comfy = "http://host.docker.internal:8188" if os.getenv("OLLAMA_HOST") else "http://127.0.0.1:8188"
+COMFYUI_HOST = os.getenv("COMFYUI_HOST", default_comfy) 
 
 # Models (Aligned with Swayne Systems standards)
 MODELS = {

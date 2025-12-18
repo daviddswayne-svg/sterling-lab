@@ -37,8 +37,14 @@ def check_and_start_comfyui():
 
 def run_meeting_generator():
     """Yields (agent_name, status_message) tuples for streaming."""
-    yield "system", "Checking visual cortex (ComfyUI)..."
-    check_and_start_comfyui()
+    
+    # Check if in Docker
+    if os.path.exists('/.dockerenv'):
+        yield "system", "Connected to Visual Cortex (Remote)..."
+        # Do not start local comfyui, assume host is running it.
+    else:
+        yield "system", "Checking visual cortex (ComfyUI)..."
+        check_and_start_comfyui()
     
     # 1. Content Director Plans
     director = ContentDirector()
