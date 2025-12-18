@@ -272,9 +272,67 @@ def check_password():
     
     return False
 
-# --- Main App ---
+# --- Main App# --- Streamlit Page Config ---
+st.set_page_config(
+    page_title="Sterling Lab - AI Chat",
+    page_icon="🧪",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+# Custom CSS to match swaynesystems.ai aesthetic
+st.markdown("""
+<style>
+    /* Match dashboard styling */
+    .stApp {
+        background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 100%);
+    }
+    
+    /* Gradient headers */
+    h1, h2, h3 {
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    /* Buttons */
+    .stButton > button {
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .stButton > button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+    }
+    
+    /* Sidebar */
+    [data-testid="stSidebar"] {
+        background: #1a1f2e;
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    /* Chat messages */
+    .stChatMessage {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+    }
+    
+    /* Metrics */
+    [data-testid="stMetricValue"] {
+        color: #6366f1;
+    }
+</style>
+""", unsafe_allow_html=True)
+
 def main():
-    st.set_page_config(page_title="Swayne Intelligence", layout="wide", page_icon="📡")
     
     # Check Authentication (with Cookies)
     if not check_password():
