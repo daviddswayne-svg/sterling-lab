@@ -280,7 +280,7 @@ def check_password():
     # Login widget (centered)
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        name, authentication_status, username = authenticator.login('Login', 'main')
+        name, authentication_status, username = authenticator.login(location='main', fields={'Form name': 'Login'})
     
     if authentication_status:
         # Successfully authenticated
