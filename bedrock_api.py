@@ -4,6 +4,8 @@ import os
 import json
 import time
 from functools import wraps
+from collections import defaultdict
+from datetime import datetime, timedelta
 from ollama import Client
 import google.generativeai as genai
 
@@ -18,6 +20,8 @@ MODEL = "dolphin-llama3"
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 ANTIGRAVITY_ALLOWED_IPS = os.getenv("ANTIGRAVITY_ALLOWED_IPS", "71.197.228.171").split(",")
 ANTIGRAVITY_ENABLED = os.getenv("ANTIGRAVITY_ENABLED", "true").lower() == "true"
+PUBLIC_CHAT_ENABLED = os.getenv("PUBLIC_CHAT_ENABLED", "true").lower() == "true"
+PUBLIC_CHAT_RATE_LIMIT = int(os.getenv("PUBLIC_CHAT_RATE_LIMIT", "20"))
 
 # Configure Gemini
 if GEMINI_API_KEY:
@@ -30,6 +34,10 @@ print(f"🚀 Bedrock API starting... Connecting to Ollama at {OLLAMA_HOST}")
 
 # Antigravity conversation history (in-memory)
 antigravity_conversations = {}
+public_chat_conversations = {}
+
+# Rate limiting for public chat
+public_chat_limits = defaultdict(list)
 
 # --- IP Whitelist Middleware ---
 def require_whitelisted_ip(f):
@@ -52,6 +60,28 @@ def require_whitelisted_ip(f):
         print(f"✅ Antigravity access granted to IP: {client_ip}")
         return f(*args, **kwargs)
     return decorated_function
+
+# --- Rate Limiting for Public Chat ---
+def check_rate_limit(ip: str, limit: int = None, window_hours: int = 1) -> bool:
+    """Check if IP is within rate limit. Returns True if under limit."""
+    if limit is None:
+        limit = PUBLIC_CHAT_RATE_LIMIT
+    
+    now = datetime.now()
+    cutoff = now - timedelta(hours=window_hours)
+    
+    # Clean old entries
+    public_chat_limits[ip] = [
+        timestamp for timestamp in public_chat_limits[ip]
+        if timestamp > cutoff
+    ]
+    
+    # Check limit
+    if len(public_chat_limits[ip]) >= limit:
+        return False
+    
+    public_chat_limits[ip].append(now)
+    return True
 
 @app.route('/health', methods=['GET'])
 def health():
@@ -278,6 +308,127 @@ def antigravity_apply():
         })
     
     except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# --- Public Chat Endpoint ---
+
+@app.route('/antigravity/public/chat', methods=['POST'])
+def antigravity_public_chat():
+    """Public chat - read-only, rate-limited, no code access"""
+    try:
+        if not PUBLIC_CHAT_ENABLED:
+            return jsonify({"error": "Public chat is disabled"}), 403
+        
+        if not GEMINI_API_KEY:
+            return jsonify({"error": "Chat service unavailable"}), 500
+        
+        # Get client IP
+        client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+        if ',' in client_ip:
+            client_ip = client_ip.split(',')[0].strip()
+        
+        # Check rate limit
+        if not check_rate_limit(client_ip):
+            return jsonify({
+                "error": "Rate limit exceeded",
+                "retry_after": 3600,
+                "message": "You've reached the message limit. Please try again in 1 hour."
+            }), 429
+        
+        data = request.json
+        if not data or 'message' not in data:
+            return jsonify({"error": "No message provided"}), 400
+        
+        user_message = data['message']
+        session_id = data.get('session_id', f'public_{client_ip}')
+        
+        # Get or create conversation history
+        if session_id not in public_chat_conversations:
+            public_chat_conversations[session_id] = []
+        
+        history = public_chat_conversations[session_id]
+        
+        # Build conversation context for Gemini
+        conversation = []
+        for msg in history[-5:]:  # Shorter context for public (5 vs 10)
+            conversation.append({
+                "role": msg["role"],
+                "parts": [msg["content"]]
+            })
+        
+        # Add public system context
+        if not conversation:
+            system_context = """You are Antigravity, an AI assistant for Sterling Lab at swaynesystems.ai.
+
+You can help visitors understand:
+- What Sterling Lab offers (AI-powered estate intelligence, RAG systems)
+- The technology stack (Flask backend, Streamlit interface, Python)
+- AI models used (Ollama, Gemini, ChromaDB for vector storage)
+- General architecture and features
+- How the RAG pipeline works
+
+You CANNOT:
+- Make code changes or edits
+- Access internal implementation details
+- Reveal API keys, credentials, or sensitive data
+- Execute commands or file operations
+- Discuss admin-only features
+
+Keep responses concise, friendly, and welcoming. If asked about code editing or admin features, politely explain that's only available to administrators."""
+            
+            conversation.append({
+                "role": "user",
+                "parts": [system_context]
+            })
+            conversation.append({
+                "role": "model",
+                "parts": ["Hi! I'm Antigravity, the AI assistant for Sterling Lab. I can answer questions about our AI technology, features, and architecture. What would you like to know?"]
+            })
+        
+        # Add current message
+        conversation.append({
+            "role": "user",
+            "parts": [user_message]
+        })
+        
+        def generate():
+            try:
+                model = genai.GenerativeModel('gemini-2.0-flash-exp')
+                response = model.generate_content(
+                    conversation,
+                    stream=True
+                )
+                
+                full_response = ""
+                for chunk in response:
+                    if chunk.text:
+                        full_response += chunk.text
+                        yield f"data: {json.dumps({'chunk': chunk.text})}\n\n"
+                
+                # Save to history
+                history.append({"role": "user", "content": user_message})
+                history.append({"role": "model", "content": full_response})
+                
+                # Log public chat usage
+                print(f"📊 Public chat from {client_ip}: {len(full_response)} chars")
+                
+                yield f"data: {json.dumps({'done': True})}\n\n"
+                
+            except Exception as e:
+                print(f"❌ Public chat error: {e}")
+                yield f"data: {json.dumps({'error': str(e)})}\n\n"
+        
+        return Response(
+            stream_with_context(generate()),
+            mimetype='text/event-stream',
+            headers={
+                'Cache-Control': 'no-cache',
+                'X-Accel-Buffering': 'no'
+            }
+        )
+    
+    except Exception as e:
+        print(f"❌ Error in public chat: {e}")
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':

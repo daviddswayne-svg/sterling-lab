@@ -10,6 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <script src="assets/antigravity.js" defer></script>
+    <script src="assets/public-chat.js" defer></script>
 </head>
 
 <body>
@@ -154,6 +155,39 @@
                 <textarea id="antigravity-input" placeholder="Ask Antigravity anything about Sterling Lab..."
                     rows="1"></textarea>
                 <button id="antigravity-send" class="ag-send">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Public Chat Widget (always visible to all users) -->
+    <button id="public-chat-trigger" class="pc-trigger" title="Chat with Antigravity">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+        </svg>
+    </button>
+
+    <div id="public-chat-modal" class="pc-modal">
+        <div class="pc-container">
+            <div class="pc-header">
+                <div class="pc-header-content">
+                    <div class="pc-logo">⚙️</div>
+                    <div>
+                        <h3>Chat with Sterling Lab</h3>
+                        <p>Powered by Antigravity AI</p>
+                    </div>
+                </div>
+                <button id="public-chat-close" class="pc-close">×</button>
+            </div>
+
+            <div id="public-chat-messages" class="pc-messages"></div>
+
+            <div class="pc-input-area">
+                <textarea id="public-chat-input" placeholder="Ask about Sterling Lab..." rows="1"></textarea>
+                <button id="public-chat-send" class="pc-send">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
                     </svg>
