@@ -8,6 +8,8 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 from ollama import Client
 import google.generativeai as genai
+import hashlib
+import hmac
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
@@ -15,6 +17,9 @@ CORS(app)  # Enable CORS for all routes
 # Configuration
 OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://host.docker.internal:11434")
 MODEL = "dolphin-llama3"
+
+# Authentication Configuration
+AUTH_SECRET = os.getenv('AUTH_SECRET', 'default-secret-change-me-in-production')
 
 # Antigravity Configuration
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
@@ -473,6 +478,93 @@ Keep responses informative but concise. If someone asks about specific code, exp
     except Exception as e:
         print(f"❌ Error in public chat: {e}")
         return jsonify({"error": str(e)}), 500
+
+# === Session Token Management ===
+
+def create_session_token(username):
+    """Create encrypted session token with HMAC-SHA256"""
+    timestamp = str(int(time.time()))
+    payload = f"{username}:{timestamp}"
+    signature = hmac.new(
+        AUTH_SECRET.encode(),
+        payload.encode(),
+        hashlib.sha256
+    ).hexdigest()
+    return f"{payload}:{signature}"
+
+def validate_token(token):
+    """Validate session token and check expiration"""
+    if not token:
+        return False
+    try:
+        payload, signature = token.rsplit(':', 1)
+        username, timestamp = payload.split(':')
+        
+        # Check signature
+        expected = hmac.new(
+            AUTH_SECRET.encode(),
+            payload.encode(),
+            hashlib.sha256
+        ).hexdigest()
+        
+        if signature != expected:
+            return False
+        
+        # Check expiration (7 days max)
+        if int(time.time()) - int(timestamp) > 7*24*60*60:
+            return False
+            
+        return True
+    except:
+        return False
+
+# === Authentication Endpoints ===
+
+@app.route('/api/auth/login', methods=['POST'])
+def login():
+    """Authenticate user and set session cookie"""
+    try:
+        data = request.json
+        username = data.get('username')
+        password = data.get('password')
+        remember = data.get('remember', False)
+        
+        # Simple credential check
+        if username == 'admin' and password == 'sterling':
+            session_token = create_session_token(username)
+            max_age = 7*24*60*60 if remember else 24*60*60
+            
+            response = jsonify({'success': True})
+            response.set_cookie(
+                'sterling_session',
+                session_token,
+                max_age=max_age,
+                httponly=True,
+                secure=True,
+                samesite='Strict',
+                path='/'
+            )
+            return response
+        else:
+            return jsonify({'success': False, 'error': 'Invalid username or password'}), 401
+            
+    except Exception as e:
+        return jsonify({'success': False, 'error': 'Server error'}), 500
+
+@app.route('/api/auth/validate', methods=['GET'])
+def validate_session():
+    """Validate session token (used by Nginx auth_request)"""
+    token = request.cookies.get('sterling_session')
+    if validate_token(token):
+        return '', 200
+    return '', 401
+
+@app.route('/api/auth/logout', methods=['POST'])
+def logout():
+    """Clear session cookie"""
+    response = jsonify({'success': True})
+    response.set_cookie('sterling_session', '', max_age=0, path='/')
+    return response
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
