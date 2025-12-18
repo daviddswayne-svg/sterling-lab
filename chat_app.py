@@ -377,7 +377,7 @@ def main():
         st.session_state.db_history = get_messages()
 
     # --- Sidebar ---
-    logo_path = os.path.join(SCRIPT_DIR, "assets", "logo.png")
+    logo_path = os.path.join(SCRIPT_DIR, "assets", "swaynesystems_logo.png")
     if os.path.exists(logo_path):
         st.sidebar.image(logo_path, use_container_width=True)
     
