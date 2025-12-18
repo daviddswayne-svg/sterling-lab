@@ -9,7 +9,7 @@ streamlit
 requests
 ollama
 pysqlite3-binary ; sys_platform == 'linux'
-extra-streamlit-components==0.1.71
+streamlit-authenticator==0.3.3
 flask
 flask-cors
 google-generativeai>=0.3.0

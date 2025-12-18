@@ -188,31 +188,48 @@ def get_chain(model_name):
         st.code(traceback.format_exc(), language="python")
         return None
 
-import extra_streamlit_components as stx
+import streamlit_authenticator as stauth
 
-# --- Authentication & UI ---
-def get_manager():
-    return stx.CookieManager()
+# --- Authentication Configuration ---
+# Password hash for "sterling" using bcrypt
+AUTH_CONFIG = {
+    'credentials': {
+        'usernames': {
+            'admin': {
+                'email': 'admin@swaynesystems.ai',
+                'name': 'Administrator',
+                # Pre-hashed password for "sterling"
+                'password': '$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW'
+            }
+        }
+    },
+    'cookie': {
+        'expiry_days': 30,
+        'key': 'pmQ-nRzj2nNKK55GF1NXzfHf43N5YvlUnC0yT8zb3PM',  # Secure random key
+        'name': 'swayne_auth_cookie'
+    },
+    'preauthorized': {
+        'emails': []
+    }
+}
 
 def check_password():
-    """Checks for cookie or validates password."""
-    cookie_manager = get_manager()
+    """Streamlit-authenticator based authentication with persistent cookies."""
+    authenticator = stauth.Authenticate(
+        AUTH_CONFIG['credentials'],
+        AUTH_CONFIG['cookie']['name'],
+        AUTH_CONFIG['cookie']['key'],
+        AUTH_CONFIG['cookie']['expiry_days'],
+        AUTH_CONFIG['preauthorized']
+    )
     
-    # Check for existing cookie
-    cookie_val = cookie_manager.get(cookie="swayne_auth_token")
-    if cookie_val == "valid_token":
-        return True
-        
-    # Check for session state bridge (prevents loop while cookie sets)
-    if st.session_state.get("auth_success", False):
-        return True
-
-    # Custom CSS for Login
+    # Custom CSS for login page (keep the existing styling)
     st.markdown("""
     <style>
         .stApp {
             background-color: #050505;
         }
+        /* Streamlit-authenticator form styling */
         div[data-testid="stForm"] {
             border: 1px solid rgba(255, 255, 255, 0.1);
             background: rgba(25, 25, 25, 0.5);
@@ -240,7 +257,7 @@ def check_password():
         label, p, h1, h2, h3 {
             color: white !important;
         }
-        /* Specific Button Styling to prevent weird state changes */
+        /* Button Styling */
         div[data-testid="stFormSubmitButton"] button {
             background-color: #00f0ff !important;
             color: #000000 !important;
@@ -251,34 +268,29 @@ def check_password():
             box-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
             background-color: #fff !important;
         }
-        /* Override p color inside button to be black */
         div[data-testid="stFormSubmitButton"] button p {
             color: #000000 !important;
         }
     </style>
     """, unsafe_allow_html=True)
-
-    # Login Container
+    
+    # Add custom header
+    st.markdown('<div class="login-header"><h3>Swayne Systems<br>Secure Access</h3></div>', unsafe_allow_html=True)
+    
+    # Login widget (centered)
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        st.markdown('<div class="login-header"><h3>Swayne Systems<br>Secure Access</h3></div>', unsafe_allow_html=True)
-        
-        with st.form("login_form"):
-            user = st.text_input("Username", key="username")
-            password = st.text_input("Password", type="password", key="password")
-            submitted = st.form_submit_button("Authenticate", use_container_width=True)
-            
-            if submitted:
-                if user == "admin" and password == "sterling":
-                    cookie_manager.set("swayne_auth_token", "valid_token", expires_at=None)
-                    st.session_state["auth_success"] = True # Bridge the gap
-                    st.success("Access Granted. Loading...")
-                    time.sleep(1) 
-                    st.rerun()
-                else:
-                    st.error("⛔️ Access Denied: Invalid Credentials")
-
-    return False
+        name, authentication_status, username = authenticator.login('Login', 'main')
+    
+    if authentication_status:
+        # Successfully authenticated
+        return True
+    elif authentication_status == False:
+        st.error('⛔️ Access Denied: Invalid Credentials')
+        return False
+    else:
+        # None - login form displayed, waiting for input
+        return False
 
 # --- Main App ---
 def main():
