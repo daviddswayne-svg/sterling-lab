@@ -146,14 +146,52 @@ body {
 
 /* Hero Card */
 .hero-card {
-    position: relative;
-    background: var(--bg-card);
-    backdrop-filter: blur(20px);
+    background: rgba(255, 255, 255, 0.03);
     border: 1px solid var(--border);
-    border-radius: 24px;
+    border-radius: 20px;
     padding: 3rem;
-    margin-bottom: 2rem;
+    margin-bottom: 3rem;
+    position: relative;
     overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+/* Hero Content with Logo Layout */
+.hero-content-with-logo {
+    display: flex;
+    gap: 3rem;
+    align-items: flex-start;
+    margin-bottom: 2.5rem;
+}
+
+.hero-logo-section {
+    flex-shrink: 0;
+}
+
+.hero-logo {
+    width: 200px;
+    height: auto;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
+}
+
+.hero-text-section {
+    flex: 1;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1));
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: 20px;
+    margin-bottom: 1.5rem;
+    color: var(--success);
+    font-size: 0.875rem;
+    font-weight: 600;
 }
 
 .card-glow {

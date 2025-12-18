@@ -20,83 +20,90 @@
 
     <!-- Main container -->
     <div class="container">
-        <!-- Header with logo and status -->
+        <!-- Header -->
         <header class="header">
-            <div class="logo-section">
-                <div class="logo-icon">
-                    <img src="assets/logo.png" alt="Swayne Systems Logo"
-                        style="width: 80px; height: auto; border-radius: 8px;">
-                </div>
-                <div class="logo-text">
+            <div class="header-content">
+                <div class="header-title">
                     <h1>Swayne Systems</h1>
-                    <p class="subtitle">AI Infrastructure Platform</p>
+                    <p>AI Infrastructure Platform</p>
                 </div>
-            </div>
-            <div class="status-indicator">
-                <span class="status-dot"></span>
-                <span class="status-text">All Systems Operational</span>
+                <div class="status-indicator">
+                    <svg width="8" height="8" viewBox="0 0 8 8">
+                        <circle cx="4" cy="4" r="4" fill="#10b981" />
+                    </svg>
+                    <span>All Systems Operational</span>
+                </div>
             </div>
         </header>
 
-        <!-- Main content -->
+        <!-- Main Content -->
         <main class="main-content">
-            <!-- Hero card -->
+            <!-- Hero Card with Logo -->
             <div class="hero-card">
-                <div class="card-glow"></div>
-                <div class="card-content">
-                    <div class="hero-badge">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor"
-                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                        </svg>
-                        <span>Deployment Successful</span>
-                    </div>
-                    <h1 class="hero-title">Welcome to Swayne Systems</h1>
-                    <p class="hero-description">
-                        Your AI infrastructure is fully operational and ready for intelligent workloads.
-                        Access Sterling Lab, our advanced AI chat interface, for document analysis, multi-agent
-                        collaboration,
-                        and real-time AI processing. Explore interactive 3D voxel simulations showcasing technical
-                        creativity,
-                        or test drive the Bedrock Insurance demo—a production-ready AI agent system.
-                        Chat with our platform using the green Antigravity assistant for instant answers about our
-                        technology stack and capabilities.
-                    </p> <!-- Stats grid -->
-                    <div class="stats-grid">
-                        <div class="stat-item">
-                            <div class="stat-icon">🔒</div>
-                            <div class="stat-content">
-                                <div class="stat-label">Security</div>
-                                <div class="stat-value">SSL Active</div>
-                            </div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-icon">⚡</div>
-                            <div class="stat-content">
-                                <div class="stat-label">AI Backend</div>
-                                <div class="stat-value">Mac Studio</div>
-                            </div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-icon">🧠</div>
-                            <div class="stat-content">
-                                <div class="stat-label">Models</div>
-                                <div class="stat-value">4+ Online</div>
-                            </div>
-                        </div>
+                <div class="hero-content-with-logo">
+                    <div class="hero-logo-section">
+                        <img src="assets/swaynesystems_logo.png" alt="Swayne Systems" class="hero-logo">
                     </div>
 
-                    <!-- CTA Button -->
-                    <a href="/lab" class="cta-button">
+                    <div class="hero-text-section">
+                        <div class="status-badge">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                            </svg>
+                            <span>Deployment Successful</span>
+                        </div>
+                        <h1 class="hero-title">Welcome to Swayne Systems</h1>
+                        <p class="hero-description">
+                            Your AI infrastructure is fully operational and ready for intelligent workloads.
+                            Access Sterling Lab, our advanced AI chat interface, for document analysis, multi-agent
+                            collaboration,
+                            and real-time AI processing. Explore interactive 3D voxel simulations showcasing technical
+                            creativity,
+                            or test drive the Bedrock Insurance demo—a production-ready AI agent system.
+                            Chat with our platform using the green Antigravity assistant for instant answers about our
+                            technology stack and capabilities.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Stats grid -->
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-icon">🔒</div>
+                        <div class="stat-content">
+                            <div class="stat-label">Security</div>
+                            <div class="stat-value">SSL Active</div>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-icon">⚡</div>
+                        <div class="stat-content">
+                            <div class="stat-label">AI Backend</div>
+                            <div class="stat-value">Mac Studio</div>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-icon">🧠</div>
+                        <div class="stat-content">
+                            <div class="stat-label">Models</div>
+                            <div class="stat-value">4+ Online</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CTA Buttons -->
+                <div class="cta-grid">
+                    <a href="/lab/" class="cta-button primary-cta">
                         <span>Launch Sterling Lab AI Chat</span>
-                        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd"
-                                d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
-                                clip-rule="evenodd" />
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
                         </svg>
                     </a>
-                    <a href="/bedrock/" class="cta-button secondary-cta"
-                        style="margin-left: 1rem; background: transparent; border: 1px solid var(--border);">
+                    <a href="/bedrock/" class="cta-button secondary-cta">
                         <span>Bedrock Insurance</span>
                     </a>
                 </div>
