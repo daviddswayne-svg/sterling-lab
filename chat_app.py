@@ -296,6 +296,22 @@ st.markdown("""
         background-clip: text;
     }
     
+    /* Preserve emoji/icon colors */
+    .stApp svg,
+    .stApp [data-testid*="icon"],
+    span[data-testid="stMarkdownContainer"] > p > span {
+        color: inherit !important;
+        fill: currentColor !important;
+    }
+    
+    /* Fix for emoji in sidebar and metrics */
+    [data-testid="stSidebar"] svg,
+    [data-testid="stMetric"] svg,
+    .element-container svg {
+        filter: none !important;
+        opacity: 1 !important;
+    }
+    
     /* Buttons */
     .stButton > button {
         background: linear-gradient(135deg, #6366f1, #8b5cf6);
