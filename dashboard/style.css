@@ -567,9 +567,10 @@ body {
 
 .staff-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 2rem;
-    margin-bottom: 2rem;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin: 2rem 0;
+    /* Added consistent spacing */
 }
 
 .staff-member {
