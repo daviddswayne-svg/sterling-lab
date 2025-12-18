@@ -1323,3 +1323,255 @@ body {
         left: 2rem;
     }
 }
+
+/* ===== PORTFOLIO SHOWCASE STYLES ===== */
+
+/* Main content with sidebar layout */
+.content-with-sidebar {
+    display: flex;
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.main-content-area {
+    flex: 1;
+    min-width: 0;
+    /* Prevent flex overflow */
+}
+
+/* Bacteriophage Widget Sidebar */
+.phage-widget {
+    position: sticky;
+    top: 2rem;
+    width: 320px;
+    flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 1.5rem;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+}
+
+.phage-widget:hover {
+    border-color: var(--primary);
+    box-shadow: 0 6px 30px rgba(99, 102, 241, 0.2);
+}
+
+.widget-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.widget-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.widget-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.75rem;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    border-radius: 12px;
+    font-weight: 500;
+    color: white;
+}
+
+.phage-widget iframe {
+    width: 100%;
+    height: 350px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: #000;
+}
+
+.widget-description {
+    margin: 0.75rem 0 0 0;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+/* Portfolio Section */
+.portfolio-section {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border);
+}
+
+.section-title {
+    margin: 0 0 2rem 0;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.portfolio-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 2rem;
+}
+
+/* Portfolio Cards */
+.portfolio-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.portfolio-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--primary);
+    box-shadow: 0 8px 30px rgba(99, 102, 241, 0.2);
+}
+
+.card-thumbnail {
+    position: relative;
+    overflow: hidden;
+    background: #000;
+}
+
+.card-thumbnail iframe {
+    display: block;
+    width: 100%;
+    height: 315px;
+    border: none;
+}
+
+.card-thumbnail a {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+}
+
+.card-preview {
+    width: 100%;
+    height: 100%;
+}
+
+.card-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    cursor: pointer;
+}
+
+.card-overlay span {
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 600;
+    padding: 1rem 2rem;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    border-radius: 8px;
+}
+
+.card-thumbnail:hover .card-overlay {
+    opacity: 1;
+}
+
+.card-content {
+    padding: 1.5rem;
+}
+
+.card-content h3 {
+    margin: 0 0 0.75rem 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.card-content p {
+    margin: 0;
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .phage-widget {
+        width: 280px;
+    }
+
+    .phage-widget iframe {
+        height: 300px;
+    }
+}
+
+@media (max-width: 1024px) {
+    .content-with-sidebar {
+        flex-direction: column-reverse;
+    }
+
+    .phage-widget {
+        position: relative;
+        width: 100%;
+        max-width: 600px;
+        margin: 0 auto;
+        top: 0;
+    }
+
+    .phage-widget iframe {
+        height: 400px;
+    }
+}
+
+@media (max-width: 768px) {
+    .portfolio-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+    }
+
+    .phage-widget {
+        padding: 1rem;
+    }
+
+    .phage-widget iframe {
+        height: 350px;
+    }
+
+    .card-content {
+        padding: 1.25rem;
+    }
+
+    .card-content h3 {
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .content-with-sidebar {
+        gap: 1.5rem;
+    }
+
+    .portfolio-section {
+        margin-top: 2rem;
+    }
+
+    .card-thumbnail iframe {
+        height: 250px;
+    }
+
+    .phage-widget iframe {
+        height: 300px;
+    }
+}
