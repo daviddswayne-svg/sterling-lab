@@ -57,6 +57,10 @@ class PublishingManager:
             subprocess.run(["git", "push", "origin", GIT_BRANCH], cwd=repo_dir, check=False)
             
             print("🎉 Deployment Triggered Successfully!")
+
+            # 3. Hot-Swap (Instant Update)
+            print("🔥 Executing Hot-Swap for instant validation...")
+            subprocess.run(["./hot_swap.sh"], cwd=repo_dir, check=False)
             
         except subprocess.CalledProcessError as e:
             print(f"❌ Git Error: {e}")
