@@ -68,7 +68,16 @@ def run_meeting():
             yield f"data: {{\"agent\": \"error\", \"message\": \"{str(e)}\"}}\n\n"
 
     from flask import stream_with_context, Response
-    return Response(stream_with_context(generate()), mimetype='text/event-stream')
+    return Response(
+        stream_with_context(generate()), 
+        mimetype='text/event-stream',
+        headers={
+            'Cache-Control': 'no-cache',
+            'Transfer-Encoding': 'chunked',
+            'Connection': 'keep-alive',
+            'X-Accel-Buffering': 'no' # Tell Nginx specifically
+        }
+    )
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
