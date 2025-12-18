@@ -720,6 +720,15 @@ body {
     pointer-events: all;
 }
 
+.pc-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: #1a1d2e;
+    /* Solid dark background instead of transparent */
+    border-radius: 16px;
+}
+
 .ag-container {
     width: 90%;
     max-width: 900px;
