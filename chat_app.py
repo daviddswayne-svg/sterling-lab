@@ -250,6 +250,8 @@ def check_password():
     </style>
     """, unsafe_allow_html=True)
     
+    # Add Logo to Sidebar
+    st.logo("assets/swaynesystems_logo.png", size="large")
     # Add custom header
     st.markdown('<div class="login-header"><h3>Swayne Systems<br>Secure Access</h3></div>', unsafe_allow_html=True)
     
@@ -304,12 +306,25 @@ st.markdown("""
         fill: currentColor !important;
     }
     
-    /* Fix for emoji in sidebar and metrics */
+    /* Fix for emoji in sidebar and metrics - force bright colors */
     [data-testid="stSidebar"] svg,
     [data-testid="stMetric"] svg,
     .element-container svg {
         filter: none !important;
         opacity: 1 !important;
+    }
+    
+    /* Sidebar section headers with icons - force bright text */
+    [data-testid="stSidebar"] h1,
+    [data-testid="stSidebar"] h2, 
+    [data-testid="stSidebar"] h3,
+    [data-testid="stSidebar"] p {
+        color: #e5e7eb !important;
+    }
+    
+    /* Sidebar markdown content */
+    [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] {
+        color: #e5e7eb !important;
     }
     
     /* Buttons */
