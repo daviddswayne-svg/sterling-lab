@@ -193,88 +193,7 @@ def get_chain(model_name):
 # Using session state instead of streamlit-authenticator for reliability
 
 
-def check_password():
-    """Streamlit-authenticator based authentication with persistent cookies."""
-    # TEMPORARY FIX: Direct password check since bcrypt hash isn't working
-    if st.session_state.get("authenticated", False):
-        return True
-    
-    # Custom CSS for login page (keep the existing styling)
-    st.markdown("""
-    <style>
-        .stApp {
-            background-color: #050505;
-        }
-        /* Streamlit-authenticator form styling */
-        div[data-testid="stForm"] {
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            background: rgba(25, 25, 25, 0.5);
-            padding: 2rem;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0, 240, 255, 0.1);
-        }
-        .login-header {
-            font-family: 'Courier New', monospace;
-            color: #00f0ff;
-            text-align: center;
-            margin-bottom: 2rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-        /* Force Input Text White & Dark Background */
-        input[type="text"], input[type="password"] {
-            color: white !important;
-            background-color: #0e0e0e !important;
-            border: 1px solid #00f0ff !important;
-            -webkit-text-fill-color: white !important;
-            border-radius: 5px;
-        }
-        /* Labels and Text */
-        label, p, h1, h2, h3 {
-            color: white !important;
-        }
-        /* Button Styling */
-        div[data-testid="stFormSubmitButton"] button {
-            background-color: #00f0ff !important;
-            color: #000000 !important;
-            border: none;
-            transition: all 0.3s ease;
-        }
-        div[data-testid="stFormSubmitButton"] button:hover {
-            box-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
-            background-color: #fff !important;
-        }
-        div[data-testid="stFormSubmitButton"] button p {
-            color: #000000 !important;
-        }
-    </style>
-    """, unsafe_allow_html=True)
-    
-    # Add Logo to Sidebar
-    st.logo("assets/swaynesystems_logo.png", size="large")
-    # Add custom header
-    st.markdown('<div class="login-header"><h3>Swayne Systems<br>Secure Access</h3></div>', unsafe_allow_html=True)
-    
-    # Login form (centered)
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        with st.form("login_form"):
-            username = st.text_input("Username")
-            password = st.text_input("Password", type="password")
-            submit = st.form_submit_button("Authenticate", use_container_width=True)
-            
-            if submit:
-                if username == "admin" and password == "sterling":
-                    st.session_state["authenticated"] = True
-                    st.success("✅ Access Granted. Loading...")
-                    time.sleep(0.5)
-                    st.rerun()
-                else:
-                    st.error("⛔️ Access Denied: Invalid Credentials")
-    
-    return False
-
-# --- Main App# --- Streamlit Page Config ---
+# --- Streamlit Page Config ---
 st.set_page_config(
     page_title="Sterling Lab - AI Chat",
     page_icon="🧪",
@@ -364,10 +283,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 def main():
-    
-    # Check Authentication (with Cookies)
-    if not check_password():
-        st.stop()
+    # Auth handled by Nginx - no check needed
     
     # Initialize DB
     init_db()
