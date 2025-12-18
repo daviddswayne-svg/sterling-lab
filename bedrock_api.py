@@ -212,7 +212,7 @@ Be concise, helpful, and proactive. When suggesting code changes, provide clear 
         
         def generate():
             try:
-                model = genai.GenerativeModel('gemini-1.5-flash-latest')
+                model = genai.GenerativeModel('gemini-2.0-flash-exp')
                 response = model.generate_content(
                     conversation,
                     stream=True
