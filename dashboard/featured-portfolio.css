@@ -147,3 +147,27 @@
         gap: 1.5rem;
     }
 }
+
+/* Portfolio Section - Side by Side Layout */
+.portfolio-section {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border);
+}
+
+.portfolio-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+}
+
+/* Make sure portfolio cards don't span multiple columns */
+.portfolio-card {
+    grid-column: span 1;
+}
+
+@media (max-width: 900px) {
+    .portfolio-grid {
+        grid-template-columns: 1fr;
+    }
+}
