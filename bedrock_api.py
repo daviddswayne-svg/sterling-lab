@@ -60,10 +60,21 @@ def run_meeting():
             # Import here to avoid circular dependencies if any
             from bedrock_agents.orchestrator import run_meeting_generator
             import json
+            import time
             
-            for agent, message in run_meeting_generator():
-                data = json.dumps({"agent": agent, "message": message})
-                yield f"data: {data}\n\n"
+            # Initial Connection Message
+            yield f"data: {json.dumps({'agent': 'system', 'message': 'Connection Stable. Agents convening...'})}\n\n"
+            
+            # Use a generator that we can pulse
+            meeting = run_meeting_generator()
+            
+            while True:
+                try:
+                    agent, message = next(meeting)
+                    data = json.dumps({"agent": agent, "message": message})
+                    yield f"data: {data}\n\n"
+                except StopIteration:
+                    break
         except Exception as e:
             yield f"data: {{\"agent\": \"error\", \"message\": \"{str(e)}\"}}\n\n"
 
