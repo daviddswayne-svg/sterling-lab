@@ -154,7 +154,6 @@ def run_meeting():
         except Exception as e:
             yield f"data: {{\"agent\": \"error\", \"message\": \"{str(e)}\"}}\n\n"
 
-    from flask import stream_with_context, Response
     return Response(
         stream_with_context(generate()), 
         mimetype='text/event-stream',
@@ -165,6 +164,41 @@ def run_meeting():
             'X-Accel-Buffering': 'no' # Tell Nginx specifically
         }
     )
+
+@app.route('/api/tts', methods=['POST'])
+def tts_proxy():
+    """Proxies TTS request to Local Mac Studio via Tunnel"""
+    try:
+        data = request.json
+        if not data or 'text' not in data:
+            return jsonify({"error": "No text provided"}), 400
+            
+        print(f"🎤 Requesting audio for: {data['text'][:30]}...")
+        
+        # Connect to Local Mac Studio via Tunnel (host.docker.internal)
+        # Port 8000 is forwarded by sterling_tunnel.sh
+        tts_url = "http://host.docker.internal:8000/generate"
+        
+        # Forward the request
+        resp = requests.post(tts_url, json={
+            "text": data['text'],
+            "voice": "David", # Hardcoded for this interface
+            "speed": 1.0
+        }, timeout=30) # Allow time for generation
+        
+        if resp.status_code == 200:
+            # Return the audio file directly
+            return Response(
+                resp.content, 
+                mimetype="audio/wav",
+                headers={"Content-Disposition": "attachment; filename=generated.wav"}
+            )
+        else:
+            return jsonify({"error": f"TTS Backend Error: {resp.text}"}), resp.status_code
+
+    except Exception as e:
+        print(f"❌ TTS Proxy Error: {e}")
+        return jsonify({"error": str(e)}), 500
 
 # --- Antigravity Endpoints ---
 

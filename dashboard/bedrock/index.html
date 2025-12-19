@@ -107,6 +107,29 @@
             if (e.key === 'Enter') sendMessage();
         }
 
+        // Initialize Audio Context for playback
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        async function playAudioBlob(blob) {
+            try {
+                const arrayBuffer = await blob.arrayBuffer();
+                const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+                const source = audioCtx.createBufferSource();
+                source.buffer = audioBuffer;
+                source.connect(audioCtx.destination);
+                source.start(0);
+            } catch (e) {
+                console.error("Audio playback failed", e);
+            }
+        }
+
+        async function playFiller() {
+             // Play pre-canned audio to mask latency
+             // We assume filler.wav exists in assets
+             const audio = new Audio('/assets/filler.wav');
+             audio.play().catch(e => console.log("Auto-play blocked or missing filler", e));
+        }
+
         async function sendMessage() {
             const input = document.getElementById('chatInput');
             const messages = document.getElementById('chatMessages');
@@ -117,9 +140,13 @@
             addMessage(userText, 'user');
             input.value = '';
 
+            // 1. Play Filler Audio immediately
+            playFiller();
+
             const thinkingId = addMessage('Analyzing...', 'bot thinking');
 
             try {
+                // 2. Get Text Response
                 const response = await fetch('/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -127,13 +154,42 @@
                 });
 
                 const data = await response.json();
-                document.getElementById(thinkingId).remove();
-
+                
                 if (data.error) {
+                    document.getElementById(thinkingId).remove();
                     addMessage("Error: " + data.error, 'bot');
-                } else {
+                    return;
+                }
+
+                // 3. Get Audio Response (TTS Proxy)
+                // We keep "Thinking..." visible while we fetch audio
+                
+                try {
+                    const ttsResponse = await fetch('/api/tts', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ text: data.reply })
+                    });
+                    
+                    if (ttsResponse.ok) {
+                        const audioBlob = await ttsResponse.blob();
+                        
+                        // 4. Reveal Answer & Play Audio
+                        document.getElementById(thinkingId).remove();
+                        addMessage(data.reply, 'bot');
+                        
+                        await playAudioBlob(audioBlob);
+                    } else {
+                        // Fallback: Text Only
+                        document.getElementById(thinkingId).remove();
+                        addMessage(data.reply, 'bot');
+                    }
+                } catch (ttsError) {
+                    console.error("TTS failed", ttsError);
+                    document.getElementById(thinkingId).remove();
                     addMessage(data.reply, 'bot');
                 }
+
             } catch (e) {
                 document.getElementById(thinkingId).remove();
                 addMessage("Connection error. Is the AI awake?", 'bot');
