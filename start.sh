@@ -7,12 +7,12 @@ echo "=================================="
 echo ""
 
 # Step 1: Run Diagnostics
-echo "[1/5] Running RAG System Diagnostics..."
+echo "[1/7] Running RAG System Diagnostics..."
 python rag_diagnostics.py || echo "⚠️  Warning: Some diagnostic checks failed."
 echo ""
 
-# Step 2: Verify Dashboard Exists (will be served by separate Nginx container)
-echo "[2/5] Verifying Dashboard Files..."
+# Step 2: Verify Dashboard Exists
+echo "[2/7] Verifying Dashboard Files..."
 if [ ! -d "/app/dashboard" ]; then
     echo "❌ FATAL: /app/dashboard directory not found!"
     exit 1
@@ -24,10 +24,17 @@ if [ ! -f "/app/dashboard/index.html" ]; then
 fi
 
 echo "✅ Dashboard files verified at /app/dashboard"
+ls -lah /app/dashboard/
 echo ""
 
-# Step 3: Start Bedrock Chat API
-echo "[3/5] Starting Bedrock Chat API..."
+# Step 3: Test Nginx Configuration
+echo "[3/7] Testing Nginx Configuration..."
+nginx -t
+echo "✅ Nginx config is valid"
+echo ""
+
+# Step 3.5: Start Bedrock Chat API
+echo "[3.5/7] Starting Bedrock Chat API..."
 python bedrock_api.py > /tmp/bedrock_api.log 2>&1 &
 API_PID=$!
 echo "✅ Bedrock API started with PID: $API_PID"
@@ -49,11 +56,12 @@ done
 if [ $COUNTER_API -eq $MAX_WAIT_API ]; then
     echo "⚠️  WARNING: Bedrock API didn't respond in time. Checking logs:"
     tail -n 20 /tmp/bedrock_api.log
+    # Don't exit, might be slow startup, but warn
 fi
 echo ""
 
 # Step 4: Start Streamlit
-echo "[4/5] Starting Streamlit on port 8501..."
+echo "[4/7] Starting Streamlit on port 8501..."
 streamlit run chat_app.py \
     --server.port=8501 \
     --server.address=0.0.0.0 \
@@ -66,7 +74,7 @@ echo "✅ Streamlit started with PID: $STREAMLIT_PID"
 echo ""
 
 # Step 5: Wait for Streamlit to be Ready
-echo "[5/5] Waiting for Streamlit to be ready..."
+echo "[5/7] Waiting for Streamlit to be ready..."
 MAX_WAIT=30
 COUNTER=0
 while [ $COUNTER -lt $MAX_WAIT ]; do
@@ -87,17 +95,43 @@ if [ $COUNTER -eq $MAX_WAIT ]; then
 fi
 echo ""
 
+# Step 6: Start Nginx
+echo "[6/7] Starting Nginx on port 80..."
+nginx -g 'daemon off;' &
+NGINX_PID=$!
+echo "✅ Nginx started with PID: $NGINX_PID"
+echo ""
+
+# Step 7: Verify Nginx is Actually Running
+echo "[7/7] Verifying Nginx is serving traffic..."
+sleep 2  # Give Nginx time to initialize
+
+# Check if Nginx process is still alive
+if ! ps -p $NGINX_PID > /dev/null 2>&1; then
+    echo "❌ FATAL: Nginx process died immediately after starting!"
+    echo "Nginx error log should be visible above. Checking pid..."
+    ps aux | grep nginx
+    exit 1
+fi
+
+# Test Main App route
+if curl -s -I http://127.0.0.1:80/ 2>&1 | head -1 | grep -q "HTTP"; then
+    echo "✅ App is accessible at /"
+else
+    echo "⚠️  WARNING: App test failed - check nginx error logs above"
+fi
+
+echo ""
 echo "=================================="
 echo "✅ ALL SERVICES STARTED SUCCESSFULLY"
 echo "Streamlit PID: $STREAMLIT_PID"
-echo "Bedrock API PID: $API_PID"
+echo "Nginx PID: $NGINX_PID"
 echo "=================================="
 echo ""
-echo "📡 Application ready for Nginx proxy"
-echo "   Streamlit endpoint: http://localhost:8501"
-echo "   Bedrock API endpoint: http://localhost:5000"
+echo "📡 Monitoring Nginx (foreground)..."
+echo "   Dashboard: http://localhost/"
+echo "   Lab: http://localhost/lab"
 echo ""
 
-# Keep Streamlit running in foreground (Docker best practice)
-wait $STREAMLIT_PID
-
+# Keep Nginx running in foreground
+wait $NGINX_PID

@@ -14,84 +14,7 @@
 > 
 > Coolify deploys from the `live` remote, NOT GitHub. Changes pushed only to GitHub will NOT deploy.
 
-> [!IMPORTANT]
-> **Authentication with Authelia**  
-> This deployment uses **Authelia** for standalone authentication. All routes are protected except `/health`.
-> 
-> **Default Credentials:**
-> - Username: `admin`
-> - Password: `sterling`
-> 
-> **First login:** Navigate to `https://swaynesystems.ai/` → auto-redirect to `/auth/` → enter credentials
-> 
-> **To change password or add users:** See "Managing Authentication" section below.
-
 ---
-
-## Managing Authentication
-
-### Changing Admin Password
-
-1. Generate new Argon2 hash:
-   ```bash
-   ./generate_password.sh "YourNewPassword123"
-   ```
-
-2. Copy the hash output
-
-3. Edit `users_database.yml` and replace the admin password hash
-
-4. Deploy:
-   ```bash
-   git add users_database.yml
-   git commit -m "Update admin password"
-   ./deploy.sh
-   ```
-
-### Adding New Users
-
-1. Generate password hash:
-   ```bash
-   ./generate_password.sh "NewUserPassword"
-   ```
-
-2. Edit `users_database.yml` and add user:
-   ```yaml
-   users:
-     admin:
-       displayname: "Administrator"
-       password: "$argon2id$v=19$m=65536$..."
-       email: admin@swaynesystems.ai
-       groups:
-         - admins
-     
-     newuser:
-       displayname: "New User Name"
-       password: "<paste_hash_here>"
-       email: newuser@swaynesystems.ai
-       groups:
-         - users
-   ```
-
-3. Deploy changes (same as above)
-
-### Troubleshooting Authentication
-
-**Problem:** Can't log in / "Invalid username or password"
-- **Solution:** Verify `users_database.yml` has correct hash format
-- **Check:** SSH to droplet and view Authelia logs:
-  ```bash
-  ssh root@165.22.146.182
-  docker logs sterling_authelia
-  ```
-
-**Problem:** Redirect loop after login
-- **Solution:** Check that `X-Forwarded-Proto` header is being set correctly by Coolify/SSL termination
-
-**Problem:** Session expires too quickly
-- **Solution:** Edit `authelia_config.yml` and increase `session.expiration` (default: 1h)
-
-
 
 ## Step 1: Access Coolify
 Open your browser to: **http://165.22.146.182:8000**
@@ -108,18 +31,11 @@ Open your browser to: **http://165.22.146.182:8000**
 4. Branch: `main`
 
 ## Step 4: Configure Build Settings
-1. **Build Pack**: Select **"Docker Compose"**
-   - Coolify will detect `docker-compose.yml` automatically
-2. **Port**: `80` ⚠️ **CRITICAL: Must be 80!**
-   - This is the Nginx container port (externally exposed)
+1. **Build Pack**: Select **"Dockerfile"**
+2. **Port**: `80` ⚠️ **CRITICAL: Must be 80, NOT 8501!**
+   - Port 80 = Nginx (serves dashboard + proxies Streamlit)
+   - Port 8501 = Streamlit only (bypasses dashboard)
 3. **Domain**: `swaynesystems.ai` (or click to auto-generate)
-
-> [!NOTE]
-> This deployment uses Docker Compose to run 4 services:
-> - **Redis**: Session storage for Authelia
-> - **Authelia**: Authentication server
-> - **App**: Sterling Lab (Streamlit + Flask)
-> - **Nginx**: Reverse proxy (exposes port 80)
 
 ## Step 5: Environment Variables
 Add these if using SSH tunnel to Mac Studio:
@@ -127,7 +43,7 @@ Add these if using SSH tunnel to Mac Studio:
 OLLAMA_HOST=http://host.docker.internal:11434
 ```
 
-**Note**: The Docker Compose file handles container networking automatically using `extra_hosts`.
+**Note**: You'll need to configure Docker to allow container → host access, OR install Ollama in the container.
 
 ## Step 6: Enable Auto-Deploy
 1. Go to **"Source"** tab
@@ -138,9 +54,9 @@ OLLAMA_HOST=http://host.docker.internal:11434
 Click **"Deploy"** button
 
 Coolify will:
-- Pull from the `live` git remote
-- Build the Docker images via `docker-compose build`
-- Start all 4 containers via `docker-compose up`
+- Pull from GitHub
+- Build the Docker image
+- Start the container
 - Provision Let's Encrypt certificate
 - Route traffic from swaynesystems.ai
 

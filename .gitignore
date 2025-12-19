@@ -2,40 +2,11 @@
 __pycache__/
 *.py[cod]
 *$py.class
-*.so
-.Python
-*.egg-info/
-dist/
-build/
-
-# Virtual Environment
 venv/
-env/
-ENV/
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# OS
+.env
 .DS_Store
-Thumbs.db
+*.db
+# Ignore all SQLite files EXCEPT the ChromaDB one (needed for RAG)
+*.sqlite3
+!chroma_db/chroma.sqlite3
 
-# ChromaDB
-chroma_db/*.sqlite3-shm
-chroma_db/*.sqlite3-wal
-
-# Authelia runtime data (keep configs, ignore runtime files)
-authelia_data/
-db.sqlite3
-notification.txt
-
-# Logs
-*.log
-logs/
-
-# Secrets (if you ever add separate secrets files)
-secrets/
-*.env.local
