@@ -310,26 +310,8 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 def main():
-    authenticator = load_auth()
-    try:
-        authenticator.login('Login', 'main')
-    except Exception as e:
-        st.error(f'Auth Error: {e}')
-        return
-
-    if st.session_state["authentication_status"]:
-        # === LOGGED IN ===
-        with st.sidebar:
-            st.write(f'Welcome *{st.session_state["name"]}*')
-            authenticator.logout('Logout', 'sidebar')
-        
-        # Proceed with Main Application
-        run_app()
-        
-    elif st.session_state["authentication_status"] is False:
-        st.error('Username/password is incorrect')
-    elif st.session_state["authentication_status"] is None:
-        st.warning('Please enter your username and password')
+    # DIRECTLY RUN APPLICATION - NO AUTHENTICATION
+    run_app()
 
 def run_app():
     # Initialize DB
