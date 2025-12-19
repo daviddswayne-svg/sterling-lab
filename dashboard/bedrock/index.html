@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/style.css?v=cta_fix">
+    <link rel="stylesheet" href="/style.css?v=3">
 </head>
 
 <body>
@@ -112,14 +112,11 @@
         // Initialize Audio Context for playback
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         let currentSource = null; // Track current audio to allow stopping
+        let currentFiller = null; // Track filler audio
 
         async function playAudioBlob(blob) {
             try {
-                // Stop any previous audio
-                if (currentSource) {
-                    currentSource.stop();
-                    currentSource = null;
-                }
+                stopAudio(); // Stop filler or previous audio before playing new one
 
                 const arrayBuffer = await blob.arrayBuffer();
                 const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
@@ -140,21 +137,24 @@
             }
         }
 
-        function stopAudio() {
+        // Expose to global scope for button
+        window.stopAudio = function () {
             if (currentSource) {
                 currentSource.stop();
                 currentSource = null;
             }
+            if (currentFiller) {
+                currentFiller.pause();
+                currentFiller.currentTime = 0;
+                currentFiller = null;
+            }
+            console.log("Audio Stopped");
         }
 
         async function playFiller() {
-            // Play pre-canned audio to mask latency
-            // We assume filler.wav exists in assets
-            const audio = new Audio('/assets/filler.wav');
-
-            // Stop button logic needs to handle this HTMLAudioElement too??
-            // For simplicity, let's just let filler play or bind it to a global
-            // But filler is short. The main issue is the long TTS.
+            stopAudio(); // Safety check
+            const audio = new Audio('/assets/filler.wav?v=' + Date.now());
+            currentFiller = audio;
             audio.play().catch(e => console.log("Auto-play blocked or missing filler", e));
         }
 
