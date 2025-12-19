@@ -76,6 +76,8 @@
         <div class="chat-window" id="chatWindow">
             <div class="chat-header">
                 <h3>Bedrock Assistant</h3>
+                <button class="stop-audio" onclick="stopAudio()" title="Stop Speaking"
+                    style="background:none; border:none; color:white; font-size:1.2rem; margin-right:1rem; cursor:pointer;">🔇</button>
                 <button class="close-chat" onclick="toggleChat()">×</button>
             </div>
             <div class="chat-messages" id="chatMessages">
@@ -109,25 +111,51 @@
 
         // Initialize Audio Context for playback
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        
+        let currentSource = null; // Track current audio to allow stopping
+
         async function playAudioBlob(blob) {
             try {
+                // Stop any previous audio
+                if (currentSource) {
+                    currentSource.stop();
+                    currentSource = null;
+                }
+
                 const arrayBuffer = await blob.arrayBuffer();
                 const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
                 const source = audioCtx.createBufferSource();
                 source.buffer = audioBuffer;
                 source.connect(audioCtx.destination);
                 source.start(0);
+
+                currentSource = source; // Save reference
+
+                // Reset when done
+                source.onended = () => {
+                    if (currentSource === source) currentSource = null;
+                };
+
             } catch (e) {
                 console.error("Audio playback failed", e);
             }
         }
 
+        function stopAudio() {
+            if (currentSource) {
+                currentSource.stop();
+                currentSource = null;
+            }
+        }
+
         async function playFiller() {
-             // Play pre-canned audio to mask latency
-             // We assume filler.wav exists in assets
-             const audio = new Audio('/assets/filler.wav');
-             audio.play().catch(e => console.log("Auto-play blocked or missing filler", e));
+            // Play pre-canned audio to mask latency
+            // We assume filler.wav exists in assets
+            const audio = new Audio('/assets/filler.wav');
+
+            // Stop button logic needs to handle this HTMLAudioElement too??
+            // For simplicity, let's just let filler play or bind it to a global
+            // But filler is short. The main issue is the long TTS.
+            audio.play().catch(e => console.log("Auto-play blocked or missing filler", e));
         }
 
         async function sendMessage() {
@@ -154,7 +182,7 @@
                 });
 
                 const data = await response.json();
-                
+
                 if (data.error) {
                     document.getElementById(thinkingId).remove();
                     addMessage("Error: " + data.error, 'bot');
@@ -163,21 +191,21 @@
 
                 // 3. Get Audio Response (TTS Proxy)
                 // We keep "Thinking..." visible while we fetch audio
-                
+
                 try {
                     const ttsResponse = await fetch('/api/tts', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ text: data.reply })
                     });
-                    
+
                     if (ttsResponse.ok) {
                         const audioBlob = await ttsResponse.blob();
-                        
+
                         // 4. Reveal Answer & Play Audio
                         document.getElementById(thinkingId).remove();
                         addMessage(data.reply, 'bot');
-                        
+
                         await playAudioBlob(audioBlob);
                     } else {
                         // Fallback: Text Only
