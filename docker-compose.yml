@@ -79,7 +79,7 @@ services:
       - ./assets:/app/assets:ro
     depends_on:
       app:
-        condition: service_healthy
+        condition: service_started
       authelia:
         condition: service_healthy
     healthcheck:
