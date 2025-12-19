@@ -66,6 +66,7 @@ streamlit run chat_app.py \
     --server.port=8501 \
     --server.address=0.0.0.0 \
     --server.headless=true \
+    --server.baseUrlPath=/lab \
     2>&1 | tee /tmp/streamlit.log &
 
 STREAMLIT_PID=$!

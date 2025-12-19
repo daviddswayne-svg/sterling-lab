@@ -312,7 +312,7 @@ st.markdown("""
 def main():
     authenticator = load_auth()
     try:
-        authenticator.login()
+        authenticator.login('Login', 'main')
     except Exception as e:
         st.error(f'Auth Error: {e}')
         return
