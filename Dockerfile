@@ -24,9 +24,9 @@ RUN dos2unix start.sh && chmod +x start.sh
 # Expose Streamlit and Flask API ports (internal to Docker network)
 EXPOSE 8501 5000
 
-# Health check (check Streamlit)
+# Health check (use Flask API - more reliable than Streamlit)
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-  CMD curl -f http://localhost:8501/_stcore/health || exit 1
+  CMD curl -f http://localhost:5000/health || exit 1
 
 # Run the start script
 CMD ["./start.sh"]
