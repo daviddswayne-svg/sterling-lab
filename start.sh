@@ -38,6 +38,26 @@ echo "[3.5/7] Starting Bedrock Chat API..."
 python bedrock_api.py > /tmp/bedrock_api.log 2>&1 &
 API_PID=$!
 echo "✅ Bedrock API started with PID: $API_PID"
+
+# Wait for API to be ready
+echo "Waiting for Bedrock API port 5000..."
+MAX_WAIT_API=15
+COUNTER_API=0
+while [ $COUNTER_API -lt $MAX_WAIT_API ]; do
+    if curl -s http://127.0.0.1:5000/health > /dev/null 2>&1; then
+        echo "✅ Bedrock API is responding on port 5000"
+        break
+    fi
+    echo "   Still waiting for API... ($COUNTER_API/$MAX_WAIT_API)"
+    sleep 1
+    COUNTER_API=$((COUNTER_API + 1))
+done
+
+if [ $COUNTER_API -eq $MAX_WAIT_API ]; then
+    echo "⚠️  WARNING: Bedrock API didn't respond in time. Checking logs:"
+    tail -n 20 /tmp/bedrock_api.log
+    # Don't exit, might be slow startup, but warn
+fi
 echo ""
 
 # Step 4: Start Streamlit

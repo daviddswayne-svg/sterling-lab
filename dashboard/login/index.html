@@ -105,7 +105,8 @@
                     btnSpinner.style.display = 'none';
                 }
             } catch (error) {
-                errorMsg.textContent = 'Connection error. Please try again.';
+                console.error('Login error:', error);
+                errorMsg.textContent = 'Connection error: ' + (error.message || 'Unknown error');
                 errorMsg.style.display = 'block';
 
                 // Reset button
