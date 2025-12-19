@@ -1,0 +1,99 @@
+version: '3.8'
+
+services:
+  # Redis for Authelia session storage
+  redis:
+    image: redis:alpine
+    container_name: sterling_redis
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks:
+      - sterling_network
+
+  # Authelia Authentication Server
+  authelia:
+    image: authelia/authelia:latest
+    container_name: sterling_authelia
+    restart: unless-stopped
+    volumes:
+      - ./authelia_config.yml:/config/configuration.yml:ro
+      - ./users_database.yml:/config/users_database.yml:ro
+      - authelia_data:/config
+    environment:
+      - TZ=America/Los_Angeles
+    expose:
+      - 9091
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9091/api/health" ]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks:
+      - sterling_network
+
+  # Sterling Lab Application (Streamlit + Flask API)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sterling_app
+    restart: unless-stopped
+    environment:
+      - OLLAMA_HOST=${OLLAMA_HOST:-http://host.docker.internal:11434}
+      - TZ=America/Los_Angeles
+    expose:
+      - 8501 # Streamlit
+      - 5000 # Flask API
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      authelia:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8501/_stcore/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - sterling_network
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: sterling_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./dashboard:/app/dashboard:ro
+      - ./public:/app/public:ro
+      - ./assets:/app/assets:ro
+    depends_on:
+      app:
+        condition: service_healthy
+      authelia:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health" ]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks:
+      - sterling_network
+
+networks:
+  sterling_network:
+    driver: bridge
+
+volumes:
+  authelia_data:
+    driver: local

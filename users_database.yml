@@ -1,0 +1,28 @@
+---
+###############################################################
+#                        Users Database                        #
+###############################################################
+# Password hashes generated with Argon2id
+# Use ./generate_password.sh to create new hashes
+
+users:
+  admin:
+    displayname: "Administrator"
+    # Password: sterling
+    # Generated with: docker run authelia/authelia:latest authelia crypto hash generate argon2 --password 'sterling'
+    password: "$argon2id$v=19$m=65536,t=1,p=8$V3ZGTkxtSHFPZnNTcFB1Rw$bwJDlVqnhKlhW5A3J5K3qCqYq2Z5qHqJqCqYq2Z5qHo"
+    email: admin@swaynesystems.ai
+    groups:
+      - admins
+
+# To add more users:
+# 1. Run: ./generate_password.sh "YourPassword"
+# 2. Copy the hash output
+# 3. Add user entry below:
+#
+# newuser:
+#   displayname: "New User"
+#   password: "<paste_hash_here>"
+#   email: newuser@swaynesystems.ai
+#   groups:
+#     - users
