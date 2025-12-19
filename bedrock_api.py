@@ -176,8 +176,8 @@ def tts_proxy():
         print(f"🎤 Requesting audio for: {data['text'][:30]}...")
         
         # Connect to Local Mac Studio via Tunnel (host.docker.internal)
-        # Port 8000 is forwarded by sterling_tunnel.sh
-        tts_url = "http://host.docker.internal:8000/generate"
+        # Port 8001 is forwarded by sterling_tunnel.sh (Mapped to Mac 8000)
+        tts_url = "http://host.docker.internal:8001/generate"
         
         # Forward the request
         resp = requests.post(tts_url, json={
