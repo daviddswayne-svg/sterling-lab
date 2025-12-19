@@ -540,8 +540,8 @@ def login():
                 session_token,
                 max_age=max_age,
                 httponly=True,
-                secure=True,
-                samesite='Strict',
+                secure=False,    # Allow cookie over HTTP (Coolify handles HTTPS termination)
+                samesite='Lax',  # Prevent dropping cookie on redirects
                 path='/'
             )
             return response
