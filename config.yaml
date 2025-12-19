@@ -1,0 +1,15 @@
+credentials:
+  usernames:
+    admin:
+      email: admin@swaynesystems.ai
+      failed_login_attempts: 0
+      first_name: Sterling
+      last_name: Admin
+      logged_in: False
+      password: "$2b$12$MYAWmSbrDNQzeedN35a3A.IueHXiGKXKlJzryBvHAC0cPw6RCa622" # sterling
+cookie:
+  expiry_days: 7
+  key: random_signature_key_swayne_systems
+  name: swayne_systems_auth
+pre-authorized:
+  emails: []

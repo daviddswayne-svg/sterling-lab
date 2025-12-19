@@ -66,7 +66,6 @@ streamlit run chat_app.py \
     --server.port=8501 \
     --server.address=0.0.0.0 \
     --server.headless=true \
-    --server.baseUrlPath=/lab \
     2>&1 | tee /tmp/streamlit.log &
 
 STREAMLIT_PID=$!
@@ -114,18 +113,11 @@ if ! ps -p $NGINX_PID > /dev/null 2>&1; then
     exit 1
 fi
 
-# Test dashboard route
-if curl -s -H "X-Test: Internal" http://127.0.0.1:80/ | grep -q "Sterling"; then
-    echo "✅ Dashboard is accessible at /"
+# Test Main App route
+if curl -s -I http://127.0.0.1:80/ 2>&1 | head -1 | grep -q "HTTP"; then
+    echo "✅ App is accessible at /"
 else
-    echo "⚠️  WARNING: Dashboard test failed - check nginx error logs above"
-fi
-
-# Test Streamlit proxy route
-if curl -s -I http://127.0.0.1:80/lab/ 2>&1 | head -1 | grep -q "HTTP"; then
-    echo "✅ Streamlit proxy is accessible at /lab"
-else
-    echo "⚠️  WARNING: Streamlit proxy test failed"
+    echo "⚠️  WARNING: App test failed - check nginx error logs above"
 fi
 
 echo ""

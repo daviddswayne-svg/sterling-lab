@@ -189,9 +189,26 @@ def get_chain(model_name):
         return None
 
 
-# --- Authentication (Simple Session-Based) ---
-# Using session state instead of streamlit-authenticator for reliability
+import yaml
+from yaml.loader import SafeLoader
+import streamlit_authenticator as stauth
 
+# ... (Previous imports) ...
+
+# --- Authentication ---
+def load_auth():
+    config_path = os.path.join(SCRIPT_DIR, 'config.yaml')
+    with open(config_path) as file:
+        config = yaml.load(file, Loader=SafeLoader)
+
+    authenticator = stauth.Authenticate(
+        config['credentials'],
+        config['cookie']['name'],
+        config['cookie']['key'],
+        config['cookie']['expiry_days'],
+        config['pre-authorized']
+    )
+    return authenticator
 
 # --- Streamlit Page Config ---
 st.set_page_config(
@@ -201,7 +218,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS to match swaynesystems.ai aesthetic
+# Custom CSS (Keeping existing styles but adding auth specific tweaks if needed)
 st.markdown("""
 <style>
     /* Match dashboard styling */
@@ -239,6 +256,7 @@ st.markdown("""
     [data-testid="stSidebar"] h3,
     [data-testid="stSidebar"] p {
         color: #e5e7eb !important;
+        
     }
     
     /* Sidebar markdown content */
@@ -279,12 +297,42 @@ st.markdown("""
     [data-testid="stMetricValue"] {
         color: #6366f1;
     }
+    
+    /* Auth Form Styling */
+    [data-testid="stForm"] {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 24px;
+        padding: 3rem;
+        max-width: 450px;
+        margin: auto;
+    }
 </style>
 """, unsafe_allow_html=True)
 
 def main():
-    # Auth handled by Nginx - no check needed
-    
+    authenticator = load_auth()
+    try:
+        authenticator.login()
+    except Exception as e:
+        st.error(f'Auth Error: {e}')
+        return
+
+    if st.session_state["authentication_status"]:
+        # === LOGGED IN ===
+        with st.sidebar:
+            st.write(f'Welcome *{st.session_state["name"]}*')
+            authenticator.logout('Logout', 'sidebar')
+        
+        # Proceed with Main Application
+        run_app()
+        
+    elif st.session_state["authentication_status"] is False:
+        st.error('Username/password is incorrect')
+    elif st.session_state["authentication_status"] is None:
+        st.warning('Please enter your username and password')
+
+def run_app():
     # Initialize DB
     init_db()
 
