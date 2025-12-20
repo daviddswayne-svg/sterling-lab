@@ -1,32 +1,56 @@
 import streamlit as st
+# pysqlite3 fix for Docker deployment
 __import__('pysqlite3')
 import sys
 sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 import sqlite3
 import time
 import requests
+import json
 from langchain_chroma import Chroma
 from langchain_ollama import OllamaEmbeddings, ChatOllama
+from langchain_core.caches import BaseCache
+from langchain_core.callbacks import BaseCallbackHandler, Callbacks
+try:
+    ChatOllama.model_rebuild()
+except Exception as e:
+    pass
 from langchain.chains import ConversationalRetrievalChain
 from langchain.memory import ConversationBufferMemory
-from langchain_core.callbacks import BaseCallbackHandler
 from ollama import Client  # New import for Worker
+import base64
+from io import BytesIO
+from PIL import Image
 
 # Configuration
 import os
 
-# Configuration
+# Configuration - Production Ready
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-CHROMA_PATH = os.path.join(SCRIPT_DIR, "chroma_db")
+CHROMA_PATH = os.path.join(SCRIPT_DIR, "chroma_db_synthetic")
 EMBEDDING_MODEL = "nomic-embed-text"
 DEFAULT_LLM = "qwen2.5-coder:32b"
-DB_PATH = "chat_history.db"
+DB_PATH = os.path.join(SCRIPT_DIR, "chat_history_frontier.db")
 
-# Remote Worker Config
+# Remote Worker Config (Mac Studio M3 via SSH Tunnel)
 OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://host.docker.internal:11434")
-WORKER_IP = "127.0.0.1" # Still used for fallback logic if needed, but primary is OLLAMA_HOST
-WORKER_PORT = "11434"
 WORKER_MODEL = "llama3.3"
+
+# M1 Muscle Config (Direct SSH Tunnel for Oracle)
+# Uses separate tunnel on port 12434 for deep reasoning
+M1_OLLAMA = os.getenv("M1_OLLAMA", "http://host.docker.internal:12434")
+FRONTIER_MODEL = "deepseek-r1:70b"
+VISION_MODEL = "llama3.2-vision:latest"
+AUTO_INGEST_DIR = os.getenv("AUTO_INGEST_DIR", os.path.join(SCRIPT_DIR, "auto_ingest"))
+
+# --- Helper: Lab Stability ---
+def get_lab_status():
+    """Check connectivity to the M1 Muscle over Thunderbolt."""
+    try:
+        response = requests.get(f"{M1_OLLAMA}/api/tags", timeout=1)
+        return response.status_code == 200
+    except:
+        return False
 
 # --- Helper: Get Models ---
 def get_ollama_models():
@@ -141,6 +165,45 @@ def get_messages():
     conn.close()
     return [{"role": row[0], "content": row[1]} for row in data]
 
+def is_greeting(text):
+    greetings = ["hello", "hi", "hey", "howdy", "morning", "afternoon", "evening", "how are you", "what's up", "yo"]
+    clean_text = text.lower().strip().strip('?!.')
+    return clean_text in greetings or len(clean_text) < 4
+
+# --- Ingestion Helpers ---
+def ingest_text_to_frontier(text, source_name="vision_upload.txt"):
+    """Manually add a piece of text to the synthetic knowledge store."""
+    try:
+        from synthetic_ingest_2026 import generate_synthetic_qa
+        from langchain_core.documents import Document
+        
+        st.info(f"🧬 Distilling 2026 insights for: {source_name}...")
+        qa = generate_synthetic_qa(text)
+        
+        if not qa:
+            st.error("❌ Failed to generate synthetic Q&A for this document.")
+            return False
+            
+        synth_doc = Document(
+            page_content=f"Question: {qa['question']}\nAnswer: {qa['answer']}",
+            metadata={
+                "source": source_name,
+                "original_context": text,
+                "is_synthetic": True,
+                "auto_ingested": True
+            }
+        )
+        
+        embeddings = OllamaEmbeddings(model=EMBEDDING_MODEL, base_url=OLLAMA_HOST)
+        db = Chroma(persist_directory=CHROMA_PATH, embedding_function=embeddings)
+        db.add_documents([synth_doc])
+        
+        st.success(f"✅ Ingested into 2026 Reasoning Grid.")
+        return True
+    except Exception as e:
+        st.error(f"Ingestion Error: {e}")
+        return False
+
 # --- RAG Pipeline ---
 @st.cache_resource
 def get_chain(model_name):
@@ -211,8 +274,8 @@ def load_auth():
 
 # --- Streamlit Page Config ---
 st.set_page_config(
-    page_title="Sterling Lab - AI Chat",
-    page_icon="🧪",
+    page_title="2026 Frontier Lab - Sterling Estate",
+    page_icon="🧬",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -222,90 +285,307 @@ st.markdown("""
 <style>
     /* Match dashboard styling */
     .stApp {
-        background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 100%);
+        background: radial-gradient(circle at top right, #111827, #030712);
+        color: #f1f5f9 !important;
     }
     
-    /* Gradient headers */
+    /* Global Text Brightness (EXCLUDING Selectboxes, Inputs, and ICONS) */
+    p:not([data-baseweb] *):not(.st-emotion-cache-* svg *), 
+    span:not([data-baseweb] *):not(.st-emotion-cache-* svg *), 
+    li, h1, h2, h3 {
+        color: #f1f5f9 !important;
+    }
+    
+    /* SURGICAL Selectbox Fix: Dark Text for Readability */
+    div[data-baseweb="select"] div[role="button"],
+    div[data-baseweb="select"] div[role="button"] > div,
+    div[data-baseweb="select"] div[role="button"] span,
+    div[data-baseweb="popover"] div[data-baseweb="menu"] div,
+    div[role="listbox"] div,
+    div[role="listbox"] span,
+    div[role="option"] span,
+    .stSelectbox div[data-baseweb="select"] * {
+        color: #0f172a !important;
+    }
+    
+    /* Let icons use their default colors */
+    
+    /* Glassmorphism Sidebar */
+    [data-testid="stSidebar"] {
+        background: rgba(15, 20, 25, 0.7) !important;
+        backdrop-filter: blur(12px);
+        border-right: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    /* Simplified Headers - NO overflow/cutoff */
     h1, h2, h3 {
-        background: linear-gradient(135deg, #6366f1, #8b5cf6);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+        font-family: 'Inter', sans-serif;
+        font-weight: 700;
+        color: #818cf8 !important;
+        max-width: 100% !important;
+        overflow: visible !important;
+        white-space: normal !important;
+        padding-top: 1rem !important;
+        margin-top: 1rem !important;
     }
     
-    /* Preserve emoji/icon colors */
-    .stApp svg,
-    .stApp [data-testid*="icon"],
-    span[data-testid="stMarkdownContainer"] > p > span {
-        color: inherit !important;
-        fill: currentColor !important;
+    /* Main title specifically - extra padding */
+    .block-container h1:first-of-type {
+        padding-top: 2rem !important;
+        margin-top: 0 !important;
     }
     
-    /* Fix for emoji in sidebar and metrics - force bright colors */
-    [data-testid="stSidebar"] svg,
-    [data-testid="stMetric"] svg,
-    .element-container svg {
-        filter: none !important;
-        opacity: 1 !important;
+    /* FORCE checkbox and toggle labels WHITE */
+    .stCheckbox label,
+    .stCheckbox label span,
+    .stCheckbox label div,
+    .stCheckbox label p,
+    [data-testid="stCheckbox"] label,
+    [data-testid="stCheckbox"] label *,
+    /* Toggle labels */
+    label[data-baseweb="checkbox"],
+    label[data-baseweb="checkbox"] *,
+    /* All label elements in sidebar */
+    [data-testid="stSidebar"] label span,
+    [data-testid="stSidebar"] label div,
+    [data-testid="stSidebar"] label p {
+        color: #ffffff !important;
     }
     
-    /* Sidebar section headers with icons - force bright text */
-    [data-testid="stSidebar"] h1,
-    [data-testid="stSidebar"] h2, 
-    [data-testid="stSidebar"] h3,
-    [data-testid="stSidebar"] p {
-        color: #e5e7eb !important;
-        
+    /* Make "Active Model" label WHITE */
+    .stSelectbox label,
+    .stSelectbox label span,
+    [data-testid="stSelectbox"] label,
+    [data-testid="stSelectbox"] > label {
+        color: #f1f5f9 !important;
     }
     
-    /* Sidebar markdown content */
-    [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] {
-        color: #e5e7eb !important;
+    /* Make ALL sidebar labels/widget text WHITE */
+    [data-testid="stSidebar"] [data-testid="stWidgetLabel"] p,
+    [data-testid="stSidebar"] [data-testid="stWidgetLabel"],
+    [data-testid="stSidebar"] label,
+    [data-testid="stSidebar"] h2,
+    [data-testid="stSidebar"] h3 {
+        color: #ffffff !important;
     }
     
-    /* Buttons */
+    /* SPECIFIC FIX: File uploader label */
+    [data-testid="stFileUploader"] label p,
+    [data-testid="stFileUploader"] [data-testid="stMarkdownContainer"] p {
+        color: #ffffff !important;
+    }
+    
+    /* Custom Chat Container */
+    .stChatMessage {
+        background: rgba(255, 255, 255, 0.02) !important;
+        border: 1px solid rgba(255, 255, 255, 0.05) !important;
+        border-radius: 16px !important;
+        padding: 1.5rem !important;
+        margin-bottom: 1rem !important;
+        box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.2);
+    }
+    
+    /* FORCE all chat message text to WHITE */
+    .stChatMessage,
+    .stChatMessage div,
+    .stChatMessage p,
+    .stChatMessage span,
+    .stChatMessage li,
+    .stChatMessage strong,
+    .stChatMessage em {
+        color: #ffffff !important;
+    }
+    
+    /* Thinking Trace Glow */
+    .stExpander {
+        background: rgba(99, 102, 241, 0.05) !important;
+        border: 1px solid rgba(99, 102, 241, 0.2) !important;
+        border-radius: 12px !important;
+    }
+    
+    /* FORCE all expander content to WHITE */
+    .stExpander div,
+    .stExpander p,
+    .stExpander span,
+    .stExpander pre,
+    .stExpander code {
+        color: #ffffff !important;
+    }
+    
+    /* Pulse Animation for Generating */
+    @keyframes pulse {
+        0% { opacity: 0.6; }
+        50% { opacity: 1; }
+        100% { opacity: 0.6; }
+    }
+    .generating-text {
+        animation: pulse 1.5s infinite;
+        color: #818cf8;
+        font-weight: 500;
+    }
+    
+    /* Buttons (Enforced) */
+    /* Dashboard Button Styles */
+    .dash-link-button {
+        display: block !important;
+        width: 100% !important;
+        text-align: center !important;
+        background: rgba(129, 138, 248, 0.1) !important;
+        border: 1px solid rgba(129, 138, 248, 0.4) !important;
+        border-radius: 12px !important;
+        padding: 12px !important;
+        color: #f1f5f9 !important;
+        text-decoration: none !important;
+        font-weight: 600 !important;
+        margin-top: 2rem !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    .dash-link-button:hover {
+        background: rgba(129, 138, 248, 0.2) !important;
+        border-color: #818cf8 !important;
+        transform: translateY(-1px) !important;
+    }
+
     .stButton > button {
-        background: linear-gradient(135deg, #6366f1, #8b5cf6);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        padding: 0.75rem 1.5rem;
-        font-weight: 600;
-        transition: all 0.3s ease;
+        width: 100% !important;
+        background: linear-gradient(135deg, #4f46e5, #7c3aed) !important;
+        color: #ffffff !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 12px !important;
+        padding: 0.6rem 1rem !important;
+        font-weight: 600 !important;
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3) !important;
+        transition: all 0.3s ease !important;
     }
     
     .stButton > button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5) !important;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
     }
     
-    /* Sidebar */
-    [data-testid="stSidebar"] {
-        background: #1a1f2e;
-        border-right: 1px solid rgba(255, 255, 255, 0.1);
+    /* Premium Image Upload UI Refinement */
+    [data-testid="stFileUploader"] {
+        background: rgba(255, 255, 255, 0.03) !important;
+        border: 2px dashed rgba(129, 138, 248, 0.3) !important;
+        border-radius: 16px !important;
+        padding: 1rem !important;
+        transition: all 0.3s ease !important;
     }
     
-    /* Chat messages */
-    .stChatMessage {
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 12px;
+    [data-testid="stFileUploader"]:hover {
+        border-color: rgba(129, 138, 248, 0.6) !important;
+        background: rgba(255, 255, 255, 0.05) !important;
+    }
+
+    [data-testid="stFileUploaderDropzone"] {
+        color: #f1f5f9 !important;
     }
     
-    /* Metrics */
-    [data-testid="stMetricValue"] {
-        color: #6366f1;
+    [data-testid="stFileUploaderDropzone"] p {
+        color: #f1f5f9 !important;
     }
     
-    /* Auth Form Styling */
-    [data-testid="stForm"] {
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 24px;
-        padding: 3rem;
-        max-width: 450px;
-        margin: auto;
+    [data-testid="stFileUploader"] label p {
+        color: #f1f5f9 !important;
+        font-weight: 600 !important;
     }
+    
+    [data-testid="stFileUploader"] div[data-testid="stMarkdownContainer"] p {
+        color: #1e293b !important; /* DARK TEXT on the light dropzone */
+        font-weight: 500 !important;
+    }
+
+    [data-testid="stFileUploaderDropzone"] span {
+        color: #1e293b !important; /* DARK TEXT on the light dropzone */
+    }
+    
+    [data-testid="stFileUploader"] small {
+        color: #475569 !important;
+    }
+    
+    /* Force inner dropzone text to DARK for readability */
+    [data-testid="stFileUploaderDropzone"] div[data-testid="stMarkdownContainer"] p,
+    [data-testid="stFileUploaderDropzone"] span,
+    [data-testid="stFileUploaderDropzone"] small {
+        color: #0f172a !important;
+    }
+    
+    /* High-Contrast Uploader Overhaul */
+    [data-testid="stFileUploader"] {
+        background: rgba(15, 23, 42, 0.4) !important;
+        border: 2px dashed rgba(129, 138, 248, 0.5) !important;
+        border-radius: 12px !important;
+        padding: 0.5rem !important;
+    }
+    
+    [data-testid="stFileUploaderDropzone"] {
+        background: transparent !important;
+        color: #f1f5f9 !important;
+    }
+
+    [data-testid="stFileUploaderDropzone"] div[data-testid="stMarkdownContainer"] p {
+        color: #f1f5f9 !important;
+        font-weight: 500 !important;
+    }
+
+    [data-testid="stFileUploaderDropzone"] span {
+        color: #f1f5f9 !important;
+    }
+    
+    [data-testid="stFileUploader"] small {
+        color: rgba(241, 245, 249, 0.7) !important;
+    }
+    
+    /* Fix Upload Button Text */
+    [data-testid="stFileUploader"] button {
+        background: rgba(129, 138, 248, 0.2) !important;
+        border: 1px solid rgba(129, 138, 248, 0.5) !important;
+        color: #f1f5f9 !important;
+    }
+    
+    /* Dashboard Button Styles (Unified) */
+    .dash-link-button {
+        display: block !important;
+        width: 100% !important;
+        text-align: center !important;
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.15)) !important;
+        border: 1px solid rgba(129, 138, 248, 0.4) !important;
+        border-radius: 10px !important;
+        padding: 10px !important;
+        color: #f1f5f9 !important;
+        text-decoration: none !important;
+        font-weight: 600 !important;
+        margin-top: 1rem !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    .dash-link-button:hover {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.25), rgba(139, 92, 246, 0.25)) !important;
+        border-color: #818cf8 !important;
+    }
+
+    /* Remove Streamlit Header & Spacing */
+    header {visibility: hidden;}
+    .stAppHeader {display: none;}
+    .block-container {
+        padding-top: 0rem !important;
+        padding-bottom: 2rem !important;
+        margin-top: -20px !important;
+    }
+    
+    /* Remove redundant spacing in sidebar */
+    [data-testid="stSidebarNav"] {display: none;}
+    [data-testid="stSidebarUserContent"] {padding-top: 1rem;}
+    
+    /* Ensure markdown text in messages is bright */
+    .stChatMessage div[data-testid="stMarkdownContainer"] p {
+        color: #f1f5f9 !important;
+        font-size: 1.05rem !important;
+        line-height: 1.6 !important;
+    }
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -320,81 +600,57 @@ def run_app():
     # Load Full History from DB
     if "db_history" not in st.session_state:
         st.session_state.db_history = get_messages()
+        
+    if "uploader_key" not in st.session_state:
+        st.session_state.uploader_key = 0
+    if "trigger_ingest" not in st.session_state:
+        st.session_state.trigger_ingest = False
 
     # --- Sidebar ---
     logo_path = os.path.join(SCRIPT_DIR, "assets", "swaynesystems_logo.png")
     if os.path.exists(logo_path):
         st.sidebar.image(logo_path, use_container_width=True)
     
-    st.sidebar.markdown("[← Swayne Systems Dashboard](/)")
-
-    st.sidebar.title("Swayne Intelligence")
-    st.sidebar.caption("Central Command Node")
+    st.sidebar.title("⚜️ Sterling Estate Office")
+    st.sidebar.caption("Multi-Family Intelligence & Advisory")
     
-    # Model Selector
+    # Selection Console
     available_models = get_ollama_models()
-    
-    # Ensure default is valid
     if DEFAULT_LLM not in available_models:
-        if available_models:
-            default_index = 0
-        else:
-            default_index = 0
-            available_models = [DEFAULT_LLM] # Fallback
+        default_index = 0 if available_models else 0
+        if not available_models: available_models = [DEFAULT_LLM]
     else:
         default_index = available_models.index(DEFAULT_LLM)
 
-    # Use session state to persist selection
     if "selected_model_name" not in st.session_state:
         st.session_state["selected_model_name"] = available_models[default_index]
-
-    def update_model():
-        st.session_state["selected_model_name"] = st.session_state.temp_model_selector
 
     selected_model = st.sidebar.selectbox(
         "Active Model", 
         available_models, 
         index=default_index,
         key="temp_model_selector",
-        on_change=update_model
+        on_change=lambda: st.session_state.update({"selected_model_name": st.session_state.temp_model_selector})
     )
-    # Sync if needed (though on_change handles it)
     selected_model = st.session_state.get("selected_model_name", selected_model)
-
-    st.sidebar.caption(f"Status: Online ({selected_model})")
+    st.sidebar.caption(f"⚡ {selected_model} Engine Online")
     
-    # --- DEBUG REMOVED ---
+    # Intelligence Options
+    col_a, col_b = st.sidebar.columns(2)
+    with col_a:
+        use_oracle = st.toggle("Oracle", value=False)
+    with col_b:
+        use_distributed = st.checkbox("Council", value=False)
     
-    # History Toggle
-    st.sidebar.markdown("---")
-    show_history = st.sidebar.checkbox("Show Operation Logs", value=False)
-    
-    # --- KNOWLEDGE SOURCE TOGGLE ---
-    st.sidebar.markdown("---")
-    st.sidebar.subheader("🧠 Intelligence Source")
-    knowledge_source = st.sidebar.radio(
-        "Select Dataset:",
-        ["Internal Database (Sterling)", "PrivateGPT Server"],
-        captions=["ChromaDB + Ollama", "Mistral/Llama @ Port 8001"]
-    )
-
-    
-    # --- DISTRIBUTED MODE TOGGLE ---
-    st.sidebar.markdown("---")
-    st.sidebar.subheader("⚡️ Compute Cluster")
-    use_distributed = st.sidebar.checkbox("Enable Council Mode", value=False)
-    if use_distributed:
-        st.sidebar.success(f"Connected: {WORKER_MODEL} via Mac Studio")
-    
-    if show_history:
-        st.sidebar.markdown("---")
-        st.sidebar.subheader("Archived Logs")
-        for msg in st.session_state.db_history:
-             st.sidebar.text(f"{msg['role'].upper()}: {msg['content']}")
-        st.sidebar.markdown("---")
+    if st.sidebar.button("System Health Check", use_container_width=True):
+        try:
+            r1_status = requests.get(f"{M1_OLLAMA}/api/ps").json()
+            st.sidebar.success("✅ M1 Weights Ready")
+        except:
+            st.sidebar.warning("M1 Hub Offline")
 
     # Main Chat Interface
-    st.title("📡 Swayne Intelligence")
+    st.title("🧬 2026 Frontier Lab")
     sub_title = "Proprietary RAG Interface"
     if use_distributed:
         sub_title = f"Distributed Grid Active (Manager: {selected_model} + Worker: {WORKER_MODEL})"
@@ -410,19 +666,91 @@ def run_app():
             if "tokens" in message:
                 st.caption(f"🪙 {message['tokens']}")
 
+    # --- Side Bar Features ---
+    # Moved up to ensure visibility
+    
     # Initialize Chain (Reloads if model changes)
-    qa_chain = get_chain(selected_model)
+    # We do this inside a try-block to prevent the whole UI from dying on startup
+    qa_chain = None
+    try:
+        qa_chain = get_chain(selected_model)
+    except Exception as e:
+        st.sidebar.error(f"RAG Engine Status: Error ({e})")
+        
     if not qa_chain:
-        st.stop()
+        st.sidebar.warning("⚠️ RAG Engine offline. Check Local Ollama.")
         
     # Pre-populate memory from DB if fresh session
-    if len(qa_chain.memory.chat_memory.messages) == 0 and len(st.session_state.db_history) > 0:
+    if qa_chain and len(qa_chain.memory.chat_memory.messages) == 0 and len(st.session_state.db_history) > 0:
         recent = st.session_state.db_history[-10:]
         for msg in recent:
             if msg['role'] == 'user':
                 qa_chain.memory.chat_memory.add_user_message(msg['content'])
             else:
                 qa_chain.memory.chat_memory.add_ai_message(msg['content'])
+
+    # --- VISION AGENT ---
+    st.sidebar.markdown("---")
+    st.sidebar.subheader("👁️ Vision Agent")
+    st.sidebar.markdown('<p style="color: white; margin: 0; padding: 0.5rem 0;">Upload Image to Lab</p>', unsafe_allow_html=True)
+    uploaded_image = st.sidebar.file_uploader(
+        "",  # Empty label since we're using markdown above
+        type=["png", "jpg", "jpeg"],
+        key=f"uploader_{st.session_state.uploader_key}",
+        label_visibility="collapsed"
+    )
+    if uploaded_image:
+        st.sidebar.image(uploaded_image, caption="Cache Active", use_container_width=True)
+        
+        col1, col2 = st.sidebar.columns(2)
+        with col1:
+            if st.button("🗑️ Discard", use_container_width=True):
+                st.session_state.vision_analysis = None
+                st.session_state.uploader_key += 1
+                st.rerun()
+        with col2:
+            if st.session_state.get("vision_analysis"):
+                if st.button("💾 Archive", use_container_width=True):
+                    st.session_state.trigger_ingest = True
+                    st.rerun()
+            else:
+                st.button("💾 Archive", use_container_width=True, disabled=True)
+        
+        # Store analysis in session state to allow ingestion after viewing
+        if "vision_analysis" not in st.session_state:
+            st.session_state.vision_analysis = None
+    
+    # Check for triggered ingestion from sidebar
+    if st.session_state.get("trigger_ingest"):
+        with st.sidebar.status("Processing Ingestion..."):
+            # Step A: Draft a formal text document
+            drafter_client = Client(host=OLLAMA_HOST)
+            draft_prompt = f"Convert this vision analysis into a formal Sterling Estate archival document. Maintain all IDs, dates, and forensic details.\n\nANALYSIS:\n{st.session_state.vision_analysis}"
+            draft_resp = drafter_client.chat(model="dolphin-llama3", messages=[{'role': 'user', 'content': draft_prompt}])
+            formal_draft = draft_resp['message']['content']
+            
+            # Step B: Save to auto_ingest
+            timestamp = int(time.time())
+            filename = f"auto_vision_{timestamp}.txt"
+            file_path = os.path.join(AUTO_INGEST_DIR, filename)
+            with open(file_path, "w") as f:
+                f.write(formal_draft)
+            
+            # Step C: Ingest to Synthetic Store
+            success = ingest_text_to_frontier(formal_draft, source_name=filename)
+            if success:
+                st.sidebar.success(f"Archived: {filename}")
+                st.session_state.vision_analysis = None
+                st.session_state.uploader_key += 1
+                st.session_state.trigger_ingest = False
+                time.sleep(1)
+                st.rerun()
+            else:
+                st.sidebar.error("Ingestion failed.")
+                st.session_state.trigger_ingest = False
+
+    # --- Dashboard Navigation (Bottom) ---
+    st.sidebar.markdown('<a href="/" target="_self" class="dash-link-button">← Dashboard</a>', unsafe_allow_html=True)
 
     # User Input
     if prompt := st.chat_input("Ask a question..."):
@@ -434,13 +762,14 @@ def run_app():
         with st.chat_message("user"):
             st.markdown(prompt)
 
-        # Generate RESPONSE
+            # Generate RESPONSE
         with st.chat_message("assistant"):
             message_placeholder = st.empty()
             token_placeholder = st.empty()
             
             # --- DISTRIBUTED LOGIC ---
-            if knowledge_source == "PrivateGPT Server":
+            if False: # PrivateGPT Mode Disabled
+                pass
                 # === PrivateGPT Mode ===
                 with st.spinner("🤖 asking PrivateGPT..."):
                     resp = query_private_gpt(prompt)
@@ -479,7 +808,212 @@ def run_app():
                         except Exception as e:
                              st.error(f"Failed to parse response: {e}. Raw: {resp}")
 
+            elif uploaded_image:
+                # --- VISION AGENT MODE (Priority if image is present) ---
+                if not get_lab_status():
+                    st.error("❌ M1 Muscle is Offline. Vision requires the Thunderbolt bridge.")
+                    st.stop()
+                
+                with st.spinner("👁️ Frontier Vision Agent is analyzing..."):
+                    try:
+                        # Convert image to base64
+                        img = Image.open(uploaded_image)
+                        buffered = BytesIO()
+                        img.save(buffered, format="JPEG")
+                        img_str = base64.b64encode(buffered.getvalue()).decode()
+                        
+                        client = Client(host=M1_OLLAMA)
+                        response = client.generate(
+                            model="llama3.2-vision", 
+                            prompt=prompt if prompt else "Analyze this image in the context of the Sterling Estate.",
+                            images=[img_str],
+                            stream=True
+                        )
+                        
+                        final_answer = ""
+                        answer_placeholder = st.empty()
+                        
+                        for chunk in response:
+                            if 'response' in chunk:
+                                final_answer += chunk['response']
+                                answer_placeholder.markdown(final_answer + "▌")
+                        
+                        answer_placeholder.markdown(final_answer)
+                        st.session_state.vision_analysis = final_answer
+                        
+                        # Save
+                        st.session_state.current_session_messages.append({"role": "assistant", "content": final_answer})
+                        st.session_state.db_history.append({"role": "assistant", "content": final_answer})
+                        save_message("assistant", final_answer)
+
+                    except Exception as e:
+                        st.error(f"Vision Connection Error: {e}")
+
+                # --- New Ingestion Button in Sidebar for Vision Analysis ---
+                if st.session_state.get("vision_analysis"):
+                    st.sidebar.markdown("---")
+                    st.sidebar.subheader("💾 Ingestion Factory")
+                    if st.sidebar.button("Archive to 2026 Archive & Dismiss"):
+                        st.session_state.trigger_ingest = True
+                        st.rerun()
+
+            elif use_oracle:
+                # --- ORACLE REASONING MODE (M1) with RECEPTIONIST ---
+                if not get_lab_status():
+                    st.error("❌ M1 Muscle is Offline. Oracle Mode requires the Thunderbolt bridge.")
+                    st.stop()
+                
+                # Step 1: RECEPTIONIST provides immediate feedback
+                receptionist_placeholder = st.empty()
+                with receptionist_placeholder.container():
+                    st.markdown("### 💁 Sterling Estate Receptionist")
+                    receptionist_msg = st.empty()
+                    
+                    # Generate warm receptionist message
+                    receptionist_prompt = f'''You are Vivienne, the warm and professional receptionist at the Sterling Estate's Frontier Oracle service. 
+                    
+A client just asked: "{prompt}"
+
+Your task:
+1. Acknowledge their question with warmth and professionalism
+2. Tell them you're connecting them to the Oracle for deep analysis
+3. Provide 2-3 sentences of general context or advice related to their question to give them something interesting to read while they wait
+4. Keep it witty, sophisticated, and concise (3-4 sentences total)
+5. End by saying the Oracle is now reviewing their case
+
+Be friendly but professional - like a high-end concierge service.'''
+                    
+                    try:
+                        # Use fast local model for receptionist
+                        recept_client = Client(host=OLLAMA_HOST)
+                        recept_response = recept_client.chat(
+                            model=selected_model,  # Use the currently selected fast model
+                            messages=[{'role': 'user', 'content': receptionist_prompt}]
+                        )
+                        receptionist_text = recept_response['message']['content']
+                        receptionist_msg.markdown(receptionist_text)
+                    except:
+                        receptionist_msg.markdown("☎️ **Connecting you to the Oracle for deep analysis...**")
+                
+                # Step 2: Oracle Processing
+                with st.spinner("🔮 Oracle is analyzing..."):
+                    try:
+                        # Context Retrieval
+                        if is_greeting(prompt):
+                            context_text = "The user is greeting you. Respond with a welcoming, forensic Frontier Oracle persona."
+                            relevant_docs = []
+                        else:
+                            retriever = qa_chain.retriever
+                            relevant_docs = retriever.invoke(prompt)
+                            context_text = "\n\n".join([f"Source: {doc.metadata.get('source', 'Unknown')}\nContent: {doc.page_content}" for doc in relevant_docs])
+                        
+                        # Build Oracle Prompt
+                        oracle_prompt = f"""You are the 2026 Frontier Oracle. 
+Use the following context from the Sterling Family Office archive to provide a DEEP DEDUCTIVE ANALYSIS.
+You must find the hidden patterns, contradictions, and clues.
+
+CONTEXT:
+---
+{context_text}
+---
+
+QUESTION:
+{prompt}
+
+Analysis Instructions:
+1. Identify specific transactions or forensic details in the context.
+2. Examine the medical, financial, and legal overlaps.
+3. Locate active statuses of family members or aliases.
+4. Conclude with deductive reasoning on the user's specific query.
+"""
+
+                        # Call M1 Oracle
+                        payload = {
+                            "model": FRONTIER_MODEL,
+                            "prompt": oracle_prompt,
+                            "stream": True
+                        }
+                        
+                        response = requests.post(f"{M1_OLLAMA}/api/generate", json=payload, stream=True)
+                        
+                        # Clear receptionist and show Oracle response
+                        receptionist_placeholder.empty()
+                        
+                        # Clear receptionist now that Oracle response is ready
+                        receptionist_placeholder.empty()
+                        
+                        st.markdown("### 🔮 Oracle Analysis")
+                        final_answer = ""
+                        answer_placeholder = st.empty()
+                        
+                        for line in response.iter_lines():
+                            if line:
+                                chunk = json.loads(line)
+                                if 'response' in chunk:
+                                    content = chunk['response']
+                                    # Skip thinking tags if present
+                                    if "<think>" not in content and "</think>" not in content:
+                                        final_answer += content
+                                        answer_placeholder.markdown(final_answer + "▌")
+                        
+                        # Final Polish
+                        answer_placeholder.markdown(final_answer)
+                        
+                        # Save to history
+                        st.session_state.current_session_messages.append({"role": "assistant", "content": final_answer})
+                        st.session_state.db_history.append({"role": "assistant", "content": final_answer})
+                        save_message("assistant", final_answer)
+                        
+                        # Sources
+                        if relevant_docs:
+                            with st.expander("View Forensic Sources (Retrieved for Oracle)"):
+                                for i, doc in enumerate(relevant_docs):
+                                    st.markdown(f"**Source {i+1}:** {doc.metadata.get('source', 'Unknown')}")
+                                    st.text(doc.page_content[:500] + "...")
+
+                    except Exception as e:
+                        st.error(f"Oracle Connection Error: {e}")
+
             elif use_distributed:
+                # --- COUNCIL MODE with RECEPTIONIST ---
+                
+                # Step 1: RECEPTIONIST provides immediate feedback
+                receptionist_placeholder = st.empty()
+                with receptionist_placeholder.container():
+                    st.markdown("### 💁 Sterling Estate Receptionist")
+                    receptionist_msg = st.empty()
+                    
+                    # Adapt receptionist message for Council mode
+                    if use_oracle:
+                        service_desc = "our Frontier Council with Oracle oversight"
+                    else:
+                        service_desc = "our Frontier Council"
+                    
+                    receptionist_prompt = f'''You are Vivienne, the warm and professional receptionist at the Sterling Estate's Frontier service.
+                    
+A client just asked: "{prompt}"
+
+Your task:
+1. Acknowledge their question with warmth and professionalism
+2. Tell them you're connecting them to {service_desc} for collaborative analysis
+3. Provide 2-3 sentences of general context about how the Council works together to give them something to read while they wait
+4. Keep it witty, sophisticated, and concise (3-4 sentences total)
+5. End by saying the Council is now convening
+
+Be friendly but professional - like a high-end concierge service.'''
+                    
+                    try:
+                        recept_client = Client(host=OLLAMA_HOST)
+                        recept_response = recept_client.chat(
+                            model=selected_model,
+                            messages=[{'role': 'user', 'content': receptionist_prompt}]
+                        )
+                        receptionist_text = recept_response['message']['content']
+                        receptionist_msg.markdown(receptionist_text)
+                    except:
+                        receptionist_msg.markdown("☎️ **Connecting you to the Council for collaborative analysis...**")
+                
+                # Step 2: Council Processing
                 worker_output_container = st.empty()
                 with worker_output_container.status("⚡️ Orchestrating Distributed Task...", expanded=True) as status:
                     final_answer = ""
@@ -491,16 +1025,45 @@ def run_app():
                         status.write(f"🧠 Manager ({selected_model}) is convening the Council...")
                         manager_client = Client(host=OLLAMA_HOST)
                         
-                        council_prompt = """You are the Council Chairman. Select the best team of 1-3 Personas to answer the user:
-1. "Consultant" (Balanced): Best for advice, explanations, and nuance.
-2. "Analyst" (Strict): Best for data, lists, math, and JSON/CSV.
-3. "Maverick" (Cynic): Best for bold opinions, critiques, or "cut to the chase" answers.
+                        # Modify Council prompt to include Oracle when both modes are on
+                        if use_oracle:
+                            council_prompt = """You are the Council Chairman selecting team members based on the question type.
+
+Available Personas:
+1. **Analyst** - Technical expert. SELECT for: data analysis, calculations, code, structured outputs (JSON/CSV/lists), technical troubleshooting, metrics
+2. **Consultant** - Professional advisor. SELECT for: strategic advice, explanations, balanced perspectives, general guidance
+3. **Maverick** - Contrarian thinker. SELECT for: debates, critiques, alternative viewpoints, devil's advocate, provocative insights
+4. **Oracle** - Deep reasoner (M1). SELECT for: complex mysteries, forensic analysis, connecting hidden patterns, deductive reasoning
+
+RULES:
+- Match personas to question type (technical = Analyst, strategic = Consultant, critical = Maverick, forensic = Oracle)
+- Use 2-4 personas. Mix different viewpoints for complex questions
+- Don't always pick the same team. Vary based on the question's nature
 
 Return JSON ONLY:
 {
-  "reasoning": "Why this team?",
-  "team": ["Consultant", "Maverick"], 
-  "instruction": "Clear instruction for the council"
+  "reasoning": "Why this specific team for THIS question?",
+  "team": ["persona1", "persona2"],
+  "instruction": "What the team should focus on"
+}"""
+                        else:
+                            council_prompt = """You are the Council Chairman selecting team members based on the question type.
+
+Available Personas:
+1. **Analyst** - Technical expert. SELECT for: data analysis, calculations, code, structured outputs (JSON/CSV/lists), technical troubleshooting, metrics
+2. **Consultant** - Professional advisor. SELECT for: strategic advice, explanations, balanced perspectives, general guidance
+3. **Maverick** - Contrarian thinker. SELECT for: debates, critiques, alternative viewpoints, devil's advocate, provocative insights
+
+RULES:
+- Match personas to question type (technical = Analyst, strategic = Consultant, critical = Maverick)
+- Use 1-3 personas. Mix different viewpoints for complex questions
+- Don't always pick the same team. Vary based on the question's nature
+
+Return JSON ONLY:
+{
+  "reasoning": "Why this specific team for THIS question?",
+  "team": ["persona1", "persona2"],
+  "instruction": "What the team should focus on"
 }"""
 
                         manager_response = manager_client.chat(model=selected_model, format='json', messages=[
@@ -508,7 +1071,6 @@ Return JSON ONLY:
                             {'role': 'user', 'content': f"User Question: {prompt}"}
                         ])
                         
-                        import json
                         try:
                             decision = json.loads(manager_response['message']['content'])
                             team = decision.get("team", ["Consultant"])
@@ -526,10 +1088,16 @@ Return JSON ONLY:
                         status.markdown(f"> **Council Team:** {', '.join(team)}\n> **Goal:** {reason}")
 
                         # Step 2: RAG Retrieval
-                        status.write("📚 Manager is retrieving documents...")
-                        retriever = qa_chain.retriever
-                        relevant_docs = retriever.invoke(prompt)
-                        context_text = "\n\n".join([f"Source: {doc.metadata.get('source', 'Unknown')}\nContent: {doc.page_content}" for doc in relevant_docs])
+                        if is_greeting(prompt):
+                            status.write("👋 Detected greeting. Skipping context retrieval.")
+                            context_text = "No additional context required for this greeting."
+                            relevant_docs = []
+                        else:
+                            status.write("📚 Manager is retrieving documents...")
+                            retriever = qa_chain.retriever
+                            relevant_docs = retriever.invoke(prompt)
+                            context_text = "\n\n".join([f"Source: {doc.metadata.get('source', 'Unknown')}\nContent: {doc.page_content}" for doc in relevant_docs])
+                        
                         source_docs = relevant_docs # Assign relevant_docs to source_docs for later display
                         
                         # Step 3: Council Execution (Sequential)
@@ -538,22 +1106,53 @@ Return JSON ONLY:
                         
                         for persona in team:
                             # Map Persona to Real Model & Prompt
-                            if "Analyst" in persona:
+                            if "Oracle" in persona:
+                                # Special handling for Oracle on M1
+                                if not get_lab_status():
+                                    council_replies.append("### 🔮 Oracle Failed:\nM1 Muscle is offline. Oracle requires Thunderbolt bridge.")
+                                    continue
+                                    
+                                model = FRONTIER_MODEL
+                                icon = "🔮"
+                                sys = "You are The Oracle. Provide deep deductive analysis with forensic precision. Connect hidden patterns and examine contradictions."
+                                
+                                status.write(f"{icon} {persona} ({model}) is performing deep analysis via M1...")
+                                
+                                oracle_payload = f"""[INSTRUCTION]
+{instruction}
+
+[CONTEXT - Forensic Archive]
+{context_text}
+
+[QUESTION]
+{prompt}
+
+Provide a deep forensic analysis. Identify patterns, contradictions, and hidden connections."""
+                                
+                                try:
+                                    # Call M1 Oracle directly
+                                    payload = {
+                                        "model": FRONTIER_MODEL,
+                                        "prompt": oracle_payload,
+                                        "stream": False
+                                    }
+                                    oracle_resp = requests.post(f"{M1_OLLAMA}/api/generate", json=payload)
+                                    oracle_data = oracle_resp.json()
+                                    content = oracle_data.get('response', 'Oracle response failed')
+                                    # Filter out thinking tags
+                                    content = content.replace('<think>', '').replace('</think>', '')
+                                    council_replies.append(f"### {icon} {persona}'s Deep Analysis:\n{content}")
+                                    total_worker_tokens += oracle_data.get('eval_count', 0)
+                                except Exception as e:
+                                    council_replies.append(f"### {icon} {persona} Failed:\n{e}")
+                                    
+                            elif "Analyst" in persona:
                                 model = "qwen2.5-coder:32b"
                                 icon = "📊"
                                 sys = "You are The Analyst. Be strict, dry, and data-driven. Output ONLY stats, lists, or code."
-                            elif "Maverick" in persona:
-                                model = "dolphin-llama3"
-                                icon = "🦅"
-                                sys = "You are The Maverick. Be cynical, bold, and unfiltered. Don't sugarcoat anything."
-                            else: # Consultant
-                                model = "llama3.3"
-                                icon = "👔"
-                                sys = "You are The Consultant. Be helpful, professional, and explain things clearly."
-
-                            status.write(f"{icon} {persona} ({model}) is thinking...")
-                            
-                            worker_payload = f"""[INSTRUCTION]
+                                status.write(f"{icon} {persona} ({model}) is thinking...")
+                                
+                                worker_payload = f"""[INSTRUCTION]
 {instruction}
 
 [CONTEXT]
@@ -561,30 +1160,84 @@ Return JSON ONLY:
 
 [QUESTION]
 {prompt}"""
-                            
-                            try:
-                                worker_client = Client(host=OLLAMA_HOST)
-                                w_resp = worker_client.chat(model=model, messages=[
-                                    {'role': 'system', 'content': sys},
-                                    {'role': 'user', 'content': worker_payload}
-                                ])
-                                content = w_resp['message']['content']
-                                council_replies.append(f"### {icon} {persona}'s Verification:\n{content}")
-                                total_worker_tokens += w_resp.get('eval_count', 0)
-                            except Exception as e:
-                                # Fallback to Localhost if remote fails
+                                
                                 try:
-                                    status.write(f"⚠️ Primary connection attempt failed. Using local fallback...")
-                                    worker_client = Client(host='http://localhost:11434')
+                                    worker_client = Client(host=OLLAMA_HOST)
                                     w_resp = worker_client.chat(model=model, messages=[
                                         {'role': 'system', 'content': sys},
                                         {'role': 'user', 'content': worker_payload}
                                     ])
                                     content = w_resp['message']['content']
-                                    council_replies.append(f"### {icon} {persona}'s Verification (Local Backup):\n{content}")
+                                    council_replies.append(f"### {icon} {persona}'s Verification:\n{content}")
                                     total_worker_tokens += w_resp.get('eval_count', 0)
-                                except Exception as e2:
-                                    council_replies.append(f"### {icon} {persona} Failed:\n{e} | Backup: {e2}")
+                                except Exception as e:
+                                    council_replies.append(f"### {icon} {persona} Failed:\n{e}")
+                                    
+                            elif "Maverick" in persona:
+                                model = "dolphin-llama3"
+                                icon = "🦅"
+                                sys = "You are The Maverick. Be cynical, bold, and unfiltered. Don't sugarcoat anything."
+                                status.write(f"{icon} {persona} ({model}) is thinking...")
+                                
+                                worker_payload = f"""[INSTRUCTION]
+{instruction}
+
+[CONTEXT]
+{context_text}
+
+[QUESTION]
+{prompt}"""
+                                
+                                try:
+                                    worker_client = Client(host=OLLAMA_HOST)
+                                    w_resp = worker_client.chat(model=model, messages=[
+                                        {'role': 'system', 'content': sys},
+                                        {'role': 'user', 'content': worker_payload}
+                                    ])
+                                    content = w_resp['message']['content']
+                                    council_replies.append(f"### {icon} {persona}'s Verification:\n{content}")
+                                    total_worker_tokens += w_resp.get('eval_count', 0)
+                                except Exception as e:
+                                    council_replies.append(f"### {icon} {persona} Failed:\n{e}")
+                                    
+                            else: # Consultant
+                                model = "llama3.3"
+                                icon = "👔"
+                                sys = "You are The Consultant. Be helpful, professional, and explain things clearly."
+                                status.write(f"{icon} {persona} ({model}) is thinking...")
+                                
+                                worker_payload = f"""[INSTRUCTION]
+{instruction}
+
+[CONTEXT]
+{context_text}
+
+[QUESTION]
+{prompt}"""
+                                
+                                try:
+                                    worker_client = Client(host=OLLAMA_HOST)
+                                    w_resp = worker_client.chat(model=model, messages=[
+                                        {'role': 'system', 'content': sys},
+                                        {'role': 'user', 'content': worker_payload}
+                                    ])
+                                    content = w_resp['message']['content']
+                                    council_replies.append(f"### {icon} {persona}'s Verification:\n{content}")
+                                    total_worker_tokens += w_resp.get('eval_count', 0)
+                                except Exception as e:
+                                    # Fallback to Localhost if remote fails
+                                    try:
+                                        status.write(f"⚠️ Primary connection attempt failed. Using local fallback...")
+                                        worker_client = Client(host='http://localhost:11434')
+                                        w_resp = worker_client.chat(model=model, messages=[
+                                            {'role': 'system', 'content': sys},
+                                            {'role': 'user', 'content': worker_payload}
+                                        ])
+                                        content = w_resp['message']['content']
+                                        council_replies.append(f"### {icon} {persona}'s Verification (Local Backup):\n{content}")
+                                        total_worker_tokens += w_resp.get('eval_count', 0)
+                                    except Exception as e2:
+                                        council_replies.append(f"### {icon} {persona} Failed:\n{e} | Backup: {e2}")
 
                         # Step 4: Chairman Synthesis
                         status.write("🧠 Chairman is synthesizing the Council's advice...")
@@ -638,6 +1291,9 @@ Synthesize these into a single Final Answer. Use the structure:
 
             else:
                 # --- STANDARD LOCAL MODE ---
+                if not qa_chain:
+                    st.error("❌ RAG Engine is not initialized. Please verify Local Ollama status.")
+                    st.stop()
                 try:
                     # Setup Callback for this run
                     class StreamHandler(TokenCallbackHandler):
