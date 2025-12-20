@@ -5,6 +5,8 @@ class PublicChat {
         this.sessionId = 'public_' + Date.now();
         this.isOpen = false;
         this.messages = [];
+        this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        this.currentSource = null;
         this.init();
     }
 
@@ -144,6 +146,8 @@ class PublicChat {
 
                         if (data.done) {
                             this.messages.push({ role: 'assistant', content: assistantMessage });
+                            // Generate TTS audio
+                            this.playTTS(assistantMessage);
                         }
 
                         if (data.error) {
@@ -182,6 +186,48 @@ class PublicChat {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+    }
+
+    async playTTS(text) {
+        try {
+            const response = await fetch('/api/tts', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: text })
+            });
+
+            if (response.ok) {
+                const audioBlob = await response.blob();
+                await this.playAudioBlob(audioBlob);
+            }
+        } catch (error) {
+            console.error('TTS failed:', error);
+        }
+    }
+
+    async playAudioBlob(blob) {
+        try {
+            this.stopAudio();
+            const arrayBuffer = await blob.arrayBuffer();
+            const audioBuffer = await this.audioCtx.decodeAudioData(arrayBuffer);
+            const source = this.audioCtx.createBufferSource();
+            source.buffer = audioBuffer;
+            source.connect(this.audioCtx.destination);
+            source.start(0);
+            this.currentSource = source;
+            source.onended = () => {
+                if (this.currentSource === source) this.currentSource = null;
+            };
+        } catch (error) {
+            console.error('Audio playback failed:', error);
+        }
+    }
+
+    stopAudio() {
+        if (this.currentSource) {
+            this.currentSource.stop();
+            this.currentSource = null;
+        }
     }
 }
 
