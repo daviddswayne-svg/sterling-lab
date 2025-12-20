@@ -165,7 +165,7 @@ def run_meeting():
         }
     )
 
-@app.route('/api/tts', methods=['POST'])
+@app.route('/tts', methods=['POST'])
 def tts_proxy():
     """Proxies TTS request to Local Mac Studio via Tunnel"""
     try:
