@@ -153,58 +153,51 @@ Routes:
 
 ## SSH Tunnel Configuration
 
-**Script**: `sterling_tunnel.sh`  
-**Tunnel**: `autossh` keeps connection alive  
+**Purpose**: Secure connection between cloud and local AI infrastructure  
+**Technology**: `autossh` maintains persistent tunnel  
 **Ports Forwarded**:
-- `11434` (Ollama) - Mac → Cloud
-- `8001` (TTS API) - Mac port 8000 → Cloud port 8001  
-  (Port 8001 used to avoid conflict with Coolify on 8000)
+- Ollama service (port 11434)
+- TTS API (local port 8000 → remote port 8001)
 
-**Connection**: `root@165.22.146.182`  
-**Key**: `~/.ssh/sterling_tunnel`
+**Why port 8001?** Avoids conflict with Coolify on cloud server.
 
 ---
 
 ## Deployment Pipeline
 
 ### Git Strategy (Dual Remotes)
-1. **Live Server**: `root@165.22.146.182:/var/www/swaynesystems.ai.git`
-   - Bare repo on DigitalOcean droplet
-   - Coolify watches this repo
+1. **Live Server**: Bare git repository on cloud droplet
+   - Coolify watches this repo for changes
+   - Auto-deploys on push
 
-2. **GitHub Backup**: `github.com/daviddswayne-svg/sterling-lab.git`
-   - Public backup/portfolio
-   - Synced automatically via `deploy.sh`
+2. **GitHub Backup**: Public repository
+   - Synced automatically via deployment script
 
-### Deployment Script (`deploy.sh`)
+### Deployment Process
 ```bash
-git push live main    # Triggers Coolify rebuild
-git push origin main  # Syncs to GitHub
+# Deployment script pushes to both remotes
+# Triggers Coolify rebuild (30-60 seconds)
 ```
 
 **Coolify**: Auto-deploys on git push
 - Builds Docker container
-- Runs `start.sh` → starts Flask, Streamlit, Nginx
+- Runs startup script → starts Flask, Streamlit, Nginx
 - Typically takes 30-60 seconds to rebuild
 
 ---
 
-##
+## Docker Environment
 
- Docker Environment
-
-**Container Network**: Coolify bridge (`10.0.1.1` Gateway IP)  
-**Why not `172.17.0.1`**:  
-- Standard Docker uses `172.17.0.1`
-- Coolify uses custom bridge with `10.0.1.1`
-- Code explicitly uses `10.0.1.1` for TTS proxy
+**Container Network**: Coolify uses custom bridge network  
+**Gateway IP**: `10.0.1.1` (Coolify default)  
+**Why not standard `172.17.0.1`?** Coolify uses custom networking.
 
 **Container Services**:
 1. Flask API (port 5000)
 2. Streamlit (port 8501)
 3. Nginx (port 80)
 
-**Startup Sequence** (`start.sh`):
+**Startup Sequence**:
 1. Run RAG diagnostics
 2. Verify dashboard files exist
 3. Test Nginx config
@@ -238,20 +231,21 @@ git push origin main  # Syncs to GitHub
 ## Security & Access Control
 
 ### Authentication
-**Admin Access**: IP whitelist
-- Allowed IPs in `ANTIGRAVITY_ALLOWED_IPS` env var
-- Default: `71.197.228.171`
-- Admin button only visible to whitelisted IPs
+**Admin Access**: IP whitelist system
+- Admin users identified by IP address
+- Admin chat button only visible to whitelisted users
+- Configured via environment variables
 
 **Public Access**: Rate limiting
-- 20 messages/hour per IP
-- Sliding window (1 hour)
-- 429 error when exceeded
+- 20 messages/hour per IP address
+- Sliding 1-hour window
+- Returns 429 error when limit exceeded
 
-### Secrets Management
-- `AUTH_SECRET` (not currently used in auth flow)
-- `GEMINI_API_KEY` for Google AI
-- `ELEVENLABS_API_KEY` in local `elevenlabs_api.py`
+### Security Practices
+- Environment variable-based configuration
+- No hardcoded credentials in code
+- Separate admin and public endpoints
+- Rate limiting on public endpoints
 
 ---
 
@@ -300,40 +294,24 @@ git push origin main  # Syncs to GitHub
 ### Infrastructure
 - Docker + Coolify (deployment)
 - Nginx (reverse proxy, static files)
-- DigitalOcean (cloud hosting)
-- SSH tunnels (local AI access)
+- Cloud hosting with SSH tunnels
 - Git (version control, auto-deploy)
 
 ---
 
-## Environment Variables (Production)
+## Key System Locations
 
-```bash
-OLLAMA_HOST=http://10.0.0.1:11434  # Docker gateway to tunnel
-GEMINI_API_KEY=<secret>
-ANTIGRAVITY_ALLOWED_IPS=71.197.228.171
-ANTIGRAVITY_ENABLED=true
-PUBLIC_CHAT_ENABLED=true
-PUBLIC_CHAT_RATE_LIMIT=20
-```
+**Cloud Container** (Docker):
+- Application root: `/app/`
+- Flask API, Streamlit app, dashboard files
+- Vector database storage
+- Configuration files
+- Log files in `/tmp/`
 
----
-
-## File Locations (Key Paths)
-
-**Cloud Container**:
-- `/app/bedrock_api.py` - Flask API
-- `/app/chat_app.py` - Streamlit app
-- `/app/dashboard/` - Static site files
-- `/app/dashboard/bedrock/` - Bedrock chat UI
-- `/app/chroma_db/` - Vector database
-- `/app/nginx.conf` - Web server config
-- `/tmp/bedrock_api.log` - Flask logs
-- `/tmp/streamlit.log` - Streamlit logs
-
-**Local Mac Studio**:
-- `/Users/daviddswayne/.gemini/antigravity/scratch/f5-tts-mlx/elevenlabs_api.py`
-- `/Users/daviddswayne/.gemini/antigravity/scratch/sterling_lab/` - Main repo
+**Local Development**:
+- TTS API service
+- Git repository
+- Development environment
 
 ---
 
