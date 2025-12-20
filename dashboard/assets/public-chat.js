@@ -127,6 +127,14 @@ class PublicChat {
         this.addMessage('user', message);
         input.value = '';
 
+        // Add instant "analyzing" feedback
+        const analyzingDiv = document.createElement('div');
+        analyzingDiv.className = 'pc-message pc-system';
+        analyzingDiv.innerHTML = `<div class="pc-text" style="opacity:0.7; font-style:italic;">🔍 Analyzing your question...</div>`;
+        document.getElementById('public-chat-messages').appendChild(analyzingDiv);
+        document.getElementById('public-chat-messages').scrollTop =
+            document.getElementById('public-chat-messages').scrollHeight;
+
         // Show typing indicator
         const typingDiv = document.createElement('div');
         typingDiv.className = 'pc-message pc-assistant pc-typing';
@@ -151,7 +159,8 @@ class PublicChat {
                 })
             });
 
-            // Remove typing indicator
+            // Remove typing and analyzing indicators
+            analyzingDiv.remove();
             typingDiv.remove();
 
             if (response.status === 429) {

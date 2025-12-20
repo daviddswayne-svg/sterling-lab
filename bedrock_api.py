@@ -457,6 +457,13 @@ YOU CANNOT:
 - Access admin-only features
 - Modify any files or configurations
 
+RESPONSE STYLE:
+- Keep responses concise and to-the-point (2-3 paragraphs maximum)
+- Use bullet points for lists
+- Answer directly without lengthy introductions
+- Focus on the most relevant information
+- If asked for details, provide them succinctly
+
 Keep responses informative but concise. If someone asks about specific code, explain what it does conceptually without revealing sensitive implementation details like API keys."""
             
             conversation.append({
