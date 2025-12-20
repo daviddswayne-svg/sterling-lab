@@ -10,6 +10,7 @@ from ollama import Client
 import google.generativeai as genai
 import hashlib
 import hmac
+import requests
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
