@@ -5,42 +5,174 @@
 
 ---
 
-## Site Architecture
+## Site Pages & Components - Detailed Breakdown
 
-### Frontend Structure
-- **Dashboard (/)**: Main landing page with portfolio showcase
-  - Built with: HTML, CSS, JavaScript
-  - Features: Animated gradient background, status indicators, featured content
-  - CTA buttons: "Launch Sterling Lab AI Chat" → `/lab/`, "Bedrock Insurance" → `/bedrock/`
+### 1. Dashboard Landing Page (`/`)
 
-- **Sterling Lab (/lab/)**: Primary AI chat interface  
-  - Built with: Streamlit (Python web framework)
-  - Real-time AI chat with document intelligence
-  - RAG (Retrieval-Augmented Generation) pipeline
-  - Council Mode (multi-agent AI system)
+**Purpose**: Professional portfolio showcase and navigation hub  
+**Tech Stack**: Pure HTML5, CSS3, JavaScript (no frameworks)
 
-- **Bedrock Insurance (/bedrock/)**: AI agent demonstration
-  - Built with: Custom HTML/CSS/JS chat interface
-  - Multi-agent workflow system
-  - **TTS Enabled**: Responses play with cloned voice (ElevenLabs)
-  - Features orchestrated AI agents for insurance workflows
+**Key Features**:
+- **Animated Gradient Background**: CSS keyframe animations creating flowing color gradients
+- **Responsive Grid Layout**: Flexbox-based cards for services and portfolio items
+- **Status Indicators**: Real-time system health badges ("All Systems Operational")
+- **Hero Section**: Large Swayne Systems logo with deployment success badge
 
-### Backend Services
+**Interactive Elements**:
+```html
+<!-- Primary CTAs -->
+<a href="/lab/">Launch Sterling Lab AI Chat</a>
+<a href="/bedrock/">Bedrock Insurance Demo</a>
+```
 
-**Flask API (`bedrock_api.py`) - Port 5000**
-Routes:
-- `/health` - Health check
-- `/chat` - Bedrock agent chat
-- `/api/tts` - Text-to-speech proxy to local Mac
-- `/api/antigravity/status` - Admin auth check
-- `/api/antigravity/chat` - Admin-only chat (IP whitelisted)
-- `/api/antigravity/public/chat` - Public chat (rate-limited)
+**Embedded iframes**:
+- T4 Bacteriophage voxel simulation (see below)
+- YouTube production reel
+- Seattle Monorail voxel scene
 
-**Web Server**: Nginx on port 80
-- Serves static dashboard
-- Proxies `/lab/` to Streamlit (port 8501)
-- Proxies `/api/` to Flask (port 5000)
-- Handles SSL/TLS termination
+---
+
+### 2. Sterling Lab (`/lab/`) - AI Chat Interface
+
+**Purpose**: Advanced AI chat with RAG, multi-model support, and Council Mode  
+**Tech Stack**: Python Streamlit, LangChain, ChromaDB, Ollama
+
+**Architecture**:
+```python
+# Core Components
+- Streamlit UI (chat_app.py)
+- ChromaDB vector store (embedded vectors)
+- LangChain ConversationalRetrievalChain
+- Ollama for local LLM hosting
+```
+
+**Key Features**:
+
+**A. RAG Pipeline (Document Intelligence)**
+```python
+# Process Flow:
+1. User query → Embed with nomic-embed-text
+2. ChromaDB similarity search → Retrieve relevant docs
+3. Context + query → LLM (qwen2.5-coder, llama3.3, etc.)
+4. LLM response includes source citations
+5. Display with token metrics and streaming
+```
+
+**Document Collection**: 8+ estate documents ingested:
+- Last Will (2020)
+- Commander Instructions
+- Groundskeeper Log
+- Secret Email correspondence
+- Assets estimate
+
+**B. Council Mode (Multi-Agent System)**
+- **Manager Model**: Handles primary reasoning (user-selected)
+- **Worker Model**: `llama3.3` on Mac Studio (via SSH tunnel)
+- **Operation**: Distributed processing across two LLMs
+  ```python
+  # Pseudo-code
+  if council_mode_enabled:
+      manager_response = primary_llm.invoke(query)
+      worker_response = remote_llm.invoke(query)
+      combined_output = synthesize(manager, worker)
+  ```
+
+**C. Model Selection**
+- Sidebar dropdown with all available Ollama models
+- Real-time model switching mid-conversation
+- Persistent conversation memory across model changes
+
+**D. Token Metrics & Streaming**
+```python
+# Real-time display during generation:
+🪙 Generating... | Output Tokens: 157
+# After completion:
+Input: 1,234 | Output: 567 | Total: 1,801 | Speed: 45.2 t/s
+```
+
+**E. Chat History (SQLite)**
+- Persistent storage of all conversations
+- Session-based retrieval and recall
+- Sidebar toggle to view archives
+
+---
+
+### 3. Bedrock Insurance (`/bedrock/`) - AI Agent Demonstration
+
+**Purpose**: Showcase autonomous multi-agent workflow for content generation  
+**Tech Stack**: Custom HTML/JS chat interface + Python orchestrator backend
+
+**The Bedrock "Staff" - LLM-Powered Agents**:
+
+#### **Agent Workflow** (`bedrock_agents/orchestrator.py`):
+```python
+def run_meeting_generator():
+    # 1. Content Director (LLM Agent)
+    director = ContentDirector()
+    brief = director.create_daily_brief()
+    # Creates: theme, title, image_concept, content_strategy
+    
+    # 2. Photo Designer (ComfyUI + LLM)
+    designer = PhotoDesigner()
+    image_path = designer.generate_image(brief['theme'], brief['image_concept'])
+    # Uses ComfyUI API + Flux.1 model for image generation
+    
+    # 3. Web Developer (LLM Agent)
+    web_dev = WebDeveloper()
+    html_content = web_dev.build_page(brief, image_path)
+    # Generates complete HTML/CSS for insurance page
+    
+    # 4. Publishing Manager (LLM Agent)
+    publisher = PublishingManager()
+    publisher.update_website(html_content, brief['theme'])
+    # Deploys live to /bedrock/ page
+```
+
+**Frontend Chat Interface**:
+- **Real-time streaming**: "Typing..." indicators while agent works
+- **TTS Integration**: ElevenLabs voice narrates responses
+  ```javascript
+  // After LLM response completes:
+  fetch('/api/tts', {
+      method: 'POST',
+      body: JSON.stringify({ text: response })
+  })
+  .then(blob => playAudioBlob(blob))
+  ```
+- **Mute Button (🔇)**: Stop audio playback mid-response
+- **Web Audio API**: Decodes MP3 and plays with buffer sources
+
+**Agent Personalities**:
+Each agent has its own system prompt defining role, expertise, and output format. They collaborate on a single deliverable.
+
+---
+
+### 4. Voxel Simulations (Embedded)
+
+#### **T4 Bacteriophage**
+- **URL**: `https://daviddswayne-svg.github.io/Voxel-Art/`
+- **Tech**: Three.js (WebGL), JavaScript
+- **What it does**: 3D voxel animation of bacteriophage virus injecting DNA into bacteria
+- **Interaction**: Real-time rotation, zoom, particle systems
+
+#### **Seattle Monorail**
+- **URL**: `https://daviddswayne-svg.github.io/Voxel-Seattle-Center-V4/`
+- **Tech**: Three.js voxel rendering
+- **Scene**: Seattle Center with monorail, buildings, and animated elements
+- **Interaction**: Click-to-launch from static preview image
+
+**Display Method**:
+```html
+<iframe src="https://daviddswayne-svg.github.io/Voxel-Art/" 
+        frameborder="0" allowfullscreen loading="lazy">
+</iframe>
+```
+
+---
+
+### 5. Antigravity Chat Widgets
+
+Two separate implementations with different access levels and features (see "Antigravity Chat System" section for full details).
 
 ---
 
