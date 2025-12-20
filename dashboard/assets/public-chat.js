@@ -27,8 +27,67 @@ class PublicChat {
             if (this.messages.length === 0) {
                 this.addMessage('assistant', "Hi! I'm Antigravity, the AI assistant for Sterling Lab. I can answer questions about our AI technology, features, and architecture. What would you like to know?");
             }
+
+            // Initialize Matrix effect
+            this.initMatrix();
         } else {
             modal.classList.remove('active');
+            this.stopMatrix();
+        }
+    }
+
+    initMatrix() {
+        if (this.matrixCanvas) return; // Already initialized
+
+        const messagesContainer = document.getElementById('public-chat-messages');
+        this.matrixCanvas = document.createElement('canvas');
+        this.matrixCanvas.style.position = 'absolute';
+        this.matrixCanvas.style.top = '0';
+        this.matrixCanvas.style.left = '0';
+        this.matrixCanvas.style.width = '100%';
+        this.matrixCanvas.style.height = '100%';
+        this.matrixCanvas.style.pointerEvents = 'none';
+        this.matrixCanvas.style.opacity = '0.15';
+        this.matrixCanvas.style.zIndex = '0';
+        messagesContainer.insertBefore(this.matrixCanvas, messagesContainer.firstChild);
+
+        const ctx = this.matrixCanvas.getContext('2d');
+        this.matrixCanvas.width = messagesContainer.offsetWidth;
+        this.matrixCanvas.height = messagesContainer.offsetHeight;
+
+        const chars = '01アイウエオカキクケコサシスセソタチツテト';
+        const fontSize = 14;
+        const columns = this.matrixCanvas.width / fontSize;
+        const drops = Array(Math.floor(columns)).fill(1);
+
+        const draw = () => {
+            ctx.fillStyle = 'rgba(10, 14, 26, 0.05)';
+            ctx.fillRect(0, 0, this.matrixCanvas.width, this.matrixCanvas.height);
+            ctx.fillStyle = '#10b981';
+            ctx.font = fontSize + 'px monospace';
+
+            for (let i = 0; i < drops.length; i++) {
+                const text = chars[Math.floor(Math.random() * chars.length)];
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                if (drops[i] * fontSize > this.matrixCanvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        };
+
+        this.matrixInterval = setInterval(draw, 50);
+    }
+
+    stopMatrix() {
+        if (this.matrixInterval) {
+            clearInterval(this.matrixInterval);
+            this.matrixInterval = null;
+        }
+        if (this.matrixCanvas) {
+            this.matrixCanvas.remove();
+            this.matrixCanvas = null;
         }
     }
 

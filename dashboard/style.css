@@ -1177,7 +1177,7 @@ body {
 .pc-container {
     width: 400px;
     height: 600px;
-    background: var(--bg-card);
+    background: #1a202c;
     border: 1px solid var(--border);
     border-radius: 16px;
     display: flex;
@@ -1245,6 +1245,8 @@ body {
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    position: relative;
+    background: #0a0e1a;
 }
 
 .pc-message {
