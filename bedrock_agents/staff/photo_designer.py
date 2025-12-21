@@ -186,22 +186,51 @@ class PhotoDesigner:
             
             # Submit the prompt and get prompt_id (allow time for SSH tunnel latency)
             conn = http.client.HTTPConnection(conn_host, conn_port, timeout=120)
-            conn.request("POST", "/prompt", json.dumps(payload), headers)
-            response = conn.getresponse()
-            response_data = response.read()
+            prompt_id = None
             
-            if response.status != 200:
-                print(f"⚠️ ComfyUI Error ({response.status}): {response_data.decode('utf-8')}")
+            try:
+                conn.request("POST", "/prompt", json.dumps(payload), headers)
+                response = conn.getresponse()
+                response_data = response.read()
+                
+                if response.status != 200:
+                    print(f"⚠️ ComfyUI Error ({response.status}): {response_data.decode('utf-8')}")
+                    conn.close()
+                    return self._get_fallback_image(category)
+                
+                # Extract prompt_id from response
+                result = json.loads(response_data)
+                prompt_id = result.get('prompt_id')
                 conn.close()
-                return self._get_fallback_image(category)
-            
-            # Extract prompt_id from response
-            result = json.loads(response_data)
-            prompt_id = result.get('prompt_id')
-            conn.close()
+                
+            except TimeoutError:
+                # SSH tunnel latency caused timeout, but prompt likely queued successfully
+                # We'll poll /history to find the most recent prompt
+                print("   ⏰ Initial response timed out (SSH tunnel latency)")
+                print("   🔍 Checking history for recent prompt...")
+                conn.close()
+                
+                try:
+                    # Get recent history to find our prompt
+                    time.sleep(2)  # Give it a moment to appear in history
+                    conn = http.client.HTTPConnection(conn_host, conn_port, timeout=10)
+                    conn.request("GET", "/history")
+                    hist_response = conn.getresponse()
+                    all_history = json.loads(hist_response.read())
+                    conn.close()
+                    
+                    # Get the most recent prompt_id
+                    if all_history:
+                        # History is a dict with prompt_ids as keys
+                        prompt_ids = list(all_history.keys())
+                        if prompt_ids:
+                            prompt_id = prompt_ids[-1]  # Most recent
+                            print(f"   ✅ Found recent prompt: {prompt_id}")
+                except Exception as hist_error:
+                    print(f"   ⚠️ Could not retrieve history: {hist_error}")
             
             if not prompt_id:
-                print("⚠️ No prompt_id returned from ComfyUI")
+                print("⚠️ No prompt_id available")
                 return self._get_fallback_image(category)
             
             print(f"   ⏳ Rendering... (prompt_id: {prompt_id}, max 120s)")
