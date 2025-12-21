@@ -233,13 +233,13 @@ class PhotoDesigner:
                 print("⚠️ No prompt_id available")
                 return self._get_fallback_image(category)
             
-            print(f"   ⏳ Rendering... (prompt_id: {prompt_id}, max 120s)")
+            print(f"   ⏳ Rendering... (prompt_id: {prompt_id}, max 240s)")
             
             # 3. Poll /history endpoint until the prompt is complete
             start_time = time.time()
             image_data = None
             
-            while time.time() - start_time < 120:
+            while time.time() - start_time < 240:
                 try:
                     # Check history for this prompt
                     conn = http.client.HTTPConnection(conn_host, conn_port, timeout=10)
