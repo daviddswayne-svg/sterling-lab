@@ -4,6 +4,7 @@ primaryColor = "#6366f1"        # Indigo accent (matches var(--primary))
 backgroundColor = "#0f1419"     # Dark background (matches dashboard)
 secondaryBackgroundColor = "#1a1f2e"  # Card background
 textColor = "#e5e7eb"          # Light text (matches var(--text-primary))
+borderColor = "#374151"        # Dark gray border (matches dashboard borders)
 
 # Font
 font = "sans serif"
