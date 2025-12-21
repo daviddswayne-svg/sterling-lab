@@ -23,7 +23,7 @@ class PublicChat {
 
             // Add welcome message if first time
             if (this.messages.length === 0) {
-                this.addMessage('assistant', "Hi! I'm here to help you learn about Swayne Systems. I can answer questions about our AI technology, features, and architecture. What would you like to know?");
+                this.addMessage('assistant', "Hi! Welcome to Swayne Systems - where we run cutting-edge AI completely locally! I can tell you about our dual Mac Studio setup, the powerful models we're running (including 70B+ locally!), our multi-agent systems, and all the cool tech that makes this platform tick. What would you like to explore?");
             }
 
             // Initialize Matrix effect
