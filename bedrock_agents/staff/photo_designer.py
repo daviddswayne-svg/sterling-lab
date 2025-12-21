@@ -203,10 +203,10 @@ class PhotoDesigner:
                 prompt_id = result.get('prompt_id')
                 conn.close()
                 
-            except TimeoutError:
-                # SSH tunnel latency caused timeout, but prompt likely queued successfully
-                # We'll poll /history to find the most recent prompt
-                print("   ⏰ Initial response timed out (SSH tunnel latency)")
+            except (TimeoutError, ConnectionResetError, OSError) as conn_error:
+                # SSH tunnel issue - connection timed out or was reset
+                # But prompt likely queued successfully, check history
+                print(f"   ⏰ Connection issue ({type(conn_error).__name__}): {conn_error}")
                 print("   🔍 Checking history for recent prompt...")
                 conn.close()
                 
