@@ -296,23 +296,19 @@ st.markdown("""
         color: #f1f5f9 !important;
     }
     
-    /* SURGICAL Selectbox Fix: Dark Text for Readability */
+    /* SURGICAL Selectbox Fix: Ensure Selected Value is WHITE */
     div[data-baseweb="select"] div[role="button"],
     div[data-baseweb="select"] div[role="button"] > div,
-    div[data-baseweb="select"] div[role="button"] span,
+    div[data-baseweb="select"] div[role="button"] span {
+        color: #ffffff !important;
+    }
+
+    /* Keep dropdown menu items readable (White on Dark background) */
     div[data-baseweb="popover"] div[data-baseweb="menu"] div,
     div[role="listbox"] div,
     div[role="listbox"] span,
-    div[role="option"] span,
-    .stSelectbox div[data-baseweb="select"] * {
-        color: #0f172a !important;
-    }
-    
-    /* But make the selected/displayed value white */
-    .stSelectbox div[data-baseweb="select"] > div,
-    .stSelectbox [role="button"] span,
-    [data-testid="stSelectbox"] [role="button"] span {
-        color: #ffffff !important;
+    div[role="option"] span {
+        color: #f1f5f9 !important;
     }
     
     /* Let icons use their default colors */
