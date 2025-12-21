@@ -823,6 +823,9 @@ def run_app():
                     try:
                         # Convert image to base64
                         img = Image.open(uploaded_image)
+                        # Fix for RGBA/PNG images
+                        if img.mode in ('RGBA', 'P'):
+                            img = img.convert('RGB')
                         buffered = BytesIO()
                         img.save(buffered, format="JPEG")
                         img_str = base64.b64encode(buffered.getvalue()).decode()
