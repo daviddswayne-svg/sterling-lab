@@ -332,504 +332,504 @@
     <!-- AI Insurance Advisor Chat Modal -->
     <script src="/assets/chat.js"></script>
     <!-- AI Insurance Advisor Chat Modal -->
-    <div id="chatModal" class="chat-modal">
-        <div class="chat-container">
-            <!-- Header -->
-            <div class="chat-header">
-                <h3>Bedrock Insurance Advisor</h3>
-                <button class="close-chat" onclick="closeChat()">✕</button>
+    <!-- AI Insurance Advisor Chat Modal -->
+<div id="insuranceChatModal" class="chat-modal">
+    <div class="insurance-chat-container">
+        <!-- Header -->
+        <div class="insurance-chat-header">
+            <h3>Bedrock Insurance Advisor</h3>
+            <button class="close-chat" onclick="closeInsuranceChat()">✕</button>
+        </div>
+
+        <!-- Identity Verification Step -->
+        <div id="insuranceVerifyStep" class="insurance-chat-step active">
+            <div class="verify-form">
+                <h4>Verify Your Identity</h4>
+                <p>Please provide your information to access your policies</p>
+
+                <form id="verifyForm" onsubmit="verifyIdentity(event)">
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" id="customerName" placeholder="Sarah Thompson" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Phone Number</label>
+                        <input type="tel" id="customerPhone" placeholder="555-0123" required>
+                    </div>
+
+                    <div class="form-divider">
+                        <span>OR</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Policy Number</label>
+                        <input type="text" id="policyNumber" placeholder="HOM-2024-00123">
+                    </div>
+
+                    <button type="submit" class="cta-button">Verify Identity</button>
+                </form>
+
+                <div id="verifyError" class="error-message" style="display: none;"></div>
             </div>
+        </div>
 
-            <!-- Identity Verification Step -->
-            <div id="verifyStep" class="chat-step active">
-                <div class="verify-form">
-                    <h4>Verify Your Identity</h4>
-                    <p>Please provide your information to access your policies</p>
+        <!-- Chat Interface Step -->
+        <div id="insuranceChatStep" class="insurance-chat-step">
+            <!-- Customer Welcome -->
+            <div id="customerWelcome" class="customer-welcome"></div>
 
-                    <form id="verifyForm" onsubmit="verifyIdentity(event)">
-                        <div class="form-group">
-                            <label>Full Name</label>
-                            <input type="text" id="customerName" placeholder="Sarah Thompson" required>
-                        </div>
+            <!-- Policy Dashboard -->
+            <div id="policyDashboard" class="policy-dashboard"></div>
 
-                        <div class="form-group">
-                            <label>Phone Number</label>
-                            <input type="tel" id="customerPhone" placeholder="555-0123" required>
-                        </div>
-
-                        <div class="form-divider">
-                            <span>OR</span>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Policy Number</label>
-                            <input type="text" id="policyNumber" placeholder="HOM-2024-00123">
-                        </div>
-
-                        <button type="submit" class="cta-button">Verify Identity</button>
-                    </form>
-
-                    <div id="verifyError" class="error-message" style="display: none;"></div>
-                </div>
-            </div>
-
-            <!-- Chat Interface Step -->
-            <div id="chatStep" class="chat-step">
-                <!-- Customer Welcome -->
-                <div id="customerWelcome" class="customer-welcome"></div>
-
-                <!-- Policy Dashboard -->
-                <div id="policyDashboard" class="policy-dashboard"></div>
-
-                <!-- Chat Messages -->
-                <div class="chat-messages" id="chatMessages">
-                    <div class="ai-message">
-                        <div class="message-avatar">🤖</div>
-                        <div class="message-content">
-                            <p>Hello! I'm your Bedrock Insurance Advisor. I can help you with:</p>
-                            <ul>
-                                <li>Understanding your coverage</li>
-                                <li>Filing claims</li>
-                                <li>Policy questions</li>
-                                <li>Getting quotes for additional coverage</li>
-                            </ul>
-                            <p>What can I help you with today?</p>
-                        </div>
+            <!-- Chat Messages -->
+            <div class="insurance-chat-messages" id="insuranceChatMessages">
+                <div class="ai-message">
+                    <div class="message-avatar">🤖</div>
+                    <div class="message-content">
+                        <p>Hello! I'm your Bedrock Insurance Advisor. I can help you with:</p>
+                        <ul>
+                            <li>Understanding your coverage</li>
+                            <li>Filing claims</li>
+                            <li>Policy questions</li>
+                            <li>Getting quotes for additional coverage</li>
+                        </ul>
+                        <p>What can I help you with today?</p>
                     </div>
                 </div>
+            </div>
 
-                <!-- Chat Input -->
-                <div class="chat-input-container">
-                    <form id="chatForm" onsubmit="sendMessage(event)">
-                        <input type="text" id="chatInput" placeholder="Type your message..." autocomplete="off">
-                        <button type="submit" class="send-button">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round" />
-                            </svg>
-                        </button>
-                    </form>
-                    <div class="typing-indicator" id="typingIndicator" style="display: none;">
-                        <span></span><span></span><span></span>
-                    </div>
+            <!-- Chat Input -->
+            <div class="insurance-insurance-chat-input-container">
+                <form id="insuranceChatForm" onsubmit="sendInsuranceMessage(event)">
+                    <input type="text" id="insuranceChatInput" placeholder="Type your message..." autocomplete="off">
+                    <button type="submit" class="send-button">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>
+                    </button>
+                </form>
+                <div class="typing-indicator" id="typingIndicator" style="display: none;">
+                    <span></span><span></span><span></span>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <style>
-        /* Chat Modal Styles */
-        .chat-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            right: 0;
+<style>
+    /* Chat Modal Styles */
+    .chat-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(8px);
+        z-index: 10000;
+        animation: fadeIn 0.3s ease;
+    }
+
+    .chat-modal.active {
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .insurance-chat-container {
+        width: 450px;
+        max-width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.98));
+        box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+        animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+        }
+
+        to {
+            transform: translateX(0);
+        }
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    .insurance-chat-header {
+        padding: 20px;
+        background: linear-gradient(135deg, #1a1a2e, #2d3561);
+        color: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .insurance-chat-header h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+    }
+
+    .close-chat {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+        padding: 0;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+        transition: background 0.2s;
+    }
+
+    .close-chat:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .insurance-chat-step {
+        display: none;
+        flex: 1;
+        overflow-y: auto;
+    }
+
+    .insurance-chat-step.active {
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Verify Form */
+    .verify-form {
+        padding: 40px 30px;
+        max-width: 400px;
+        margin: auto;
+    }
+
+    .verify-form h4 {
+        margin: 0 0 10px;
+        color: #1a1a2e;
+        font-size: 24px;
+    }
+
+    .verify-form p {
+        color: #666;
+        margin-bottom: 30px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        color: #333;
+        font-weight: 500;
+        font-size: 14px;
+    }
+
+    .form-group input {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 16px;
+        transition: border-color 0.3s;
+    }
+
+    .form-group input:focus {
+        outline: none;
+        border-color: #4a90e2;
+    }
+
+    .form-divider {
+        text-align: center;
+        margin: 20px 0;
+        position: relative;
+    }
+
+    .form-divider::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 50%;
+        height: 1px;
+        background: #e0e0e0;
+    }
+
+    .form-divider span {
+        background: white;
+        padding: 0 15px;
+        color: #999;
+        position: relative;
+        z-index: 1;
+    }
+
+    .error-message {
+        background: #ffebee;
+        color: #c62828;
+        padding: 12px;
+        border-radius: 8px;
+        margin-top: 15px;
+        font-size: 14px;
+    }
+
+    /* Policy Dashboard */
+    .customer-welcome {
+        padding: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .customer-welcome h4 {
+        margin: 0 0 5px;
+        font-size: 22px;
+    }
+
+    .customer-welcome p {
+        margin: 0;
+        opacity: 0.9;
+    }
+
+    .policy-dashboard {
+        padding: 20px;
+        background: #f8f9fa;
+    }
+
+    .policy-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .policy-card {
+        background: white;
+        padding: 15px;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .policy-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    }
+
+    .policy-type {
+        font-size: 12px;
+        color: #666;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 5px;
+    }
+
+    .policy-number {
+        font-weight: 600;
+        color: #1a1a2e;
+        margin-bottom: 8px;
+    }
+
+    .policy-coverage {
+        font-size: 18px;
+        color: #4a90e2;
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
+
+    .policy-status {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+    .policy-status.active {
+        background: #e8f5e9;
+        color: #2e7d32;
+    }
+
+    /* Chat Messages */
+    .insurance-chat-messages {
+        flex: 1;
+        padding: 20px;
+        overflow-y: auto;
+        background: white;
+    }
+
+    .ai-message,
+    .user-message {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 20px;
+        animation: messageSlide 0.3s ease;
+    }
+
+    @keyframes messageSlide {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .user-message {
+        flex-direction: row-reverse;
+    }
+
+    .message-avatar {
+        font-size: 28px;
+        width: 40px;
+        height: 40px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .message-content {
+        background: #f0f0f0;
+        padding: 12px 16px;
+        border-radius: 12px;
+        max-width: 80%;
+    }
+
+    .user-message .message-content {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .message-content p {
+        margin: 0 0 10px;
+    }
+
+    .message-content p:last-child {
+        margin-bottom: 0;
+    }
+
+    .message-content ul {
+        margin: 10px 0;
+        padding-left: 20px;
+    }
+
+    /* Chat Input */
+    .insurance-chat-input-container {
+        padding: 15px 20px;
+        background: white;
+        border-top: 1px solid #e0e0e0;
+    }
+
+    #chatForm {
+        display: flex;
+        gap: 10px;
+    }
+
+    #insuranceChatInput {
+        flex: 1;
+        padding: 12px 16px;
+        border: 2px solid #e0e0e0;
+        border-radius: 24px;
+        font-size: 15px;
+        transition: border-color 0.3s;
+    }
+
+    #insuranceChatInput:focus {
+        outline: none;
+        border-color: #4a90e2;
+    }
+
+    .send-button {
+        width: 44px;
+        height: 44px;
+        border: none;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .send-button:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .typing-indicator {
+        padding: 10px 0;
+        display: flex;
+        gap: 4px;
+    }
+
+    .typing-indicator span {
+        width: 8px;
+        height: 8px;
+        background: #999;
+        border-radius: 50%;
+        animation: typing 1.4s infinite;
+    }
+
+    .typing-indicator span:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+
+    .typing-indicator span:nth-child(3) {
+        animation-delay: 0.4s;
+    }
+
+    @keyframes typing {
+
+        0%,
+        60%,
+        100% {
+            transform: translateY(0);
+        }
+
+        30% {
+            transform: translateY(-10px);
+        }
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+        .insurance-chat-container {
             width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(8px);
-            z-index: 10000;
-            animation: fadeIn 0.3s ease;
         }
 
-        .chat-modal.active {
-            display: flex;
-            justify-content: flex-end;
-        }
-
-        .chat-container {
-            width: 450px;
-            max-width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.98));
-            box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-            animation: slideIn 0.3s ease;
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-            }
-
-            to {
-                transform: translateX(0);
-            }
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
-        }
-
-        .chat-header {
-            padding: 20px;
-            background: linear-gradient(135deg, #1a1a2e, #2d3561);
-            color: white;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .chat-header h3 {
-            margin: 0;
-            font-size: 18px;
-            font-weight: 600;
-        }
-
-        .close-chat {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-            padding: 0;
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 4px;
-            transition: background 0.2s;
-        }
-
-        .close-chat:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .chat-step {
-            display: none;
-            flex: 1;
-            overflow-y: auto;
-        }
-
-        .chat-step.active {
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* Verify Form */
         .verify-form {
-            padding: 40px 30px;
-            max-width: 400px;
-            margin: auto;
-        }
-
-        .verify-form h4 {
-            margin: 0 0 10px;
-            color: #1a1a2e;
-            font-size: 24px;
-        }
-
-        .verify-form p {
-            color: #666;
-            margin-bottom: 30px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #333;
-            font-weight: 500;
-            font-size: 14px;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: border-color 0.3s;
-        }
-
-        .form-group input:focus {
-            outline: none;
-            border-color: #4a90e2;
-        }
-
-        .form-divider {
-            text-align: center;
-            margin: 20px 0;
-            position: relative;
-        }
-
-        .form-divider::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            right: 0;
-            top: 50%;
-            height: 1px;
-            background: #e0e0e0;
-        }
-
-        .form-divider span {
-            background: white;
-            padding: 0 15px;
-            color: #999;
-            position: relative;
-            z-index: 1;
-        }
-
-        .error-message {
-            background: #ffebee;
-            color: #c62828;
-            padding: 12px;
-            border-radius: 8px;
-            margin-top: 15px;
-            font-size: 14px;
-        }
-
-        /* Policy Dashboard */
-        .customer-welcome {
-            padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        .customer-welcome h4 {
-            margin: 0 0 5px;
-            font-size: 22px;
-        }
-
-        .customer-welcome p {
-            margin: 0;
-            opacity: 0.9;
-        }
-
-        .policy-dashboard {
-            padding: 20px;
-            background: #f8f9fa;
+            padding: 30px 20px;
         }
 
         .policy-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
+            grid-template-columns: 1fr;
         }
-
-        .policy-card {
-            background: white;
-            padding: 15px;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .policy-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-        }
-
-        .policy-type {
-            font-size: 12px;
-            color: #666;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 5px;
-        }
-
-        .policy-number {
-            font-weight: 600;
-            color: #1a1a2e;
-            margin-bottom: 8px;
-        }
-
-        .policy-coverage {
-            font-size: 18px;
-            color: #4a90e2;
-            font-weight: 700;
-            margin-bottom: 5px;
-        }
-
-        .policy-status {
-            display: inline-block;
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: 600;
-        }
-
-        .policy-status.active {
-            background: #e8f5e9;
-            color: #2e7d32;
-        }
-
-        /* Chat Messages */
-        .chat-messages {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-            background: white;
-        }
-
-        .ai-message,
-        .user-message {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 20px;
-            animation: messageSlide 0.3s ease;
-        }
-
-        @keyframes messageSlide {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .user-message {
-            flex-direction: row-reverse;
-        }
-
-        .message-avatar {
-            font-size: 28px;
-            width: 40px;
-            height: 40px;
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .message-content {
-            background: #f0f0f0;
-            padding: 12px 16px;
-            border-radius: 12px;
-            max-width: 80%;
-        }
-
-        .user-message .message-content {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        .message-content p {
-            margin: 0 0 10px;
-        }
-
-        .message-content p:last-child {
-            margin-bottom: 0;
-        }
-
-        .message-content ul {
-            margin: 10px 0;
-            padding-left: 20px;
-        }
-
-        /* Chat Input */
-        .chat-input-container {
-            padding: 15px 20px;
-            background: white;
-            border-top: 1px solid #e0e0e0;
-        }
-
-        #chatForm {
-            display: flex;
-            gap: 10px;
-        }
-
-        #chatInput {
-            flex: 1;
-            padding: 12px 16px;
-            border: 2px solid #e0e0e0;
-            border-radius: 24px;
-            font-size: 15px;
-            transition: border-color 0.3s;
-        }
-
-        #chatInput:focus {
-            outline: none;
-            border-color: #4a90e2;
-        }
-
-        .send-button {
-            width: 44px;
-            height: 44px;
-            border: none;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .send-button:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-        }
-
-        .typing-indicator {
-            padding: 10px 0;
-            display: flex;
-            gap: 4px;
-        }
-
-        .typing-indicator span {
-            width: 8px;
-            height: 8px;
-            background: #999;
-            border-radius: 50%;
-            animation: typing 1.4s infinite;
-        }
-
-        .typing-indicator span:nth-child(2) {
-            animation-delay: 0.2s;
-        }
-
-        .typing-indicator span:nth-child(3) {
-            animation-delay: 0.4s;
-        }
-
-        @keyframes typing {
-
-            0%,
-            60%,
-            100% {
-                transform: translateY(0);
-            }
-
-            30% {
-                transform: translateY(-10px);
-            }
-        }
-
-        /* Mobile Responsive */
-        @media (max-width: 768px) {
-            .chat-container {
-                width: 100%;
-            }
-
-            .verify-form {
-                padding: 30px 20px;
-            }
-
-            .policy-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+    }
+</style>
 </body>
-
 </html>
