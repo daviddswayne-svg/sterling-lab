@@ -27,9 +27,9 @@
                     <p class="subtitle">Autonomous Publishing Division</p>
                 </div>
             </div>
-            <div class="status-indicator" id="systemStatus">
+            <div class="status-indicator">
                 <span class="status-dot"></span>
-                <span class="status-text">Checking Systems...</span>
+                <span class="status-text">Agents Online</span>
             </div>
         </header>
 
@@ -100,33 +100,6 @@
     </div>
 
     <script>
-        // System Status Checker
-        function checkSystemStatus() {
-            fetch('/health')
-                .then(r => r.json())
-                .then(data => {
-                    const indicator = document.getElementById('systemStatus');
-                    const dot = indicator.querySelector('.status-dot');
-                    const text = indicator.querySelector('.status-text');
-
-                    if (data.status === 'operational') {
-                        indicator.className = 'status-indicator operational';
-                        text.textContent = data.message;
-                    } else {
-                        indicator.className = 'status-indicator degraded';
-                        text.textContent = data.message;
-                    }
-                })
-                .catch(() => {
-                    const indicator = document.getElementById('systemStatus');
-                    indicator.className = 'status-indicator offline';
-                    indicator.querySelector('.status-text').textContent = 'Status Unknown';
-                });
-        }
-
-        // Check status immediately on page load and every 30 seconds
-        checkSystemStatus();
-        setInterval(checkSystemStatus, 30000);
 
         function toggleChat() {
             document.getElementById('chatWindow').classList.toggle('active');
