@@ -31,43 +31,25 @@
                     </feMerge>
                 </filter>
             </defs>
-            <!-- Abstract German Shepherd Silhouette -->
-            <path d="M180,450 
-                     Q160,450 150,400 
-                     Q150,350 160,300 
-                     Q165,250 200,200 
-                     Q210,180 205,150 
-                     L195,110 
-                     Q190,90 210,95 
-                     L220,130 
-                     L235,135 
-                     L250,90 
-                     Q260,80 265,110 
-                     L260,140 
-                     Q280,150 290,180 
-                     Q300,220 290,280 
-                     Q330,350 350,420 
-                     Q360,450 320,450 
-                     Z" fill="none" stroke="url(#holoGradient)" stroke-width="2" filter="url(#glow)"
-                class="holo-path" />
-            <!-- Internal wireframe details -->
-            <path d="M205,150 Q230,160 260,140" stroke="rgba(99, 102, 241, 0.3)" fill="none" class="holo-detail" />
-            <path d="M210,250 Q250,280 280,240" stroke="rgba(99, 102, 241, 0.2)" fill="none" class="holo-detail" />
-            <path d="M160,350 Q250,380 340,380" stroke="rgba(99, 102, 241, 0.2)" fill="none" class="holo-detail" />
+            <!-- Low-poly German Shepherd Head -->
+            <path
+                d="M150,350 L180,250 L150,150 L200,180 L230,120 L260,180 L320,150 L290,250 L340,300 L280,320 L250,400 L200,380 Z"
+                fill="none" stroke="url(#holoGradient)" stroke-width="2" filter="url(#glow)" class="holo-path" />
+            <!-- Internal details for low-poly look -->
+            <path d="M180,250 L230,280 L290,250" stroke="rgba(99, 102, 241, 0.3)" fill="none" class="holo-detail" />
+            <path d="M230,120 L230,280 L250,400" stroke="rgba(99, 102, 241, 0.3)" fill="none" class="holo-detail" />
+            <path d="M200,180 L260,180" stroke="rgba(99, 102, 241, 0.3)" fill="none" class="holo-detail" />
         </svg>
     </div>
 
     <style>
         .holo-mascot {
-            position: fixed;
-            bottom: -20px;
-            right: 15%;
-            /* Positioned to the right but not corner */
-            width: 400px;
-            /* Large but subtle */
-            height: 400px;
-            z-index: -1;
-            /* Behind content */
+            position: absolute;
+            top: 15%;
+            right: 10%;
+            width: 350px;
+            height: 350px;
+            z-index: 0;
             pointer-events: none;
             opacity: 0;
             animation: holoLife 10s ease-in-out infinite;
