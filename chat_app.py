@@ -850,9 +850,11 @@ def run_app():
                         st.session_state.vision_analysis = final_answer
                         
                         # Save
-                        st.session_state.current_session_messages.append({"role": "assistant", "content": final_answer})
                         st.session_state.db_history.append({"role": "assistant", "content": final_answer})
                         save_message("assistant", final_answer)
+                        
+                        # Rerun to update sidebar "Archive" button state
+                        st.rerun()
 
                     except Exception as e:
                         st.error(f"Vision Connection Error: {e}")
