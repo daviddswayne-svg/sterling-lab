@@ -308,6 +308,13 @@ st.markdown("""
         color: #0f172a !important;
     }
     
+    /* But make the selected/displayed value white */
+    .stSelectbox div[data-baseweb="select"] > div,
+    .stSelectbox [role="button"] span,
+    [data-testid="stSelectbox"] [role="button"] span {
+        color: #ffffff !important;
+    }
+    
     /* Let icons use their default colors */
     
     /* Glassmorphism Sidebar */
