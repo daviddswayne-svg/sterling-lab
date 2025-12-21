@@ -393,12 +393,22 @@ def antigravity_public_chat():
                 from ollama import Client
                 
                 chroma_path = os.path.join(os.path.dirname(__file__), 'chroma_db_public')
+                print(f"🔍 PUBLIC RAG: Loading ChromaDB from: {chroma_path}")
+                print(f"🔍 PUBLIC RAG: Path exists: {os.path.exists(chroma_path)}")
+                
                 embeddings = OllamaEmbeddings(model="nomic-embed-text", base_url=OLLAMA_HOST)
                 db = Chroma(persist_directory=chroma_path, embedding_function=embeddings)
+                
+                print(f"🔍 PUBLIC RAG: ChromaDB loaded successfully")
+                print(f"🔍 PUBLIC RAG: User question: '{user_message}'")
                 
                 # Retrieve relevant context - more documents for better coverage
                 relevant_docs = db.similarity_search(user_message, k=5)
                 context = "\n\n".join([doc.page_content for doc in relevant_docs])
+                
+                print(f"🔍 PUBLIC RAG: Retrieved {len(relevant_docs)} documents")
+                print(f"🔍 PUBLIC RAG: Context length: {len(context)} chars")
+                print(f"🔍 PUBLIC RAG: First 200 chars of context: {context[:200]}...")
                 
                 # Build conversation for Qwen
                 messages = [
