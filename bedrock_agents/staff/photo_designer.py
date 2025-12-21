@@ -177,95 +177,124 @@ class PhotoDesigner:
         }
         
         try:
-            # 2. Queue Prompt
-            # Use COMFYUI_HOST for connection details
-            host_parts = COMFYUI_HOST.replace("http://", "").split(":")
+            # 2. Queue Prompt via API
+            host_parts = COMFYUI_HOST.replace("http://", "").replace("https://", "").split(":")
             conn_host = host_parts[0]
-            conn_port = int(host_parts[1]) if len(host_parts) > 1 else 80 # Default to 80 if no port
+            conn_port = int(host_parts[1]) if len(host_parts) > 1 else 8188
             
-            conn = http.client.HTTPConnection(conn_host, conn_port)
-            p = payload # The entire workflow is the payload for the /prompt endpoint
             headers = {"Content-Type": "application/json"}
-            conn.request("POST", "/prompt", json.dumps(p), headers)
+            
+            # Submit the prompt and get prompt_id
+            conn = http.client.HTTPConnection(conn_host, conn_port, timeout=30)
+            conn.request("POST", "/prompt", json.dumps(payload), headers)
             response = conn.getresponse()
+            response_data = response.read()
             
             if response.status != 200:
-                print(f"⚠️ ComfyUI Error: {response.read().decode('utf-8')}")
+                print(f"⚠️ ComfyUI Error ({response.status}): {response_data.decode('utf-8')}")
+                conn.close()
                 return self._get_fallback_image(category)
             
-            # 3. Wait/Poll for Image
-            # Since we don't have websocket here, we'll watch the output dir for a new file
-            # Night Shift Output Dir (User configured)
-            # This path should ideally be configurable or derived from ComfyUI config
-            output_dir = "/Users/daviddswayne/.gemini/antigravity/scratch/night_shift_studio/output" 
+            # Extract prompt_id from response
+            result = json.loads(response_data)
+            prompt_id = result.get('prompt_id')
+            conn.close()
             
-            if not os.path.exists(output_dir):
-                print(f"⚠️ ComfyUI output directory not found: {output_dir}")
+            if not prompt_id:
+                print("⚠️ No prompt_id returned from ComfyUI")
                 return self._get_fallback_image(category)
-
-            print("   ⏳ Rendering (Waiting up to 120s)...")
             
-            # Simple polling: check for files matching prefix created > now
-            file_prefix = "Bedrock_Flux_Gen"
+            print(f"   ⏳ Rendering... (prompt_id: {prompt_id}, max 120s)")
+            
+            # 3. Poll /history endpoint until the prompt is complete
             start_time = time.time()
-            found_file = None
+            image_data = None
             
             while time.time() - start_time < 120:
-                # Look for files matching prefix
-                candidates = [f for f in os.listdir(output_dir) if f.startswith(file_prefix)]
-                if candidates:
-                    # Sort by modification time, newest first
-                    candidates.sort(key=lambda x: os.path.getmtime(os.path.join(output_dir, x)), reverse=True)
-                    newest = candidates[0]
-                    # Check if it was created after we submitted
-                    if os.path.getmtime(os.path.join(output_dir, newest)) > start_time:
-                        found_file = os.path.join(output_dir, newest)
-                        break
-                time.sleep(2)
-                
-            if found_file:
-                # Copy to Dashboard Assets
-                dest_filename = f"bedrock_latest.png"
-                dest_path = os.path.join(ASSETS_DIR, dest_filename)
-                
-                # Use shutil copy
-                shutil.copy(found_file, dest_path)
+                try:
+                    # Check history for this prompt
+                    conn = http.client.HTTPConnection(conn_host, conn_port, timeout=10)
+                    conn.request("GET", f"/history/{prompt_id}")
+                    hist_response = conn.getresponse()
+                    hist_data = json.loads(hist_response.read())
+                    conn.close()
                     
-                print(f"✅ Image Rendered and Saved to {dest_path}")
-                # Return absolute path for HTML (web root view)
-                return f"/assets/{dest_filename}" 
-            else:
-                # 3a. Docker Fallback - Use /view API
-                # If we are in Docker, or if polling failed but Comfy might have it.
-                # Actually, ComfyUI returns the filename in the prompt queue response usually only if websocket is used.
-                # But here we rely on "Bedrock_Flux_Gen" prefix.
-                
-                # If we are in Docker, we CANNOT poll the disk.
-                # We need to list files via API? ComfyUI doesn't have a simple "list outputs" API without custom nodes.
-                # Strategy Change: We can't easily know the filename if we don't control the output filename strictly.
-                # But we set "filename_prefix": "Bedrock_Flux_Gen".
-                
-                # Alternative: Just skip image generation in Docker for this MVP step?
-                # User wants "Cool".
-                
-                # Let's try to fetch the LATEST image from the View API if we can guess the name?
-                # No, that's brittle.
-                
-                # BETTER: If in Docker, we just use a placeholder for now to avoid the crash? 
-                # OR we try to assume the filename logic? Comfy usually does prefix_00001.png.
-                # Without shared storage, this is hard.
-                
-                if os.path.exists('/.dockerenv'):
-                     print("⚠️ Docker detected: Cannot access Host filesystem to retrieve image.")
-                     print("ℹ️ (Future: Implement WebSocket to receive image data directly)")
-                     return self._get_fallback_image(category)
-                
-                print("⚠️ Timeout waiting for image.")
+                    if prompt_id in hist_data:
+                        prompt_history = hist_data[prompt_id]
+                        
+                        # Check if completed
+                        if prompt_history.get('status', {}).get('completed', False):
+                            # Extract image filename from outputs
+                            outputs = prompt_history.get('outputs', {})
+                            
+                            # Find the SaveImage node output (node "9" in our workflow)
+                            for node_id, node_output in outputs.items():
+                                if 'images' in node_output:
+                                    images = node_output['images']
+                                    if images:
+                                        # Get the first image
+                                        img_info = images[0]
+                                        filename = img_info['filename']
+                                        subfolder = img_info.get('subfolder', '')
+                                        img_type = img_info.get('type', 'output')
+                                        
+                                        print(f"   ✅ Image generated: {filename}")
+                                        
+                                        # 4. Fetch image via /view endpoint
+                                        view_params = f"filename={filename}&type={img_type}"
+                                        if subfolder:
+                                            view_params += f"&subfolder={subfolder}"
+                                        
+                                        conn = http.client.HTTPConnection(conn_host, conn_port, timeout=30)
+                                        conn.request("GET", f"/view?{view_params}")
+                                        img_response = conn.getresponse()
+                                        
+                                        if img_response.status == 200:
+                                            image_data = img_response.read()
+                                            conn.close()
+                                            
+                                            # Save to assets directory
+                                            dest_filename = "bedrock_latest.png"
+                                            dest_path = os.path.join(ASSETS_DIR, dest_filename)
+                                            
+                                            with open(dest_path, 'wb') as f:
+                                                f.write(image_data)
+                                            
+                                            print(f"   ✅ Image saved to {dest_path}")
+                                            return f"/assets/{dest_filename}"
+                                        else:
+                                            conn.close()
+                                            print(f"⚠️ Failed to fetch image: {img_response.status}")
+                                            break
+                            
+                            # If we got here, outputs didn't have images
+                            print("⚠️ Prompt completed but no images found in output")
+                            break
+                        
+                        # Check if there was an error
+                        if 'status' in prompt_history and 'status_str' in prompt_history['status']:
+                            status_str = prompt_history['status']['status_str']
+                            if 'error' in status_str.lower():
+                                print(f"⚠️ ComfyUI execution error: {status_str}")
+                                break
+                    
+                    # Not complete yet, wait and retry
+                    time.sleep(3)
+                    
+                except Exception as poll_error:
+                    print(f"⚠️ Polling error: {poll_error}")
+                    time.sleep(3)
+            
+            # If we got here without image_data, use fallback
+            if not image_data:
+                print("⚠️ Timeout or error during image generation")
                 return self._get_fallback_image(category)
             
         except Exception as e:
-            print(f"⚠️ ComfyUI Connection Failed (is it running?): {e}")
-            return None
+            print(f"⚠️ ComfyUI Connection Failed: {e}")
+            import traceback
+            traceback.print_exc()
+            return self._get_fallback_image(category)
 
     def _get_fallback_image(self, category):
         """Pick a random image from the stock directory."""
