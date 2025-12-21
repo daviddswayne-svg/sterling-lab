@@ -1,3 +1,130 @@
+# Swayne Systems AI Platform - Quick Reference Guide
+
+## What is This Platform?
+
+**Swayne Systems** (swaynesystems.ai) is a cutting-edge AI infrastructure platform featuring:
+
+### Sterling Lab - AI Chat Interface
+**Location**: https://swaynesystems.ai/lab
+
+**What It Is**: Sterling Lab is the code name/branding for the Swayne Systems AI chat interface. It uses a "Sterling Estate Office" theme as a demo showcasing estate management and consulting capabilities.
+
+**Key Point**: **Sterling Lab = Swayne Systems AI Chat** with themed branding
+
+**Features**:
+- Multi-agent Council Mode (specialized AI personas collaborate)
+- Oracle Mode with DeepSeek-R1 70B for deep reasoning
+- Vision Agent for image analysis
+- RAG (Retrieval-Augmented Generation) with ChromaDB
+- Running 70B+ models completely locally on Mac Studios
+- No external APIs - all processing on powerful local hardware
+
+### Bedrock Insurance - AI Agent Demo  
+**Location**: https://swaynesystems.ai/bedrock
+
+**What It Is**: Bedrock Insurance is a demonstration of autonomous multi-agent AI workflows. It's a showcase/demo page, NOT a real insurance company.
+
+**Purpose**: Demonstrates how multiple AI agents can collaborate to:
+- Generate content strategies
+- Create images via ComfyUI
+- Build web pages
+- Coordinate and publish results
+
+**Key Point**: **Bedrock Insurance = AI Agent Workflow Demonstration** showcasing what's possible with coordinated AI systems
+
+**The "Staff"**: LLM-powered agents (Content Director, Photo Designer, Web Developer, Publishing Manager) that collaborate on tasks
+
+### The Tech Stack (Why It's Impressive)
+
+**Local AI Processing**:
+- Dual Mac Studio setup (M3 Ultra + M1 Ultra)
+- Combined 224GB unified memory
+- Running models up to 70B parameters locally
+- No OpenAI, Anthropic, or external API dependencies
+
+**Models Available**:
+- qwen2.5-coder:32b - Technical analysis
+- llama3.3:70b - General reasoning  
+- deepseek-r1:70b - Deep forensic analysis (Oracle mode)
+- llama3.2-vision - Image understanding
+- dolphin-llama3 - Creative responses
+
+**Infrastructure**:
+- Docker deployment via Coolify
+- SSH tunnels connecting cloud to Mac Studios
+- Real-time streaming responses
+- ChromaDB vector database for RAG
+- Nginx routing with Let's Encrypt SSL
+
+---
+
+# Sterling Lab - AI-Powered Estate Intelligence
+
+> [!CAUTION]
+> **CRITICAL: This repo has TWO Git remotes**  
+> - `origin` → GitHub (**BACKUP ONLY** - does NOT deploy)
+> - `live` → Server (root@165.22.146.182:/var/www/swaynesystems.ai.git) - **ACTUAL DEPLOYMENT SOURCE**
+> 
+> **Always push to BOTH:**
+> ```bash
+> git push origin main && git push live main
+> ```
+
+Intelligent RAG (Retrieval-Augmented Generation) system for the Sterling Estate, powered by multiple LLM models through a distributed "Council Mode" architecture.
+
+## Features
+
+- **Council Mode**: Multi-agent system with specialized AI personas (Consultant, Analyst, Maverick)
+- **RAG Pipeline**: ChromaDB vector database with 8+ estate documents
+- **Real-time Streaming**: Live AI responses with token counting
+- **Distributed Architecture**: Mac Studio AI backend via SSH tunnel
+- **Knowledge Sources**: Internal ChromaDB + PrivateGPT integration
+
+## Architecture
+
+- **Frontend**: Streamlit web interface
+- **AI Backend**: Mac Studio M3 via SSH tunnel (port 11434)
+- **Models**: llama3.3:70b, qwen2.5-coder:32b, dolphin-llama3, nomic-embed-text
+- **Database**: ChromaDB for vector storage, SQLite for chat history
+
+## Deployment
+
+**IMPORTANT:** Must push to `live` remote for deployment (Coolify uses this, NOT GitHub)
+
+```bash
+# Correct deployment workflow:
+git add .
+git commit -m "Your message"
+git push origin main  # Backup to GitHub
+git push live main    # Deploy to swaynesystems.ai (REQUIRED!)
+
+# Or shorthand to push to both:
+git push --all
+```
+
+See [COOLIFY_DEPLOY.md](COOLIFY_DEPLOY.md) for full deployment guide.
+
+## Environment Variables
+
+```env
+OLLAMA_HOST=http://host.docker.internal:11434  # For Docker deployment
+```
+
+## Live Site
+
+- **Production**: https://swaynesystems.ai (via Coolify)
+- **Legacy**: https://swaynesystems.ai:8443 (direct Caddy)
+
+## AI Agent Workflow
+
+AI agents can auto-update by:
+```bash
+git add .
+git commit -m "AI update: [description]"
+git push origin main  # Backup
+git push live main    # Deploy (REQUIRED!)
+```
+→ Coolify automatically deploys from `live` remote
 # Sterling Lab - AI-Powered Estate Intelligence
 
 > [!CAUTION]
@@ -71,8 +198,22 @@ git push live main    # Deploy (REQUIRED!)
 Built with ❤️ for the Sterling Estate
 # Sterling Lab / Swayne Systems - Complete Site Knowledge Base
 
-## Overview
-**swaynesystems.ai** is a hybrid AI infrastructure platform combining cloud hosting with local AI processing. The site showcases advanced AI capabilities, RAG systems, and creative portfolio work.
+## Platform Overview
+
+**Swayne Systems** is a cutting-edge AI infrastructure platform running on swaynesystems.ai. 
+
+### What is "Sterling Lab"?
+
+**Sterling Lab** is the internal code name and branding for the Swayne Systems AI chat interface. It features:
+- **Sterling Estate Office** branding - a multi-family estate consulting theme
+- Demo use case focused on estate management and intelligence
+- The same powerful AI infrastructure as the main Swayne Systems platform
+
+Think of it as: **Sterling Lab = Swayne Systems AI Chat** with a themed demo showcasing capabilities through an estate consulting lens.
+
+### Platform Components
+
+The platform showcases advanced AI capabilities through multiple integrated systems:, and creative portfolio work.
 
 ---
 
