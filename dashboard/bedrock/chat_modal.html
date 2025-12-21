@@ -1,14 +1,14 @@
 <!-- AI Insurance Advisor Chat Modal -->
 <div id="chatModal" class="chat-modal">
-    <div class="chat-container">
+    <div class="insurance-chat-container">
         <!-- Header -->
-        <div class="chat-header">
+        <div class="insurance-chat-header">
             <h3>Bedrock Insurance Advisor</h3>
             <button class="close-chat" onclick="closeInsuranceChat()">✕</button>
         </div>
 
         <!-- Identity Verification Step -->
-        <div id="verifyStep" class="chat-step active">
+        <div id="verifyStep" class="insurance-chat-step active">
             <div class="verify-form">
                 <h4>Verify Your Identity</h4>
                 <p>Please provide your information to access your policies</p>
@@ -41,7 +41,7 @@
         </div>
 
         <!-- Chat Interface Step -->
-        <div id="chatStep" class="chat-step">
+        <div id="chatStep" class="insurance-chat-step">
             <!-- Customer Welcome -->
             <div id="customerWelcome" class="customer-welcome"></div>
 
@@ -49,7 +49,7 @@
             <div id="policyDashboard" class="policy-dashboard"></div>
 
             <!-- Chat Messages -->
-            <div class="chat-messages" id="chatMessages">
+            <div class="insurance-chat-messages" id="chatMessages">
                 <div class="ai-message">
                     <div class="message-avatar">🤖</div>
                     <div class="message-content">
@@ -66,7 +66,7 @@
             </div>
 
             <!-- Chat Input -->
-            <div class="chat-input-container">
+            <div class="insurance-insurance-chat-input-container">
                 <form id="chatForm" onsubmit="sendInsuranceMessage(event)">
                     <input type="text" id="chatInput" placeholder="Type your message..." autocomplete="off">
                     <button type="submit" class="send-button">
@@ -104,7 +104,7 @@
         justify-content: flex-end;
     }
 
-    .chat-container {
+    .insurance-chat-container {
         width: 450px;
         max-width: 100%;
         height: 100%;
@@ -135,7 +135,7 @@
         }
     }
 
-    .chat-header {
+    .insurance-chat-header {
         padding: 20px;
         background: linear-gradient(135deg, #1a1a2e, #2d3561);
         color: white;
@@ -144,7 +144,7 @@
         align-items: center;
     }
 
-    .chat-header h3 {
+    .insurance-chat-header h3 {
         margin: 0;
         font-size: 18px;
         font-weight: 600;
@@ -170,13 +170,13 @@
         background: rgba(255, 255, 255, 0.1);
     }
 
-    .chat-step {
+    .insurance-chat-step {
         display: none;
         flex: 1;
         overflow-y: auto;
     }
 
-    .chat-step.active {
+    .insurance-chat-step.active {
         display: flex;
         flex-direction: column;
     }
@@ -336,7 +336,7 @@
     }
 
     /* Chat Messages */
-    .chat-messages {
+    .insurance-chat-messages {
         flex: 1;
         padding: 20px;
         overflow-y: auto;
@@ -403,7 +403,7 @@
     }
 
     /* Chat Input */
-    .chat-input-container {
+    .insurance-chat-input-container {
         padding: 15px 20px;
         background: white;
         border-top: 1px solid #e0e0e0;
@@ -484,7 +484,7 @@
 
     /* Mobile Responsive */
     @media (max-width: 768px) {
-        .chat-container {
+        .insurance-chat-container {
             width: 100%;
         }
 
