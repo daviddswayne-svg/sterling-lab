@@ -4,16 +4,16 @@ let chatEventSource = null;
 
 // Open chat modal
 function openInsuranceChat() {
-    document.getElementById('chatModal').classList.add('active');
-    document.getElementById('verifyStep').classList.add('active');
-    document.getElementById('chatStep').classList.remove('active');
+    document.getElementById('insuranceChatModal').classList.add('active');
+    document.getElementById('insuranceVerifyStep').classList.add('active');
+    document.getElementById('insuranceChatStep').classList.remove('active');
 }
 
 // Close chat modal
 function closeInsuranceChat() {
-    document.getElementById('chatModal').classList.remove('active');
-    document.getElementById('verifyStep').classList.remove('active');
-    document.getElementById('chatStep').classList.remove('active');
+    document.getElementById('insuranceChatModal').classList.remove('active');
+    document.getElementById('insuranceVerifyStep').classList.remove('active');
+    document.getElementById('insuranceChatStep').classList.remove('active');
 
     // Close SSE connection if open
     if (chatEventSource) {
@@ -66,8 +66,8 @@ function showError(message) {
 
 // Show chat interface after successful verification
 function showChatInterface() {
-    document.getElementById('verifyStep').classList.remove('active');
-    document.getElementById('chatStep').classList.add('active');
+    document.getElementById('insuranceVerifyStep').classList.remove('active');
+    document.getElementById('insuranceChatStep').classList.add('active');
 
     // Show welcome message
     const welcomeDiv = document.getElementById('customerWelcome');
@@ -80,7 +80,7 @@ function showChatInterface() {
     renderPolicyDashboard();
 
     // Reset chat messages with welcome
-    const chatMessages = document.getElementById('chatMessages');
+    const chatMessages = document.getElementById('insuranceChatMessages');
     chatMessages.innerHTML = `
         <div class="ai-message">
             <div class="message-avatar">🤖</div>
@@ -138,7 +138,7 @@ function showPolicyDetails(policyNumber) {
     const policy = currentCustomer.policies.find(p => p.number === policyNumber);
     if (!policy) return;
 
-    addUserMessage(`Tell me about policy ${policyNumber}`);
+    addInsuranceMessage(`Tell me about policy ${policyNumber}`, 'user');
 
     // Trigger AI response with policy details
     setTimeout(() => {
@@ -158,19 +158,19 @@ function showPolicyDetails(policyNumber) {
         details += `\n**Renewal Date:** ${new Date(policy.renewal_date).toLocaleDateString()}\n\n`;
         details += `Is there anything specific you'd like to know about this policy?`;
 
-        addAIMessage(details);
+        addInsuranceMessage(details, 'ai');
     }, 500);
 }
 
 // Quick action: Ask about coverage
 function askAboutCoverage() {
-    addUserMessage("What coverage do I have?");
-    sendAIRequest("What coverage do I have?");
+    addInsuranceMessage("What coverage do I have?", 'user');
+    sendInsuranceAIRequest("What coverage do I have?");
 }
 
 // Quick action: Start claim
 function startClaim() {
-    addUserMessage("I want to file a claim");
+    addInsuranceMessage("I want to file a claim", 'user');
 
     setTimeout(() => {
         let message = "I can help you file a claim. Which type of claim do you need to file?\n\n";
@@ -179,7 +179,7 @@ function startClaim() {
         });
         message += "\nPlease let me know which policy this claim is for.";
 
-        addAIMessage(message);
+        addInsuranceMessage(message, 'ai');
     }, 500);
 }
 
@@ -187,12 +187,12 @@ function startClaim() {
 function sendInsuranceMessage(event) {
     event.preventDefault();
 
-    const input = document.getElementById('chatInput');
+    const input = document.getElementById('insuranceChatInput');
     const message = input.value.trim();
 
     if (!message) return;
 
-    addUserMessage(message);
+    addInsuranceMessage(message, 'user');
     input.value = '';
 
     // Send to AI
@@ -200,15 +200,7 @@ function sendInsuranceMessage(event) {
 }
 
 // Add user message to chat
-function addUserMessage(text) {
-    const chatMessages = document.getElementById('chatMessages');
-    const messageDiv = document.createElement('div');
-    messageDiv.className = 'user-message';
-    messageDiv.innerHTML = `
-        <div class="message-avatar">👤</div>
-        <div class="message-content">
-            <p>${escapeHtml(text)}</p>
-        </div>
+        </div >
     `;
     chatMessages.appendChild(messageDiv);
     chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -226,11 +218,11 @@ function addAIMessage(text) {
         .replace(/\n/g, '<br>');
 
     messageDiv.innerHTML = `
-        <div class="message-avatar">🤖</div>
+    < div class="message-avatar" >🤖</div >
         <div class="message-content">
             ${formatted}
         </div>
-    `;
+`;
     chatMessages.appendChild(messageDiv);
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }

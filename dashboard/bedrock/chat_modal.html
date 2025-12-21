@@ -1,5 +1,5 @@
 <!-- AI Insurance Advisor Chat Modal -->
-<div id="chatModal" class="chat-modal">
+<div id="insuranceChatModal" class="chat-modal">
     <div class="insurance-chat-container">
         <!-- Header -->
         <div class="insurance-chat-header">
@@ -8,7 +8,7 @@
         </div>
 
         <!-- Identity Verification Step -->
-        <div id="verifyStep" class="insurance-chat-step active">
+        <div id="insuranceVerifyStep" class="insurance-chat-step active">
             <div class="verify-form">
                 <h4>Verify Your Identity</h4>
                 <p>Please provide your information to access your policies</p>
@@ -41,7 +41,7 @@
         </div>
 
         <!-- Chat Interface Step -->
-        <div id="chatStep" class="insurance-chat-step">
+        <div id="insuranceChatStep" class="insurance-chat-step">
             <!-- Customer Welcome -->
             <div id="customerWelcome" class="customer-welcome"></div>
 
@@ -49,7 +49,7 @@
             <div id="policyDashboard" class="policy-dashboard"></div>
 
             <!-- Chat Messages -->
-            <div class="insurance-chat-messages" id="chatMessages">
+            <div class="insurance-chat-messages" id="insuranceChatMessages">
                 <div class="ai-message">
                     <div class="message-avatar">🤖</div>
                     <div class="message-content">
@@ -67,8 +67,8 @@
 
             <!-- Chat Input -->
             <div class="insurance-insurance-chat-input-container">
-                <form id="chatForm" onsubmit="sendInsuranceMessage(event)">
-                    <input type="text" id="chatInput" placeholder="Type your message..." autocomplete="off">
+                <form id="insuranceChatForm" onsubmit="sendInsuranceMessage(event)">
+                    <input type="text" id="insuranceChatInput" placeholder="Type your message..." autocomplete="off">
                     <button type="submit" class="send-button">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                             <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" stroke-width="2" stroke-linecap="round"
@@ -414,7 +414,7 @@
         gap: 10px;
     }
 
-    #chatInput {
+    #insuranceChatInput {
         flex: 1;
         padding: 12px 16px;
         border: 2px solid #e0e0e0;
@@ -423,7 +423,7 @@
         transition: border-color 0.3s;
     }
 
-    #chatInput:focus {
+    #insuranceChatInput:focus {
         outline: none;
         border-color: #4a90e2;
     }
