@@ -184,8 +184,8 @@ class PhotoDesigner:
             
             headers = {"Content-Type": "application/json"}
             
-            # Submit the prompt and get prompt_id
-            conn = http.client.HTTPConnection(conn_host, conn_port, timeout=30)
+            # Submit the prompt and get prompt_id (allow time for SSH tunnel latency)
+            conn = http.client.HTTPConnection(conn_host, conn_port, timeout=120)
             conn.request("POST", "/prompt", json.dumps(payload), headers)
             response = conn.getresponse()
             response_data = response.read()
