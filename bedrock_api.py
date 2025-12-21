@@ -15,10 +15,6 @@ import requests
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 
-# Register chat API blueprint
-from chat_api import chat_bp
-app.register_blueprint(chat_bp)
-
 # Configuration
 OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://host.docker.internal:11434")
 MODEL = "dolphin-llama3"
@@ -32,6 +28,14 @@ ANTIGRAVITY_ALLOWED_IPS = os.getenv("ANTIGRAVITY_ALLOWED_IPS", "71.197.228.171")
 ANTIGRAVITY_ENABLED = os.getenv("ANTIGRAVITY_ENABLED", "true").lower() == "true"
 PUBLIC_CHAT_ENABLED = os.getenv("PUBLIC_CHAT_ENABLED", "true").lower() == "true"
 PUBLIC_CHAT_RATE_LIMIT = int(os.getenv("PUBLIC_CHAT_RATE_LIMIT", "20"))
+
+# Register chat API blueprint
+try:
+    from chat_api import chat_bp
+    app.register_blueprint(chat_bp)
+    print("✅ Chat API blueprint registered successfully")
+except Exception as e:
+    print(f"⚠️ Failed to register chat API blueprint: {e}")
 
 # Configure Gemini
 if GEMINI_API_KEY:
