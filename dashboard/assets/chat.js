@@ -23,7 +23,7 @@ function closeInsuranceChat() {
 
     // Reset state
     currentCustomer = null;
-    document.getElementById('chatMessages').innerHTML = '';
+    document.getElementById('insuranceChatMessages').innerHTML = '';
     document.getElementById('verifyForm').reset();
 }
 
@@ -200,29 +200,31 @@ function sendInsuranceMessage(event) {
 }
 
 // Add user message to chat
-        </div >
-    `;
-    chatMessages.appendChild(messageDiv);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-}
-
-// Add AI message to chat
-function addAIMessage(text) {
-    const chatMessages = document.getElementById('chatMessages');
+function addInsuranceMessage(text, type, avatar = null) {
+    const chatMessages = document.getElementById('insuranceChatMessages');
     const messageDiv = document.createElement('div');
-    messageDiv.className = 'ai-message';
 
-    // Convert markdown-style formatting to HTML
-    const formatted = text
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\n/g, '<br>');
+    // Use 'ai-message' for AI/bot and 'user-message' for user
+    const className = type === 'user' ? 'user-message' : 'ai-message';
+    messageDiv.className = className;
+
+    const avatarIcon = type === 'user' ? '👤' : '🤖';
+
+    // Format if AI
+    let content = escapeHtml(text);
+    if (type !== 'user') {
+        content = text
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\n/g, '<br>');
+    }
 
     messageDiv.innerHTML = `
-    < div class="message-avatar" >🤖</div >
+        <div class="message-avatar">${avatarIcon}</div>
         <div class="message-content">
-            ${formatted}
+            ${type === 'user' ? `<p>${content}</p>` : content}
         </div>
-`;
+    `;
+
     chatMessages.appendChild(messageDiv);
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
@@ -247,11 +249,11 @@ async function sendInsuranceAIRequest(message) {
         typingIndicator.style.display = 'none';
 
         if (data.response) {
-            addAIMessage(data.response);
+            addInsuranceMessage(data.response, 'ai');
         }
     } catch (error) {
         typingIndicator.style.display = 'none';
-        addAIMessage("I apologize, but I'm having trouble connecting. Please try again.");
+        addInsuranceMessage("I apologize, but I'm having trouble connecting. Please try again.", 'ai');
     }
 }
 
@@ -264,8 +266,8 @@ function escapeHtml(text) {
 
 // Close modal when clicking outside
 document.addEventListener('click', (e) => {
-    const modal = document.getElementById('chatModal');
+    const modal = document.getElementById('insuranceChatModal');
     if (e.target === modal) {
-        closeChat();
+        closeInsuranceChat();
     }
 });
