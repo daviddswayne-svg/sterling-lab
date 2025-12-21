@@ -1,0 +1,162 @@
+{
+    "customers": [
+        {
+            "id": "C001",
+            "name": "Sarah Thompson",
+            "phone": "555-0123",
+            "email": "sarah.t@email.com",
+            "policies": [
+                {
+                    "type": "home",
+                    "number": "HOM-2024-00123",
+                    "address": "742 Evergreen Terrace, Springfield",
+                    "coverage": "$500,000",
+                    "premium": "$1,200/year",
+                    "deductible": "$2,500",
+                    "status": "active",
+                    "renewal_date": "2025-06-15",
+                    "features": [
+                        "Fire & Theft",
+                        "Flood Protection",
+                        "Personal Property"
+                    ]
+                },
+                {
+                    "type": "auto",
+                    "number": "AUTO-2024-00456",
+                    "vehicle": "2022 Honda Accord",
+                    "coverage": "100/300/100",
+                    "premium": "$1,800/year",
+                    "deductible": "$1,000",
+                    "status": "active",
+                    "renewal_date": "2025-03-20",
+                    "features": [
+                        "Collision",
+                        "Comprehensive",
+                        "Uninsured Motorist"
+                    ]
+                }
+            ],
+            "claims": [
+                {
+                    "number": "CLM-2024-789",
+                    "type": "home",
+                    "policy": "HOM-2024-00123",
+                    "date": "2024-11-10",
+                    "status": "settled",
+                    "amount": "$3,500",
+                    "description": "Water damage from burst pipe in basement"
+                }
+            ],
+            "documents": [
+                {
+                    "name": "Home Policy Document",
+                    "type": "pdf",
+                    "url": "/documents/HOM-2024-00123.pdf",
+                    "date": "2024-06-15"
+                },
+                {
+                    "name": "Auto Policy Document",
+                    "type": "pdf",
+                    "url": "/documents/AUTO-2024-00456.pdf",
+                    "date": "2024-03-20"
+                }
+            ]
+        },
+        {
+            "id": "C002",
+            "name": "Michael Chen",
+            "phone": "555-0456",
+            "email": "m.chen@email.com",
+            "policies": [
+                {
+                    "type": "auto",
+                    "number": "AUTO-2024-00789",
+                    "vehicle": "2023 Tesla Model 3",
+                    "coverage": "250/500/100",
+                    "premium": "$2,100/year",
+                    "deductible": "$500",
+                    "status": "active",
+                    "renewal_date": "2025-08-10",
+                    "features": [
+                        "Collision",
+                        "Comprehensive",
+                        "Roadside Assistance"
+                    ]
+                }
+            ],
+            "claims": [],
+            "documents": [
+                {
+                    "name": "Auto Policy Document",
+                    "type": "pdf",
+                    "url": "/documents/AUTO-2024-00789.pdf",
+                    "date": "2024-08-10"
+                }
+            ]
+        },
+        {
+            "id": "C003",
+            "name": "Jennifer Martinez",
+            "phone": "555-0789",
+            "email": "jmartinez@email.com",
+            "policies": [
+                {
+                    "type": "home",
+                    "number": "HOM-2024-00234",
+                    "address": "1428 Elm Street, Denver, CO",
+                    "coverage": "$750,000",
+                    "premium": "$1,850/year",
+                    "deductible": "$5,000",
+                    "status": "active",
+                    "renewal_date": "2025-09-01",
+                    "features": [
+                        "Fire & Theft",
+                        "Earthquake",
+                        "Personal Property",
+                        "Liability"
+                    ]
+                },
+                {
+                    "type": "auto",
+                    "number": "AUTO-2024-00567",
+                    "vehicle": "2021 Subaru Outback",
+                    "coverage": "100/300/50",
+                    "premium": "$1,450/year",
+                    "deductible": "$1,500",
+                    "status": "active",
+                    "renewal_date": "2025-05-12",
+                    "features": [
+                        "Collision",
+                        "Comprehensive"
+                    ]
+                }
+            ],
+            "claims": [
+                {
+                    "number": "CLM-2024-456",
+                    "type": "auto",
+                    "policy": "AUTO-2024-00567",
+                    "date": "2024-10-15",
+                    "status": "processing",
+                    "amount": "$4,200",
+                    "description": "Minor collision - rear-end accident"
+                }
+            ],
+            "documents": [
+                {
+                    "name": "Home Policy Document",
+                    "type": "pdf",
+                    "url": "/documents/HOM-2024-00234.pdf",
+                    "date": "2024-09-01"
+                },
+                {
+                    "name": "Auto Policy Document",
+                    "type": "pdf",
+                    "url": "/documents/AUTO-2024-00567.pdf",
+                    "date": "2024-05-12"
+                }
+            ]
+        }
+    ]
+}

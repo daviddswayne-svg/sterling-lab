@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.swaynesystems.m3.keepalive</string>
+    
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>/Users/daviddswayne/mac_studio_scripts/m3_keepalive.sh</string>
+    </array>
+    
+    <key>RunAtLoad</key>
+    <true/>
+    
+    <key>StartInterval</key>
+    <integer>7200</integer>
+    
+    <key>StandardOutPath</key>
+    <string>/Users/daviddswayne/tunnel_keepalive_m3_launcher.log</string>
+    
+    <key>StandardErrorPath</key>
+    <string>/Users/daviddswayne/tunnel_keepalive_m3_launcher.log</string>
+    
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin</string>
+    </dict>
+</dict>
+</plist>

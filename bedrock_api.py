@@ -15,6 +15,10 @@ import requests
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 
+# Register chat API blueprint
+from chat_api import chat_bp
+app.register_blueprint(chat_bp)
+
 # Configuration
 OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://host.docker.internal:11434")
 MODEL = "dolphin-llama3"
