@@ -704,17 +704,17 @@ def run_app():
         
         col1, col2 = st.sidebar.columns(2)
         with col1:
-            if st.button("🗑️ Discard", use_container_width=True):
+            if st.button("🗑️ Discard", use_container_width=True, key="vision_discard_btn"):
                 st.session_state.vision_analysis = None
                 st.session_state.uploader_key += 1
                 st.rerun()
         with col2:
             if st.session_state.get("vision_analysis"):
-                if st.button("💾 Archive", use_container_width=True):
+                if st.button("💾 Archive", use_container_width=True, key="vision_archive_btn"):
                     st.session_state.trigger_ingest = True
                     st.rerun()
             else:
-                st.button("💾 Archive", use_container_width=True, disabled=True)
+                st.button("💾 Archive", use_container_width=True, disabled=True, key="vision_archive_disabled_btn")
         
         # Store analysis in session state to allow ingestion after viewing
         if "vision_analysis" not in st.session_state:
