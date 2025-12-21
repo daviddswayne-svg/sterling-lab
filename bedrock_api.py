@@ -354,13 +354,10 @@ def antigravity_apply():
 
 @app.route('/antigravity/public/chat', methods=['POST'])
 def antigravity_public_chat():
-    """Public chat - read-only, rate-limited, no code access"""
+    """Public chat - Local Qwen RAG, rate-limited, read-only"""
     try:
         if not PUBLIC_CHAT_ENABLED:
             return jsonify({"error": "Public chat is disabled"}), 403
-        
-        if not GEMINI_API_KEY:
-            return jsonify({"error": "Chat service unavailable"}), 500
         
         # Get client IP
         client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
@@ -388,88 +385,80 @@ def antigravity_public_chat():
         
         history = public_chat_conversations[session_id]
         
-        # Build conversation context for Gemini
-        conversation = []
-        for msg in history[-5:]:  # Shorter context for public (5 vs 10)
-            conversation.append({
-                "role": msg["role"],
-                "parts": [msg["content"]]
-            })
-        
-        # Add public system context
-        if not conversation:
-            # Load comprehensive knowledge base
-            knowledge_base_path = os.path.join(os.path.dirname(__file__), 'SITE_KNOWLEDGE.md')
-            try:
-                with open(knowledge_base_path, 'r') as f:
-                    site_knowledge = f.read()
-            except FileNotFoundError:
-                site_knowledge = "Knowledge base not found. Using basic information."
-            
-            system_context = f"""You are Antigravity, an AI assistant for Sterling Lab at swaynesystems.ai.
-
-COMPREHENSIVE SITE KNOWLEDGE:
-{site_knowledge}
-
----
-
-RESPONSE STYLE:
-- Keep responses concise and to-the-point (2-3 paragraphs maximum)
-- Use bullet points for lists
-- Answer directly without lengthy introductions
-- Focus on the most relevant information
-- If asked for details, provide them succinctly
-
-YOU CANNOT:
-- Make code changes or suggest edits
-- Reveal API keys, passwords, or credentials  
-- Execute commands or file operations
-- Access admin-only features
-- Modify any files or configurations
-
-Keep responses informative but concise. If someone asks about specific code, explain what it does conceptually without revealing sensitive implementation details like API keys."""
-            
-            conversation.append({
-                "role": "user",
-                "parts": [system_context]
-            })
-            conversation.append({
-                "role": "model",
-                "parts": ["Hi! I'm Antigravity, the AI assistant for Sterling Lab. I can answer detailed questions about our AI technology stack, the models we use, our architecture, and how everything works. What would you like to know?"]
-            })
-        
-        # Add current message
-        conversation.append({
-            "role": "user",
-            "parts": [user_message]
-        })
-        
         def generate():
             try:
-                model = genai.GenerativeModel('gemini-2.0-flash-exp')
-                response = model.generate_content(
-                    conversation,
+                # Load public ChromaDB
+                from langchain_chroma import Chroma
+                from langchain_ollama import OllamaEmbeddings
+                from ollama import Client
+                
+                chroma_path = os.path.join(os.path.dirname(__file__), 'chroma_db_public')
+                embeddings = OllamaEmbeddings(model="nomic-embed-text", base_url=OLLAMA_HOST)
+                db = Chroma(persist_directory=chroma_path, embedding_function=embeddings)
+                
+                # Retrieve relevant context
+                relevant_docs = db.similarity_search(user_message, k=3)
+                context = "\n\n".join([doc.page_content for doc in relevant_docs])
+                
+                # Build conversation for Qwen
+                messages = [
+                    {
+                        "role": "system",
+                        "content": """You are Antigravity, a helpful AI assistant for Swayne Systems AI Lab at swaynesystems.ai. 
+
+You explain features, architecture, and how to use the platform. Keep responses concise (2-3 paragraphs).
+
+YOU CANNOT:
+- Write or suggest code edits
+- Reveal credentials or sensitive details
+- Access admin features
+
+Use the provided context to answer accurately."""
+                    }
+                ]
+                
+                # Add recent history for context
+                for msg in history[-3:]:
+                    messages.append({
+                        "role": msg["role"],
+                        "content": msg["content"]
+                    })
+                
+                # Add current question with context
+                messages.append({
+                    "role": "user",
+                    "content": f"CONTEXT:\n{context}\n\nQUESTION: {user_message}"
+                })
+                
+                # Stream from Qwen
+                client = Client(host=OLLAMA_HOST)
+                response = client.chat(
+                    model='qwen2.5-coder:32b',
+                    messages=messages,
                     stream=True
                 )
                 
                 full_response = ""
                 for chunk in response:
-                    if chunk.text:
-                        full_response += chunk.text
-                        yield f"data: {json.dumps({'chunk': chunk.text})}\n\n"
+                    if 'message' in chunk and 'content' in chunk['message']:
+                        text = chunk['message']['content']
+                        full_response += text
+                        yield f"data: {json.dumps({'chunk': text})}\n\n"
                 
                 # Save to history
                 history.append({"role": "user", "content": user_message})
-                history.append({"role": "model", "content": full_response})
+                history.append({"role": "assistant", "content": full_response})
                 
-                # Log public chat usage
-                print(f"📊 Public chat from {client_ip}: {len(full_response)} chars")
+                # Log usage
+                print(f"📊 Public RAG chat from {client_ip}: {len(full_response)} chars")
                 
                 yield f"data: {json.dumps({'done': True})}\n\n"
                 
             except Exception as e:
-                print(f"❌ Public chat error: {e}")
-                yield f"data: {json.dumps({'error': str(e)})}\n\n"
+                print(f"❌ Public RAG chat error: {e}")
+                import traceback
+                traceback.print_exc()
+                yield f"data: {json.dumps({'error': 'Chat service temporarily unavailable'})}\n\n"
         
         return Response(
             stream_with_context(generate()),
@@ -481,7 +470,7 @@ Keep responses informative but concise. If someone asks about specific code, exp
         )
     
     except Exception as e:
-        print(f"❌ Error in public chat: {e}")
+        print(f"❌ Error in public chat endpoint: {e}")
         return jsonify({"error": str(e)}), 500
 
 # === Session Token Management ===

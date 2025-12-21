@@ -1,0 +1,262 @@
+# Swayne Systems AI Lab - Knowledge Base
+
+## Platform Overview
+
+Swayne Systems is a cutting-edge AI infrastructure platform running on swaynesystems.ai. The platform showcases advanced AI capabilities through multiple integrated systems:
+
+- **Sterling Lab**: The flagship AI chat interface featuring multi-agent collaboration, document analysis, and real-time AI processing
+- **Bedrock Insurance**: A production-ready AI agent system demonstrating enterprise applications
+- **Creative Portfolio**: Interactive 3D voxel art and AI-generated video content
+
+The infrastructure is powered by Apple Mac Studio computers (M3 and M1 Ultra) with a combined 224GB of unified memory, connected via SSH tunnels to a DigitalOcean droplet running Docker containers.
+
+## Sterling Lab Features
+
+### Frontier Lab 2026 (Main Chat Interface)
+
+**Sterling Estate Office** - The rebranded AI chat system designed for multi-family estate consulting and intelligence.
+
+**Key Features:**
+- Real-time AI chat with multiple large language models
+- RAG (Retrieval-Augmented Generation) pipeline using ChromaDB
+- 106+ synthetic knowledge nodes about estate management
+- Token counting and performance metrics
+- Professional Sterling Estate branding with coat of arms
+
+### Council Mode
+
+A sophisticated multi-agent AI system that assembles specialized personas based on your question:
+
+**Available Personas:**
+- **Consultant**: Professional advisor for strategic guidance and explanations
+- **Analyst**: Technical expert for data analysis, calculations, and structured outputs
+- **Maverick**: Contrarian thinker for critiques and alternative viewpoints
+- **Oracle**: Deep reasoner using DeepSeek-R1 70B for complex forensic analysis
+
+**How it Works:**
+1. Manager (qwen2.5-coder) analyzes your question
+2. Selects 1-3 appropriate personas
+3. Each persona provides their perspective
+4. Chairman synthesizes insights into a final answer
+
+### Oracle Mode
+
+Experience deep AI reasoning with DeepSeek-R1 70B running on the M1 Mac Studio:
+
+- Forensic-level analysis of complex questions
+- Pattern detection and deductive reasoning  
+- Runs on dedicated M1 Ultra hardware (128GB RAM)
+- Accessed via separate SSH tunnel for maximum performance
+
+### Vision Agent
+
+Upload images for AI-powered analysis using Llama 3.2 Vision:
+
+- Drag-and-drop image upload
+- Real-time vision model processing
+- Archive analyzed images to knowledge base
+- Supports PNG, JPG, JPEG formats (max 200MB)
+
+### Vivienne the Receptionist
+
+An innovative UX feature providing immediate engagement:
+
+- Instant warm greeting while AI processes requests
+- Professional, witty responses
+- Adapts message for Oracle or Council mode
+- Creates engaging wait experience
+
+## Available AI Models
+
+**Standard Models (Mac Studio M3):**
+- qwen2.5-coder:32b - Technical analysis and coding
+- llama3.3:70b - General conversation and reasoning
+- dolphin-llama3 - Creative and unfiltered responses
+- nomic-embed-text - Document embedding for RAG
+
+**Advanced Models (Mac Studio M1):**
+- deepseek-r1:70b - Deep reasoning and forensic analysis
+- llama3.2-vision:latest - Image analysis and understanding
+
+All models run locally on powerful Mac Studio hardware - no external API calls, complete privacy.
+
+## Technology Stack
+
+### Frontend
+- **Streamlit**: Modern Python web framework for AI interfaces
+- **Custom CSS**: Glassmorphic dark theme with premium aesthetics
+- **WebSockets**: Real-time streaming for live AI responses
+
+### Backend
+- **Ollama**: Local LLM serving on Mac Studios
+- **ChromaDB**: Vector database for retrieval-augmented generation
+- **LangChain**: RAG pipeline orchestration
+- **pysqlite3**: Chat history persistence
+
+### Infrastructure
+- **Docker**: Containerized deployment
+- **Nginx**: Reverse proxy routing traffic
+- **Coolify**: Automated deployment platform
+- **SSH Tunnels**: Secure Mac Studio → Droplet connectivity
+  - Port 11434: M3 standard models
+  - Port 12434: M1 Oracle/Vision models
+
+### Deployment
+- **DigitalOcean Droplet**: Cloud hosting
+- **Dual Git Remotes**: GitHub (backup) + Live server (deploy)
+- **Let's Encrypt**: Automatic SSL certificates
+- **Automatic Builds**: Push to Git triggers deployment
+
+## How to Use Sterling Lab
+
+### Accessing the Lab
+1. Visit swaynesystems.ai
+2. Click "Launch Sterling Lab AI Chat"
+3. Chat interface opens at /lab
+
+### Basic Chat
+1. Select a model from the dropdown (default: qwen2.5-coder:32b)
+2. Type your question in the input box
+3. Press Enter or click Send
+4. Watch AI response stream in real-time
+
+### Using Council Mode
+1. Enable "Council" checkbox in sidebar
+2. Ask a complex question requiring multiple perspectives
+3. Manager convenes appropriate team of personas
+4. Receive synthesized collaborative answer
+
+### Using Oracle Mode
+1. Enable "Oracle" toggle in sidebar
+2. Ask a complex, forensic-level question
+3. Vivienne greets you immediately
+4. DeepSeek-R1 provides deep analysis
+
+### Oracle + Council (Hybrid Reasoning)
+1. Enable both Oracle and Council toggles
+2. Oracle becomes available as a Council member
+3. Get best of both: fast collaboration + deep reasoning
+
+### Vision Agent
+1. Drag and drop an image to "Upload Image to Lab" section
+2. Vision model analyzes the image automatically
+3. View analysis results
+4. Click "Archive" to save to knowledge base or "Discard" to clear
+
+## Bedrock Insurance Demo
+
+A production-ready enterprise AI system demonstrating:
+
+- Multi-agent workflow with specialized AI personas
+- Document generation and processing
+- Real-time collaboration between AI agents
+- Enterprise-grade architecture
+
+Access via the "Bedrock Insurance" button on the homepage.
+
+## Creative Portfolio
+
+### T4 Bacteriophage
+Interactive 3D voxel simulation of a bacterial virus demonstrating:
+- Real-time 3D rendering
+- Scientific visualization
+- Technical creativity
+
+### Seattle Voxel Monorail
+Full 3D voxel environment showcasing:
+- Interactive navigation
+- Urban landscape modeling  
+- Advanced voxel techniques
+
+### AI Production Reel
+Generative AI video workflows featuring:
+- Character consistency across scenes
+- Enterprise storytelling applications
+- Cutting-edge video generation
+
+## Architecture Details
+
+### Mac Studio Cluster
+
+**Mac Studio M3 Ultra** (10.10.10.1):
+- 96GB Unified Memory
+- ~800 GB/s memory bandwidth
+- Handles standard models and Council mode
+- SSH tunnel on port 11434
+
+**Mac Studio M1 Ultra** (10.10.10.3):
+- 128GB Unified Memory
+- 800 GB/s memory bandwidth
+- Dedicated to Oracle and Vision processing
+- SSH tunnel on port 12434
+
+**Thunderbolt Bridge**:
+- 40 Gbps connection between Mac Studios
+- Enables cluster computing for large models
+- Can theoretically run 405B models distributed
+
+### Network Flow
+
+```
+User Browser (HTTPS)
+    ↓
+DigitalOcean Droplet (Nginx)
+    ↓
+Docker Container (Streamlit App)
+    ↓
+SSH Tunnels (11434, 12434)
+    ↓
+Mac Studios (Local LLMs)
+    ↓
+Response streams back to browser
+```
+
+### Data Privacy
+
+- All AI processing happens locally on Mac Studios
+- No data sent to external APIs
+- ChromaDB stored in Docker container
+- Chat history in local SQLite database
+- Complete control over data
+
+## Common Questions
+
+**Q: Is this using ChatGPT or Claude?**
+A: No! All models run locally on Mac Studio computers. No OpenAI, Anthropic, or other external APIs.
+
+**Q: How fast are responses?**
+A: Standard models: 20-40 tokens/second. Oracle (DeepSeek-R1): 10-20 tokens/second. All depends on question complexity.
+
+**Q: Can I use this for my own documents?**
+A: Currently, the system uses a curated knowledge base. Contact the admin for custom integrations.
+
+**Q: What's the difference between Council and Oracle?**
+A: Council = fast multi-agent collaboration. Oracle = deep single-agent reasoning. Use both for hybrid approach!
+
+**Q: Is my chat history saved?**
+A: Yes, in a local SQLite database. It helps the AI maintain context across conversations.
+
+**Q: Can the AI write code?**
+A: The underlying models can, but the public chat focuses on explanations about the platform, not code generation.
+
+**Q: How do I access the Bedrock demo?**
+A: Click the "Bedrock Insurance" button on the homepage.
+
+**Q: What file types can Vision Agent analyze?**
+A: PNG, JPG, and JPE formats up to 200MB.
+
+**Q: Is the site secure?**
+A: Yes! HTTPS with Let's Encrypt SSL, running on trusted cloud infrastructure.
+
+## Contact & Access
+
+- **Website**: https://swaynesystems.ai
+- **Sterling Lab**: https://swaynesystems.ai/lab  
+- **Bedrock Demo**: https://swaynesystems.ai/bedrock
+- **Status**: All systems operational 24/7
+
+For admin access or custom integrations, contact the platform administrator.
+
+---
+
+*Last Updated: December 2025*
