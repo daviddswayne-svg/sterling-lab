@@ -255,7 +255,7 @@
     <script>
         // System Status Checker
         function checkSystemStatus() {
-            fetch('/health')
+            fetch('/api/health')
                 .then(r => r.json())
                 .then(data => {
                     const indicator = document.getElementById('systemStatus');
