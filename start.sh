@@ -22,6 +22,17 @@ else
 fi
 echo ""
 
+# Step 1.6: Ingest Sterling Estate Knowledge
+echo "[1.6/8] Ingesting Sterling Estate Knowledge Base..."
+if [ -f "/app/ingest_sterling.py" ]; then
+    rm -rf /app/chroma_db_synthetic  # Clean start each deploy
+    python ingest_sterling.py || echo "⚠️  Warning: Sterling ingestion had issues."
+    echo "✅ Sterling Estate knowledge based ready"
+else
+    echo "⚠️  Warning: ingest_sterling.py not found, skipping..."
+fi
+echo ""
+
 # Step 2: Verify Dashboard Exists
 echo "[2/8] Verifying Dashboard Files..."
 if [ ! -d "/app/dashboard" ]; then

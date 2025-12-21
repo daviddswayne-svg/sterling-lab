@@ -868,123 +868,6 @@ def run_app():
                         st.session_state.trigger_ingest = True
                         st.rerun()
 
-            elif use_oracle:
-                # --- ORACLE REASONING MODE (M1) with RECEPTIONIST ---
-                if not get_lab_status():
-                    st.error("❌ M1 Muscle is Offline. Oracle Mode requires the Thunderbolt bridge.")
-                    st.stop()
-                
-                # Step 1: RECEPTIONIST provides immediate feedback
-                receptionist_placeholder = st.empty()
-                with receptionist_placeholder.container():
-                    st.markdown("### 💁 Sterling Estate Receptionist")
-                    receptionist_msg = st.empty()
-                    
-                    # Generate warm receptionist message
-                    receptionist_prompt = f'''You are Vivienne, the warm and professional receptionist at the Sterling Estate's Frontier Oracle service. 
-                    
-A client just asked: "{prompt}"
-
-Your task:
-1. Acknowledge their question with warmth and professionalism
-2. Tell them you're connecting them to the Oracle for deep analysis
-3. Provide 2-3 sentences of general context or advice related to their question to give them something interesting to read while they wait
-4. Keep it witty, sophisticated, and concise (3-4 sentences total)
-5. End by saying the Oracle is now reviewing their case
-
-Be friendly but professional - like a high-end concierge service.'''
-                    
-                    try:
-                        # Use fast local model for receptionist
-                        recept_client = Client(host=OLLAMA_HOST)
-                        recept_response = recept_client.chat(
-                            model=selected_model,  # Use the currently selected fast model
-                            messages=[{'role': 'user', 'content': receptionist_prompt}]
-                        )
-                        receptionist_text = recept_response['message']['content']
-                        receptionist_msg.markdown(receptionist_text)
-                    except:
-                        receptionist_msg.markdown("☎️ **Connecting you to the Oracle for deep analysis...**")
-                
-                # Step 2: Oracle Processing
-                with st.spinner("🔮 Oracle is analyzing..."):
-                    try:
-                        # Context Retrieval
-                        if is_greeting(prompt):
-                            context_text = "The user is greeting you. Respond with a welcoming, forensic Frontier Oracle persona."
-                            relevant_docs = []
-                        else:
-                            retriever = qa_chain.retriever
-                            relevant_docs = retriever.invoke(prompt)
-                            context_text = "\n\n".join([f"Source: {doc.metadata.get('source', 'Unknown')}\nContent: {doc.page_content}" for doc in relevant_docs])
-                        
-                        # Build Oracle Prompt
-                        oracle_prompt = f"""You are the 2026 Frontier Oracle. 
-Use the following context from the Sterling Family Office archive to provide a DEEP DEDUCTIVE ANALYSIS.
-You must find the hidden patterns, contradictions, and clues.
-
-CONTEXT:
----
-{context_text}
----
-
-QUESTION:
-{prompt}
-
-Analysis Instructions:
-1. Identify specific transactions or forensic details in the context.
-2. Examine the medical, financial, and legal overlaps.
-3. Locate active statuses of family members or aliases.
-4. Conclude with deductive reasoning on the user's specific query.
-"""
-
-                        # Call M1 Oracle
-                        payload = {
-                            "model": FRONTIER_MODEL,
-                            "prompt": oracle_prompt,
-                            "stream": True
-                        }
-                        
-                        response = requests.post(f"{M1_OLLAMA}/api/generate", json=payload, stream=True)
-                        
-                        # Clear receptionist and show Oracle response
-                        # receptionist_placeholder.empty() # Keep receptionist visible so users can read the handoff
-                        
-                        # Clear receptionist now that Oracle response is ready
-                        # receptionist_placeholder.empty() # Commented out to prevent disappearing too fast
-                        
-                        st.markdown("### 🔮 Oracle Analysis")
-                        final_answer = ""
-                        answer_placeholder = st.empty()
-                        
-                        for line in response.iter_lines():
-                            if line:
-                                chunk = json.loads(line)
-                                if 'response' in chunk:
-                                    content = chunk['response']
-                                    # Skip thinking tags if present
-                                    if "<think>" not in content and "</think>" not in content:
-                                        final_answer += content
-                                        answer_placeholder.markdown(final_answer + "▌")
-                        
-                        # Final Polish
-                        answer_placeholder.markdown(final_answer)
-                        
-                        # Save to history
-                        st.session_state.current_session_messages.append({"role": "assistant", "content": final_answer})
-                        st.session_state.db_history.append({"role": "assistant", "content": final_answer})
-                        save_message("assistant", final_answer)
-                        
-                        # Sources
-                        if relevant_docs:
-                            with st.expander("View Forensic Sources (Retrieved for Oracle)"):
-                                for i, doc in enumerate(relevant_docs):
-                                    st.markdown(f"**Source {i+1}:** {doc.metadata.get('source', 'Unknown')}")
-                                    st.text(doc.page_content[:500] + "...")
-
-                    except Exception as e:
-                        st.error(f"Oracle Connection Error: {e}")
-
             elif use_distributed:
                 # --- COUNCIL MODE with RECEPTIONIST ---
                 
@@ -1051,7 +934,7 @@ RULES:
 - Use 2-4 personas. Mix different viewpoints for complex questions
 - Don't always pick the same team. Vary based on the question's nature
 
-Return JSON ONLY:
+Return JSON ONLY (No Markdown, No Code Blocks):
 {
   "reasoning": "Why this specific team for THIS question?",
   "team": ["persona1", "persona2"],
@@ -1070,7 +953,7 @@ RULES:
 - Use 1-3 personas. Mix different viewpoints for complex questions
 - Don't always pick the same team. Vary based on the question's nature
 
-Return JSON ONLY:
+Return JSON ONLY (No Markdown, No Code Blocks):
 {
   "reasoning": "Why this specific team for THIS question?",
   "team": ["persona1", "persona2"],
@@ -1083,7 +966,14 @@ Return JSON ONLY:
                         ])
                         
                         try:
-                            decision = json.loads(manager_response['message']['content'])
+                            # FIX: Strip markdown code blocks if present
+                            clean_json = manager_response['message']['content']
+                            if "```" in clean_json:
+                                clean_json = clean_json.split("```")[1]
+                                if clean_json.startswith("json"):
+                                    clean_json = clean_json[4:]
+                            
+                            decision = json.loads(clean_json)
                             team = decision.get("team", ["Consultant"])
                             instruction = decision.get("instruction", "")
                             reason = decision.get("reasoning", "")
@@ -1299,6 +1189,123 @@ Synthesize these into a single Final Answer. Use the structure:
                         for i, doc in enumerate(source_docs):
                             st.markdown(f"**Source {i+1}:** {doc.metadata.get('source', 'Unknown')}")
                             st.text(doc.page_content[:500] + "...")
+
+            elif use_oracle:
+                # --- ORACLE REASONING MODE (M1) with RECEPTIONIST ---
+                if not get_lab_status():
+                    st.error("❌ M1 Muscle is Offline. Oracle Mode requires the Thunderbolt bridge.")
+                    st.stop()
+                
+                # Step 1: RECEPTIONIST provides immediate feedback
+                receptionist_placeholder = st.empty()
+                with receptionist_placeholder.container():
+                    st.markdown("### 💁 Sterling Estate Receptionist")
+                    receptionist_msg = st.empty()
+                    
+                    # Generate warm receptionist message
+                    receptionist_prompt = f'''You are Vivienne, the warm and professional receptionist at the Sterling Estate's Frontier Oracle service. 
+                    
+A client just asked: "{prompt}"
+
+Your task:
+1. Acknowledge their question with warmth and professionalism
+2. Tell them you're connecting them to the Oracle for deep analysis
+3. Provide 2-3 sentences of general context or advice related to their question to give them something interesting to read while they wait
+4. Keep it witty, sophisticated, and concise (3-4 sentences total)
+5. End by saying the Oracle is now reviewing their case
+
+Be friendly but professional - like a high-end concierge service.'''
+                    
+                    try:
+                        # Use fast local model for receptionist
+                        recept_client = Client(host=OLLAMA_HOST)
+                        recept_response = recept_client.chat(
+                            model=selected_model,  # Use the currently selected fast model
+                            messages=[{'role': 'user', 'content': receptionist_prompt}]
+                        )
+                        receptionist_text = recept_response['message']['content']
+                        receptionist_msg.markdown(receptionist_text)
+                    except:
+                        receptionist_msg.markdown("☎️ **Connecting you to the Oracle for deep analysis...**")
+                
+                # Step 2: Oracle Processing
+                with st.spinner("🔮 Oracle is analyzing..."):
+                    try:
+                        # Context Retrieval
+                        if is_greeting(prompt):
+                            context_text = "The user is greeting you. Respond with a welcoming, forensic Frontier Oracle persona."
+                            relevant_docs = []
+                        else:
+                            retriever = qa_chain.retriever
+                            relevant_docs = retriever.invoke(prompt)
+                            context_text = "\n\n".join([f"Source: {doc.metadata.get('source', 'Unknown')}\nContent: {doc.page_content}" for doc in relevant_docs])
+                        
+                        # Build Oracle Prompt
+                        oracle_prompt = f"""You are the 2026 Frontier Oracle. 
+Use the following context from the Sterling Family Office archive to provide a DEEP DEDUCTIVE ANALYSIS.
+You must find the hidden patterns, contradictions, and clues.
+
+CONTEXT:
+---
+{context_text}
+---
+
+QUESTION:
+{prompt}
+
+Analysis Instructions:
+1. Identify specific transactions or forensic details in the context.
+2. Examine the medical, financial, and legal overlaps.
+3. Locate active statuses of family members or aliases.
+4. Conclude with deductive reasoning on the user's specific query.
+"""
+
+                        # Call M1 Oracle
+                        payload = {
+                            "model": FRONTIER_MODEL,
+                            "prompt": oracle_prompt,
+                            "stream": True
+                        }
+                        
+                        response = requests.post(f"{M1_OLLAMA}/api/generate", json=payload, stream=True)
+                        
+                        # Clear receptionist and show Oracle response
+                        # receptionist_placeholder.empty() # Keep receptionist visible so users can read the handoff
+                        
+                        # Clear receptionist now that Oracle response is ready
+                        # receptionist_placeholder.empty() # Commented out to prevent disappearing too fast
+                        
+                        st.markdown("### 🔮 Oracle Analysis")
+                        final_answer = ""
+                        answer_placeholder = st.empty()
+                        
+                        for line in response.iter_lines():
+                            if line:
+                                chunk = json.loads(line)
+                                if 'response' in chunk:
+                                    content = chunk['response']
+                                    # Skip thinking tags if present
+                                    if "<think>" not in content and "</think>" not in content:
+                                        final_answer += content
+                                        answer_placeholder.markdown(final_answer + "▌")
+                        
+                        # Final Polish
+                        answer_placeholder.markdown(final_answer)
+                        
+                        # Save to history
+                        st.session_state.current_session_messages.append({"role": "assistant", "content": final_answer})
+                        st.session_state.db_history.append({"role": "assistant", "content": final_answer})
+                        save_message("assistant", final_answer)
+                        
+                        # Sources
+                        if relevant_docs:
+                            with st.expander("View Forensic Sources (Retrieved for Oracle)"):
+                                for i, doc in enumerate(relevant_docs):
+                                    st.markdown(f"**Source {i+1}:** {doc.metadata.get('source', 'Unknown')}")
+                                    st.text(doc.page_content[:500] + "...")
+
+                    except Exception as e:
+                        st.error(f"Oracle Connection Error: {e}")
 
             else:
                 # --- STANDARD LOCAL MODE ---

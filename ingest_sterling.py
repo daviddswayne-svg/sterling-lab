@@ -15,7 +15,7 @@ DATA_FILES = [
     (os.path.join(SCRIPT_DIR, "Secret_Email.eml"), UnstructuredEmailLoader),
     (os.path.join(SCRIPT_DIR, "Groundskeeper_Log.md"), UnstructuredMarkdownLoader),
 ]
-CHROMA_PATH = os.path.join(SCRIPT_DIR, "chroma_db")
+CHROMA_PATH = os.path.join(SCRIPT_DIR, "chroma_db_synthetic")
 EMBEDDING_MODEL = "nomic-embed-text"  # Must match chat_app.py
 
 def ingest_data():
