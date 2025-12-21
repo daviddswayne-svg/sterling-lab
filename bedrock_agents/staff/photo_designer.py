@@ -71,6 +71,21 @@ class PhotoDesigner:
             if slogan:
                 positive_prompt += f', the text "{slogan}" is written in large, bold, modern, cinematic 3D typography superimposed in the center'
             
+            # HARDCODED AESTHETIC: Mixed-media hybrid style
+            aesthetic_suffix = (
+                ", mixed-media hybrid aesthetic where the main subject (house or vehicle) is photorealistic and highly detailed, "
+                "but the surrounding environment appears as a hyper-detailed architectural scale model or digital simulation, "
+                "miniature-like terrain with perfect geometric precision, elevated aerial camera angle at 35-45 degrees, "
+                "subtle tilt-shift depth of field effect with sharp subject and soft edges, "
+                "clean sculpted topography like a physical architectural model or premium CGI render, "
+                "bright even lighting as if under studio lights or golden hour, "
+                "vibrant but slightly stylized colors with enhanced saturation, "
+                "trees and landscaping appear as detailed miniature model elements, "
+                "roads and pathways look like precision-cut model components, "
+                "high-end insurance risk assessment visualization aesthetic, architectural presentation render quality"
+            )
+            positive_prompt += aesthetic_suffix
+            
             print(f"   Category: {category}")
             print(f"   Slogan: {slogan}")
             print(f"   Prompt: {positive_prompt[:100]}...")
