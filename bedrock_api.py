@@ -98,7 +98,7 @@ def check_rate_limit(ip: str, limit: int = None, window_hours: int = 1) -> bool:
     public_chat_limits[ip].append(now)
     return True
 
-@app.route('/api/health', methods=['GET'])
+@app.route('/health', methods=['GET'])
 def health():
     """Comprehensive system health check for Ollama and ComfyUI"""
     
