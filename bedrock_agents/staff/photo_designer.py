@@ -39,7 +39,9 @@ class PhotoDesigner:
         
         Task: 
         1. Write a detailed, comma-separated image generation prompt. Focus on lighting, texture, and composition. No people.
-        2. Create a short, punchy, 2-3 word marketing slogan relevant to the concept (e.g., "SECURE FUTURE", "SAFE HOME").
+        2. Create a short, punchy, 2-3 word marketing slogan relevant to the concept.
+           - Examples: "FUTURE PROOF", "TOTAL CLARITY", "RISK ZERO", "PURE DEFENSE".
+           - CRITICAL: Do NOT use the phrase "Safe Haven" or "Safe Home". Be creative and unique.
         
         Output Format:
         Positive Prompt: [Your detailed prompt here]
