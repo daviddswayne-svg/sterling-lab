@@ -23,7 +23,7 @@ class PublicChat {
 
             // Add welcome message if first time
             if (this.messages.length === 0) {
-                this.addMessage('assistant', "Hi! I'm Antigravity, the AI assistant for Sterling Lab. I can answer questions about our AI technology, features, and architecture. What would you like to know?");
+                this.addMessage('assistant', "Hi! I'm here to help you learn about Swayne Systems. I can answer questions about our AI technology, features, and architecture. What would you like to know?");
             }
 
             // Initialize Matrix effect
@@ -102,7 +102,7 @@ class PublicChat {
             messageDiv.innerHTML = `
                 <div class="pc-avatar">⚙️</div>
                 <div class="pc-content">
-                    <div class="pc-name">Antigravity</div>
+                    <div class="pc-name">Swayne Systems</div>
                     <div class="pc-text">${this.formatMarkdown(content)}</div>
                 </div>
             `;
@@ -139,7 +139,7 @@ class PublicChat {
         typingDiv.innerHTML = `
             <div class="pc-avatar">⚙️</div>
             <div class="pc-content">
-                <div class="pc-name">Antigravity</div>
+                <div class="pc-name">Swayne Systems</div>
                 <div class="pc-typing-indicator">
                     <span></span><span></span><span></span>
                 </div>
@@ -198,7 +198,7 @@ class PublicChat {
                                 messageDiv.innerHTML = `
                                     <div class="pc-avatar">⚙️</div>
                                     <div class="pc-content">
-                                        <div class="pc-name">Antigravity</div>
+                                        <div class="pc-name">Swayne Systems</div>
                                         <div class="pc-text"></div>
                                     </div>
                                 `;
