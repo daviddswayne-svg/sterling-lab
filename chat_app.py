@@ -642,6 +642,8 @@ def run_app():
     col_a, col_b = st.sidebar.columns(2)
     with col_a:
         use_oracle = st.toggle("Oracle", value=False)
+        if use_oracle:
+            st.caption("DeepSeek Logic Active")
     with col_b:
         use_distributed = st.checkbox("Council", value=False)
     
