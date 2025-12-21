@@ -266,7 +266,7 @@ body {
     width: 200%;
     height: 200%;
     background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
-    animation: rotate-glow 20s linear infinite;
+    /* animation: rotate-glow 20s linear infinite; - Removed per user feedback */
     pointer-events: none;
     z-index: 0;
 }
