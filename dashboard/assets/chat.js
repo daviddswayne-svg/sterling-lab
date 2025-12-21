@@ -3,14 +3,14 @@ let currentCustomer = null;
 let chatEventSource = null;
 
 // Open chat modal
-function openChat() {
+function openInsuranceChat() {
     document.getElementById('chatModal').classList.add('active');
     document.getElementById('verifyStep').classList.add('active');
     document.getElementById('chatStep').classList.remove('active');
 }
 
 // Close chat modal
-function closeChat() {
+function closeInsuranceChat() {
     document.getElementById('chatModal').classList.remove('active');
     document.getElementById('verifyStep').classList.remove('active');
     document.getElementById('chatStep').classList.remove('active');
@@ -184,7 +184,7 @@ function startClaim() {
 }
 
 // Send message
-function sendMessage(event) {
+function sendInsuranceMessage(event) {
     event.preventDefault();
 
     const input = document.getElementById('chatInput');
@@ -196,7 +196,7 @@ function sendMessage(event) {
     input.value = '';
 
     // Send to AI
-    sendAIRequest(message);
+    sendInsuranceAIRequest(message);
 }
 
 // Add user message to chat
@@ -236,7 +236,7 @@ function addAIMessage(text) {
 }
 
 // Send request to AI
-async function sendAIRequest(message) {
+async function sendInsuranceAIRequest(message) {
     const typingIndicator = document.getElementById('typingIndicator');
     typingIndicator.style.display = 'flex';
 
