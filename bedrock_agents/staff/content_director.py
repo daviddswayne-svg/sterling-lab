@@ -16,23 +16,34 @@ class ContentDirector:
 
     def create_daily_brief(self):
         """Generates a creative brief for the day's insurance content."""
-        date_str = datetime.now().strftime("%Y-%m-%d")
+        import random
         
-        # Build list of themes
+        date_str = datetime.now().strftime("%Y-%m-%d")
+        time_str = datetime.now().strftime("%H:%M:%S")
+        
+        # Randomly select a theme to force variety
+        selected_theme = random.choice(self.prompts["themes"])
+        
+        # Build list of all themes for context
         themes_list = "\n        - ".join(self.prompts["themes"])
         
         prompt = f"""
         {self.prompts['system_prompt']}
-        Today's date is {date_str}.
+        Today's date is {date_str} at {time_str}.
         
-        Themes to choose from (pick ONE):
+        ASSIGNED THEME (you MUST use this): {selected_theme}
+        
+        All available themes (for context):
         - {themes_list}
+        
+        CRITICAL: Generate completely UNIQUE content. Do not reuse phrases, headlines, or descriptions from previous outputs. Think of fresh angles and new vocabulary.
         
         Return a JSON object with this EXACT structure:
         {json.dumps(self.prompts['output_format'], indent=4)}
         """
         
         print(f"🧠 Content Director ({self.model}) is planning content for {date_str}...")
+        print(f"   📌 Assigned Theme: {selected_theme}")
         
         response = self.client.chat(model=self.model, format='json', messages=[
             {'role': 'user', 'content': prompt}
