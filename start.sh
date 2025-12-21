@@ -7,12 +7,23 @@ echo "=================================="
 echo ""
 
 # Step 1: Run Diagnostics
-echo "[1/7] Running RAG System Diagnostics..."
+echo "[1/8] Running RAG System Diagnostics..."
 python rag_diagnostics.py || echo "⚠️  Warning: Some diagnostic checks failed."
 echo ""
 
+# Step 1.5: Ingest Public Knowledge Base
+echo "[1.5/8] Ingesting Public Knowledge Base..."
+if [ -f "/app/ingest_lab_knowledge.py" ]; then
+    rm -rf /app/chroma_db_public  # Clean start each deploy
+    python ingest_lab_knowledge.py || echo "⚠️  Warning: Public knowledge ingestion had issues."
+    echo "✅ Public knowledge base ready"
+else
+    echo "⚠️  Warning: ingest_lab_knowledge.py not found, skipping..."
+fi
+echo ""
+
 # Step 2: Verify Dashboard Exists
-echo "[2/7] Verifying Dashboard Files..."
+echo "[2/8] Verifying Dashboard Files..."
 if [ ! -d "/app/dashboard" ]; then
     echo "❌ FATAL: /app/dashboard directory not found!"
     exit 1
@@ -28,13 +39,13 @@ ls -lah /app/dashboard/
 echo ""
 
 # Step 3: Test Nginx Configuration
-echo "[3/7] Testing Nginx Configuration..."
+echo "[3/8] Testing Nginx Configuration..."
 nginx -t
 echo "✅ Nginx config is valid"
 echo ""
 
 # Step 3.5: Start Bedrock Chat API
-echo "[3.5/7] Starting Bedrock Chat API..."
+echo "[3.5/8] Starting Bedrock Chat API..."
 python bedrock_api.py > /tmp/bedrock_api.log 2>&1 &
 API_PID=$!
 echo "✅ Bedrock API started with PID: $API_PID"
@@ -61,7 +72,7 @@ fi
 echo ""
 
 # Step 4: Start Streamlit
-echo "[4/7] Starting Streamlit on port 8501..."
+echo "[4/8] Starting Streamlit on port 8501..."
 streamlit run chat_app.py \
     --server.port=8501 \
     --server.address=0.0.0.0 \
@@ -74,7 +85,7 @@ echo "✅ Streamlit started with PID: $STREAMLIT_PID"
 echo ""
 
 # Step 5: Wait for Streamlit to be Ready
-echo "[5/7] Waiting for Streamlit to be ready..."
+echo "[5/8] Waiting for Streamlit to be ready..."
 MAX_WAIT=30
 COUNTER=0
 while [ $COUNTER -lt $MAX_WAIT ]; do
@@ -96,14 +107,14 @@ fi
 echo ""
 
 # Step 6: Start Nginx
-echo "[6/7] Starting Nginx on port 80..."
+echo "[6/8] Starting Nginx on port 80..."
 nginx -g 'daemon off;' &
 NGINX_PID=$!
 echo "✅ Nginx started with PID: $NGINX_PID"
 echo ""
 
 # Step 7: Verify Nginx is Actually Running
-echo "[7/7] Verifying Nginx is serving traffic..."
+echo "[7/8] Verifying Nginx is serving traffic..."
 sleep 2  # Give Nginx time to initialize
 
 # Check if Nginx process is still alive
