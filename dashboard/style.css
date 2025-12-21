@@ -115,7 +115,48 @@ body {
     color: var(--success);
     font-size: 0.875rem;
     font-weight: 600;
+    transition: all 0.3s ease;
 }
+
+.status-indicator.operational {
+    background: rgba(16, 185, 129, 0.1);
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+.status-indicator.operational .status-dot {
+    background: var(--success);
+}
+
+.status-indicator.operational .status-text {
+    color: var(--success);
+}
+
+.status-indicator.degraded {
+    background: rgba(251, 191, 36, 0.1);
+    border-color: rgba(251, 191, 36, 0.3);
+}
+
+.status-indicator.degraded .status-dot {
+    background: #fbbf24;
+}
+
+.status-indicator.degraded .status-text {
+    color: #fbbf24;
+}
+
+.status-indicator.offline {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+.status-indicator.offline .status-dot {
+    background: #ef4444;
+}
+
+.status-indicator.offline .status-text {
+    color: #ef4444;
+}
+
 
 .logout-button {
     display: flex;

@@ -17,6 +17,7 @@ CORS(app)  # Enable CORS for all routes
 
 # Configuration
 OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://host.docker.internal:11434")
+COMFYUI_HOST = os.getenv("COMFYUI_HOST", "http://host.docker.internal:8188")
 MODEL = "dolphin-llama3"
 
 # Authentication Configuration
@@ -99,7 +100,43 @@ def check_rate_limit(ip: str, limit: int = None, window_hours: int = 1) -> bool:
 
 @app.route('/health', methods=['GET'])
 def health():
-    return jsonify({"status": "ok", "model": MODEL})
+    """Comprehensive system health check for Ollama and ComfyUI"""
+    
+    def check_ollama():
+        try:
+            response = requests.get(f"{OLLAMA_HOST}/api/tags", timeout=3)
+            return response.status_code == 200
+        except:
+            return False
+    
+    def check_comfyui():
+        try:
+            response = requests.get(f"{COMFYUI_HOST}/system_stats", timeout=3)
+            return response.status_code == 200
+        except:
+            return False
+    
+    ollama_status = check_ollama()
+    comfyui_status = check_comfyui()
+    all_operational = ollama_status and comfyui_status
+    
+    # Determine status message
+    if all_operational:
+        message = "All Systems Operational"
+    elif not ollama_status and not comfyui_status:
+        message = "AI Services Offline"
+    elif not ollama_status:
+        message = "Language Model Offline"
+    else:
+        message = "Image Generator Offline"
+    
+    return jsonify({
+        "status": "operational" if all_operational else "degraded",
+        "ollama": ollama_status,
+        "comfyui": comfyui_status,
+        "message": message
+    })
+
 
 @app.route('/chat', methods=['POST'])
 def chat():
