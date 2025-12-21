@@ -396,24 +396,36 @@ def antigravity_public_chat():
                 embeddings = OllamaEmbeddings(model="nomic-embed-text", base_url=OLLAMA_HOST)
                 db = Chroma(persist_directory=chroma_path, embedding_function=embeddings)
                 
-                # Retrieve relevant context
-                relevant_docs = db.similarity_search(user_message, k=3)
+                # Retrieve relevant context - more documents for better coverage
+                relevant_docs = db.similarity_search(user_message, k=5)
                 context = "\n\n".join([doc.page_content for doc in relevant_docs])
                 
                 # Build conversation for Qwen
                 messages = [
                     {
                         "role": "system",
-                        "content": """You are Antigravity, a helpful AI assistant for Swayne Systems AI Lab at swaynesystems.ai. 
+                        "content": """You are a helpful AI assistant for Swayne Systems AI Lab at swaynesystems.ai. 
 
-You explain features, architecture, and how to use the platform. Keep responses concise (2-3 paragraphs).
+CRITICAL: You have been provided with comprehensive documentation about the platform. ALWAYS check and use this documentation FIRST before providing general knowledge.
+
+Your knowledge base includes:
+- Platform features and capabilities
+- Deployment procedures
+- Technical architecture
+- How-to guides
+- FAQ and troubleshooting
+
+Response Guidelines:
+- Answer ONLY from the provided context when available
+- If context contains the answer, use it directly
+- Be concise (2-3 paragraphs maximum)
+- If asked about something not in your knowledge base, say so clearly
 
 YOU CANNOT:
 - Write or suggest code edits
 - Reveal credentials or sensitive details
 - Access admin features
-
-Use the provided context to answer accurately."""
+- Make things up if not in the knowledge base"""
                     }
                 ]
                 

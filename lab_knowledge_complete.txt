@@ -1,0 +1,958 @@
+# Sterling Lab - AI-Powered Estate Intelligence
+
+> [!CAUTION]
+> **CRITICAL: This repo has TWO Git remotes**  
+> - `origin` → GitHub (**BACKUP ONLY** - does NOT deploy)
+> - `live` → Server (root@165.22.146.182:/var/www/swaynesystems.ai.git) - **ACTUAL DEPLOYMENT SOURCE**
+> 
+> **Always push to BOTH:**
+> ```bash
+> git push origin main && git push live main
+> ```
+
+Intelligent RAG (Retrieval-Augmented Generation) system for the Sterling Estate, powered by multiple LLM models through a distributed "Council Mode" architecture.
+
+## Features
+
+- **Council Mode**: Multi-agent system with specialized AI personas (Consultant, Analyst, Maverick)
+- **RAG Pipeline**: ChromaDB vector database with 8+ estate documents
+- **Real-time Streaming**: Live AI responses with token counting
+- **Distributed Architecture**: Mac Studio AI backend via SSH tunnel
+- **Knowledge Sources**: Internal ChromaDB + PrivateGPT integration
+
+## Architecture
+
+- **Frontend**: Streamlit web interface
+- **AI Backend**: Mac Studio M3 via SSH tunnel (port 11434)
+- **Models**: llama3.3:70b, qwen2.5-coder:32b, dolphin-llama3, nomic-embed-text
+- **Database**: ChromaDB for vector storage, SQLite for chat history
+
+## Deployment
+
+**IMPORTANT:** Must push to `live` remote for deployment (Coolify uses this, NOT GitHub)
+
+```bash
+# Correct deployment workflow:
+git add .
+git commit -m "Your message"
+git push origin main  # Backup to GitHub
+git push live main    # Deploy to swaynesystems.ai (REQUIRED!)
+
+# Or shorthand to push to both:
+git push --all
+```
+
+See [COOLIFY_DEPLOY.md](COOLIFY_DEPLOY.md) for full deployment guide.
+
+## Environment Variables
+
+```env
+OLLAMA_HOST=http://host.docker.internal:11434  # For Docker deployment
+```
+
+## Live Site
+
+- **Production**: https://swaynesystems.ai (via Coolify)
+- **Legacy**: https://swaynesystems.ai:8443 (direct Caddy)
+
+## AI Agent Workflow
+
+AI agents can auto-update by:
+```bash
+git add .
+git commit -m "AI update: [description]"
+git push origin main  # Backup
+git push live main    # Deploy (REQUIRED!)
+```
+→ Coolify automatically deploys from `live` remote
+
+---
+
+Built with ❤️ for the Sterling Estate
+# Sterling Lab / Swayne Systems - Complete Site Knowledge Base
+
+## Overview
+**swaynesystems.ai** is a hybrid AI infrastructure platform combining cloud hosting with local AI processing. The site showcases advanced AI capabilities, RAG systems, and creative portfolio work.
+
+---
+
+## Site Pages & Components - Detailed Breakdown
+
+### 1. Dashboard Landing Page (`/`)
+
+**Purpose**: Professional portfolio showcase and navigation hub  
+**Tech Stack**: Pure HTML5, CSS3, JavaScript (no frameworks)
+
+**Key Features**:
+- **Animated Gradient Background**: CSS keyframe animations creating flowing color gradients
+- **Responsive Grid Layout**: Flexbox-based cards for services and portfolio items
+- **Status Indicators**: Real-time system health badges ("All Systems Operational")
+- **Hero Section**: Large Swayne Systems logo with deployment success badge
+
+**Interactive Elements**:
+```html
+<!-- Primary CTAs -->
+<a href="/lab/">Launch Sterling Lab AI Chat</a>
+<a href="/bedrock/">Bedrock Insurance Demo</a>
+```
+
+**Embedded iframes**:
+- T4 Bacteriophage voxel simulation (see below)
+- YouTube production reel
+- Seattle Monorail voxel scene
+
+---
+
+### 2. Sterling Lab (`/lab/`) - AI Chat Interface
+
+**Purpose**: Advanced AI chat with RAG, multi-model support, and Council Mode  
+**Tech Stack**: Python Streamlit, LangChain, ChromaDB, Ollama
+
+**Architecture**:
+```python
+# Core Components
+- Streamlit UI (chat_app.py)
+- ChromaDB vector store (embedded vectors)
+- LangChain ConversationalRetrievalChain
+- Ollama for local LLM hosting
+```
+
+**Key Features**:
+
+**A. RAG Pipeline (Document Intelligence)**
+```python
+# Process Flow:
+1. User query → Embed with nomic-embed-text
+2. ChromaDB similarity search → Retrieve relevant docs
+3. Context + query → LLM (qwen2.5-coder, llama3.3, etc.)
+4. LLM response includes source citations
+5. Display with token metrics and streaming
+```
+
+**Document Collection**: 8+ estate documents ingested:
+- Last Will (2020)
+- Commander Instructions
+- Groundskeeper Log
+- Secret Email correspondence
+- Assets estimate
+
+**B. Council Mode (Multi-Agent System)**
+- **Manager Model**: Handles primary reasoning (user-selected)
+- **Worker Model**: `llama3.3` on Mac Studio (via SSH tunnel)
+- **Operation**: Distributed processing across two LLMs
+  ```python
+  # Pseudo-code
+  if council_mode_enabled:
+      manager_response = primary_llm.invoke(query)
+      worker_response = remote_llm.invoke(query)
+      combined_output = synthesize(manager, worker)
+  ```
+
+**C. Model Selection**
+- Sidebar dropdown with all available Ollama models
+- Real-time model switching mid-conversation
+- Persistent conversation memory across model changes
+
+**D. Token Metrics & Streaming**
+```python
+# Real-time display during generation:
+🪙 Generating... | Output Tokens: 157
+# After completion:
+Input: 1,234 | Output: 567 | Total: 1,801 | Speed: 45.2 t/s
+```
+
+**E. Chat History (SQLite)**
+- Persistent storage of all conversations
+- Session-based retrieval and recall
+- Sidebar toggle to view archives
+
+---
+
+### 3. Bedrock Insurance (`/bedrock/`) - AI Agent Demonstration
+
+**Purpose**: Showcase autonomous multi-agent workflow for content generation  
+**Tech Stack**: Custom HTML/JS chat interface + Python orchestrator backend
+
+**The Bedrock "Staff" - LLM-Powered Agents**:
+
+#### **Agent Workflow** (`bedrock_agents/orchestrator.py`):
+```python
+def run_meeting_generator():
+    # 1. Content Director (LLM Agent)
+    director = ContentDirector()
+    brief = director.create_daily_brief()
+    # Creates: theme, title, image_concept, content_strategy
+    
+    # 2. Photo Designer (ComfyUI + LLM)
+    designer = PhotoDesigner()
+    image_path = designer.generate_image(brief['theme'], brief['image_concept'])
+    # Uses ComfyUI API + Flux.1 model for image generation
+    
+    # 3. Web Developer (LLM Agent)
+    web_dev = WebDeveloper()
+    html_content = web_dev.build_page(brief, image_path)
+    # Generates complete HTML/CSS for insurance page
+    
+    # 4. Publishing Manager (LLM Agent)
+    publisher = PublishingManager()
+    publisher.update_website(html_content, brief['theme'])
+    # Deploys live to /bedrock/ page
+```
+
+**Frontend Chat Interface**:
+- **Real-time streaming**: "Typing..." indicators while agent works
+- **TTS Integration**: ElevenLabs voice narrates responses
+  ```javascript
+  // After LLM response completes:
+  fetch('/api/tts', {
+      method: 'POST',
+      body: JSON.stringify({ text: response })
+  })
+  .then(blob => playAudioBlob(blob))
+  ```
+- **Mute Button (🔇)**: Stop audio playback mid-response
+- **Web Audio API**: Decodes MP3 and plays with buffer sources
+
+**Agent Personalities**:
+Each agent has its own system prompt defining role, expertise, and output format. They collaborate on a single deliverable.
+
+---
+
+### 4. Voxel Simulations (Embedded)
+
+#### **T4 Bacteriophage**
+- **URL**: `https://daviddswayne-svg.github.io/Voxel-Art/`
+- **Tech**: Three.js (WebGL), JavaScript
+- **What it does**: 3D voxel animation of bacteriophage virus injecting DNA into bacteria
+- **Interaction**: Real-time rotation, zoom, particle systems
+
+#### **Seattle Monorail**
+- **URL**: `https://daviddswayne-svg.github.io/Voxel-Seattle-Center-V4/`
+- **Tech**: Three.js voxel rendering
+- **Scene**: Seattle Center with monorail, buildings, and animated elements
+- **Interaction**: Click-to-launch from static preview image
+
+**Display Method**:
+```html
+<iframe src="https://daviddswayne-svg.github.io/Voxel-Art/" 
+        frameborder="0" allowfullscreen loading="lazy">
+</iframe>
+```
+
+---
+
+### 5. Antigravity Chat Widgets
+
+Two separate implementations with different access levels and features (see "Antigravity Chat System" section for full details).
+
+---
+
+## AI Infrastructure
+
+### Local AI Processing (Mac Studio M3 Ultra)
+**Location**: User's home office  
+**Connection**: SSH tunnel from cloud server
+
+**Ollama Models**:
+- `llama3.3:70b` - Primary reasoning model
+- `qwen2.5-coder:32b` - Code generation
+- `dolphin-llama3` - General purpose
+- `nomic-embed-text` - Text embeddings for RAG
+
+**Ollama Access**:
+- Local: `http://localhost:11434`
+- From Cloud: `http://host.docker.internal:11434` (via SSH tunnel)
+
+**ElevenLabs TTS API** (Local):
+- API: `elevenlabs_api.py` on port 8000
+- Voice ID: `rjgzTjOCnuup89lc2ELP` (David's cloned voice)
+- Model: `eleven_turbo_v2_5` (fastest)
+- Accessed from cloud via tunnel: `http://10.0.1.1:8001/generate`
+
+### Cloud AI Services
+**Gemini 2.0 Flash** (Google AI):
+- Powers both Antigravity chat interfaces
+- Streaming responses for real-time display
+- Public chat: Rate-limited (20 messages/hour per IP)
+- Admin chat: IP-whitelisted access only
+
+**ComfyUI** (Image Generation):
+- Runs on Mac Studio
+- Used by Bedrock Photo Designer agent
+- Flux.1 model for high-quality images
+
+---
+
+## RAG (Retrieval-Augmented Generation) System
+
+### Vector Database: ChromaDB
+**Documents Ingested**: 8+ estate-related documents
+- Last Will (2020)
+- Commander Instructions
+- Groundskeeper Log
+- Secret Email
+- Assets Estimate
+
+**Embedding Model**: `nomic-embed-text`  
+**Storage**: `/app/chroma_db` in Docker container  
+**Query Flow**:
+1. User asks question
+2. Embeddings generated for query
+3. Similar documents retrieved from ChromaDB
+4. Context + query sent to LLM
+5. LLM generates answer based on retrieved docs
+
+---
+
+## Bedrock Multi-Agent System
+
+### Agent Roles
+1. **Content Director**: Strategy and messaging
+2. **Web Developer**: Technical implementation
+3. **Photo Designer**: Image generation via ComfyUI
+4. **Publishing Manager**: Final review and coordination
+
+### Orchestration Pattern
+- coordinator sends tasks to agents
+- Agents respond with specialized output
+- Results aggregated and presented to user
+
+### TTS Integration (Bedrock Only)
+- After LLM response completes, text sent to `/api/tts`
+- Flask proxies to local Mac (`10.0.1.1:8001`)
+- ElevenLabs generates MP3 audio
+- Frontend plays audio via Web Audio API
+- Mute button (🔇) allows stopping playback
+
+---
+
+## Antigravity Chat System
+
+### Two Implementations
+
+**1. Admin Chat (Gear Icon ⚙️)**
+- **Visibility**: Only for whitelisted IPs (e.g., `71.197.228.171`)
+- **Location**: Top-right corner (green gear button)
+- **Backend**: `/api/antigravity/chat`
+- **Model**: Gemini 2.0 Flash
+- **Features**: Full system access, debugging conversations
+- **TTS**: DISABLED (text-only for rapid debugging)
+
+**2. Public Chat (Speech Bubble 💬)**
+- **Visibility**: Always visible to all visitors
+- **Location**: Bottom-left corner (green bubble)
+- **Backend**: `/api/antigravity/public/chat`
+- **Model**: Gemini 2.0 Flash
+- **Rate Limit**: 20 messages per hour per IP
+- **Features**:
+  - Instant "🔍 Analyzing..." feedback message
+  - Streaming text responses (word-by-word)
+  - Matrix code rain background animation
+  - Concise responses (2-3 paragraphs max)
+- **TTS**: DISABLED (text-only for performance)
+- **Restrictions**: Read-only, cannot execute commands or modify files
+
+---
+
+## SSH Tunnel Configuration
+
+**Purpose**: Secure connection between cloud and local AI infrastructure  
+**Technology**: `autossh` maintains persistent tunnel  
+**Ports Forwarded**:
+- Ollama service (port 11434)
+- TTS API (local port 8000 → remote port 8001)
+
+**Why port 8001?** Avoids conflict with Coolify on cloud server.
+
+---
+
+## Deployment Pipeline
+
+### Git Strategy (Dual Remotes)
+1. **Live Server**: Bare git repository on cloud droplet
+   - Coolify watches this repo for changes
+   - Auto-deploys on push
+
+2. **GitHub Backup**: Public repository
+   - Synced automatically via deployment script
+
+### Deployment Process
+```bash
+# Deployment script pushes to both remotes
+# Triggers Coolify rebuild (30-60 seconds)
+```
+
+**Coolify**: Auto-deploys on git push
+- Builds Docker container
+- Runs startup script → starts Flask, Streamlit, Nginx
+- Typically takes 30-60 seconds to rebuild
+
+---
+
+## Docker Environment
+
+**Container Network**: Coolify uses custom bridge network  
+**Gateway IP**: `10.0.1.1` (Coolify default)  
+**Why not standard `172.17.0.1`?** Coolify uses custom networking.
+
+**Container Services**:
+1. Flask API (port 5000)
+2. Streamlit (port 8501)
+3. Nginx (port 80)
+
+**Startup Sequence**:
+1. Run RAG diagnostics
+2. Verify dashboard files exist
+3. Test Nginx config
+4. Start Flask API
+5. Start Streamlit
+6. Start Nginx (foreground)
+7. Verify all services responding
+
+---
+
+## Creative Portfolio
+
+### Featured Projects
+
+**T4 Bacteriophage Simulation**
+- **Tech**: Interactive 3D voxel rendering
+- **URL**: [GitHub Pages](https://daviddswayne-svg.github.io/Voxel-Art/)
+- **Display**: Embedded iframe on dashboard
+
+**Seattle Voxel Monorail**
+- **Tech**: 3D voxel scene with real-time rendering
+- **URL**: [GitHub Pages](https://daviddswayne-svg.github.io/Voxel-Seattle-Center-V4/)
+- **Assets**: Preview image in `/assets/monorail_preview.png`
+
+**AI Production Reel**
+- **URL**: [YouTube](https://www.youtube.com/embed/-jEpskz8DGE)
+- **Content**: Generative AI video workflows demo
+
+---
+
+## Security & Access Control
+
+### Authentication
+**Admin Access**: IP whitelist system
+- Admin users identified by IP address
+- Admin chat button only visible to whitelisted users
+- Configured via environment variables
+
+**Public Access**: Rate limiting
+- 20 messages/hour per IP address
+- Sliding 1-hour window
+- Returns 429 error when limit exceeded
+
+### Security Practices
+- Environment variable-based configuration
+- No hardcoded credentials in code
+- Separate admin and public endpoints
+- Rate limiting on public endpoints
+
+---
+
+## Known Issues & Quirks
+
+1. **TTS Latency**: Full response must generate before audio starts  
+   - Cannot stream TTS (ElevenLabs needs complete text)
+   - Text streams to user while audio generates
+
+2. **Docker Gateway IP**: Must use `10.0.1.1` on Linux/Coolify  
+   - `host.docker.internal` fails in production
+   - Works on Mac dev environment, not on DigitalOcean
+
+3. **Nginx Path Stripping**: `/api/` prefix stripped before Flask  
+   - Frontend calls `/api/tts`  
+   - Nginx proxies to Flask on `/tts`
+   - Flask routes must not include `/api/` prefix
+
+4. **Filler Audio Removed**: Initial "One moment..." TTS was annoying  
+   - Replaced with instant text feedback instead
+
+5. **Coolify Port Conflict**: Port 8000 occupied by Coolify  
+   - TTS tunnel uses port 8001 instead
+
+---
+
+## Technology Stack Summary
+
+### Languages
+- Python (Flask, Streamlit, FastAPI)
+- JavaScript (ES6+)
+- HTML5/CSS3
+
+### Frameworks
+- Flask (backend API)
+- Streamlit (chat interface)
+- FastAPI (TTS API)
+
+### AI/ML
+- Ollama (local LLM hosting)
+- Google Gemini 2.0 Flash
+- ElevenLabs TTS
+- ChromaDB (vector database)
+- ComfyUI + Flux.1 (image generation)
+
+### Infrastructure
+- Docker + Coolify (deployment)
+- Nginx (reverse proxy, static files)
+- Cloud hosting with SSH tunnels
+- Git (version control, auto-deploy)
+
+---
+
+## Key System Locations
+
+**Cloud Container** (Docker):
+- Application root: `/app/`
+- Flask API, Streamlit app, dashboard files
+- Vector database storage
+- Configuration files
+- Log files in `/tmp/`
+
+**Local Development**:
+- TTS API service
+- Git repository
+- Development environment
+
+---
+
+## Chat Behavior Guidelines
+
+### Antigravity Should:
+- **Be concise** (2-3 paragraphs max)
+- **Use bullet points** for lists
+- **Answer directly** without long intros
+- **Explain concepts**, not just list facts
+- **Acknowledge limitations** (can't modify files, etc.)
+
+### Antigravity Should NOT:
+- Reveal API keys or credentials
+- Suggest code changes (read-only for public users)
+- Execute commands
+- Access files outside documented scope
+- Generate overly long responses
+
+---
+
+**Last Updated**: December 19, 2025  
+**Maintained By**: Antigravity assistant context system
+# Coolify Deployment Guide for Sterling Lab
+
+> [!CAUTION]
+> **CRITICAL: Dual Git Remote Setup**  
+> This repository has TWO remotes:
+> - `origin` → GitHub (https://github.com/daviddswayne-svg/sterling-lab.git) - **BACKUP ONLY**
+> - `live` → Server (root@165.22.146.182:/var/www/swaynesystems.ai.git) - **ACTUAL DEPLOYMENT SOURCE**
+> 
+> **Always push to BOTH remotes:**
+> ```bash
+> git push origin main  # Backup to GitHub
+> git push live main    # Deploy to server (THIS ONE MATTERS!)
+> ```
+> 
+> Coolify deploys from the `live` remote, NOT GitHub. Changes pushed only to GitHub will NOT deploy.
+
+---
+
+## Step 1: Access Coolify
+Open your browser to: **http://165.22.146.182:8000**
+
+## Step 2: Create New Project
+1. Click **"+ New"** → **"Project"**
+2. Name it: `Sterling Lab`
+
+## Step 3: Add GitHub Repository
+1. In the project, click **"+ New"** → **"Application"**
+2. Select **"Public Repository"** (or connect your GitHub account)
+3. Enter repository URL: `https://github.com/YOUR_USERNAME/sterling_lab`
+   - Replace with your actual GitHub repo URL
+4. Branch: `main`
+
+## Step 4: Configure Build Settings
+1. **Build Pack**: Select **"Dockerfile"**
+2. **Port**: `80` ⚠️ **CRITICAL: Must be 80, NOT 8501!**
+   - Port 80 = Nginx (serves dashboard + proxies Streamlit)
+   - Port 8501 = Streamlit only (bypasses dashboard)
+3. **Domain**: `swaynesystems.ai` (or click to auto-generate)
+
+## Step 5: Environment Variables
+Add these if using SSH tunnel to Mac Studio:
+```
+OLLAMA_HOST=http://host.docker.internal:11434
+```
+
+**Note**: You'll need to configure Docker to allow container → host access, OR install Ollama in the container.
+
+## Step 6: Enable Auto-Deploy
+1. Go to **"Source"** tab
+2. Enable **"Automatic Deployment"**
+3. Coolify will create a webhook in your GitHub repo
+
+## Step 7: Deploy
+Click **"Deploy"** button
+
+Coolify will:
+- Pull from GitHub
+- Build the Docker image
+- Start the container
+- Provision Let's Encrypt certificate
+- Route traffic from swaynesystems.ai
+
+## Accessing Your App
+Once deployed: **https://swaynesystems.ai**
+
+## AI Agent Workflow
+Your AI agents can now:
+```bash
+git add .
+git commit -m "AI update: ..."
+git push origin main
+```
+→ Coolify automatically deploys!
+
+## Important: SSH Tunnel Consideration
+Since you're using SSH tunnel to Mac Studio for Ollama, you have 2 options:
+
+**Option A: Continue using tunnel**
+- Need to configure Docker networking to access host
+- Add `--add-host=host.docker.internal:host-gateway` to container
+
+**Option B: Install Ollama in container** 
+- Pull models into container (requires significant space)
+- Slower performance than Mac Studio
+
+Recommend **Option A** - I can help configure after initial Coolify setup.
+
+---
+
+## Verifying Successful Deployment
+
+### Check Startup Logs
+
+After deployment, immediately check if all services started correctly:
+
+```bash
+# Find container
+docker ps | grep sterling
+
+# View startup sequence
+docker logs <container_id> --tail 100
+```
+
+**Expected Output:**
+```
+==================================
+🚀 STERLING LAB STARTUP SEQUENCE
+==================================
+
+[1/7] Running RAG System Diagnostics...
+[2/7] Verifying Dashboard Files...
+✅ Dashboard files verified at /app/dashboard
+[3/7] Testing Nginx Configuration...
+✅ Nginx config is valid
+[4/7] Starting Streamlit on port 8501...
+✅ Streamlit started with PID: 123
+[5/7] Waiting for Streamlit to be ready...
+✅ Streamlit is responding on port 8501
+[6/7] Starting Nginx on port 80...
+✅ Nginx started with PID: 456
+[7/7] Verifying Nginx is serving traffic...
+✅ Dashboard is accessible at /
+✅ Streamlit proxy is accessible at /lab
+==================================
+✅ ALL SERVICES STARTED SUCCESSFULLY
+```
+
+> **If you see any ❌ FATAL errors**, the logs will show exactly what failed.
+
+---
+
+## Troubleshooting RAG Issues
+
+### Pre-Deployment Checklist
+
+Before deploying, ensure these requirements are met:
+
+1. **✅ Embedding Model on Mac Studio**
+   ```bash
+   # SSH to Mac Studio
+   ollama list | grep nomic
+   ```
+   - Should show: `nomic-embed-text` or `nomic-embed-text:latest`
+   - If missing: `ollama pull nomic-embed-text`
+
+2. **✅ SSH Tunnel Active**
+   ```bash
+   # On deployment server
+   curl http://localhost:11434/api/version
+   ```
+   - Should return: `{"version":"0.x.x"}`
+   - Verify tunnel in `/var/log/sterling-tunnel.log`
+
+3. **✅ ChromaDB Populated**
+   ```bash
+   # Local machine
+   ls -la chroma_db/
+   ```
+   - Should show: `chroma.sqlite3` and UUID directory
+   - If empty: Run `python ingest_sterling.py`
+
+### Diagnostic Commands
+
+Run these inside the deployed container:
+
+```bash
+# Find container ID
+docker ps | grep sterling
+
+# Run diagnostics
+docker exec <container_id> python rag_diagnostics.py
+
+# Check logs
+docker logs <container_id> --tail 100
+```
+
+### Common Issues
+
+#### Issue: "RAG returns zero documents"
+
+**Symptom**: "View Source Documents" expander is empty
+**Cause**: Embedding model unavailable on Mac Studio
+**Fix**:
+```bash
+# On Mac Studio
+ollama pull nomic-embed-text
+
+# Verify from droplet
+curl -X POST http://localhost:11434/api/embeddings \
+  -d '{"model":"nomic-embed-text","prompt":"test"}'
+# Should return: {"embedding":[...]}
+```
+
+#### Issue: "Connection to Ollama failed"
+
+**Symptom**: `❌ Ollama: Unreachable` in System Diagnostics
+**Cause**: SSH tunnel down or `OLLAMA_HOST` misconfigured
+**Fix**:
+1. Check environment variable in Coolify:
+   - Go to Application → Environment
+   - Verify: `OLLAMA_HOST=http://host.docker.internal:11434`
+2. Restart tunnel on Mac Studio:
+   ```bash
+   ssh -R 11434:localhost:11434 root@165.22.146.182
+   ```
+
+#### Issue: "ChromaDB not found"
+
+**Symptom**: `❌ ChromaDB: NOT FOUND` 
+**Cause**: `chroma_db/` not committed to Git or `.gitignore` blocking it
+**Fix**:
+```bash
+# Check if in Git
+git ls-files | grep chroma_db
+
+# If missing, add and push
+git add chroma_db/
+git commit -m "Add populated ChromaDB"
+git push origin main
+```
+
+### Debug Mode
+
+To get verbose RAG output, add this to Coolify environment:
+```
+STREAMLIT_LOGGER_LEVEL=debug
+```
+
+Then check container logs for detailed ChromaDB queries.
+
+## Hybrid Deployment Strategy (Hotfix + Push)
+
+This strategy allows you to fix issues **instantly** (Hotfix) while ensuring they persist in future builds (Push).
+
+### When to use:
+- Critical bugs (e.g., CSS broken, site down, image missing).
+- You want to verify a fix on the live site *before* waiting 5 minutes for a full build.
+
+### The Workflow:
+
+#### 1. Push Code (Persistence)
+First, ensure your code is saved to Git so the *next* automated build includes it.
+```bash
+git add .
+git commit -m "Fix critical issue"
+# Pushes to both GitHub (Backup/Build Trigger) and Server (Deploy Source)
+./deploy.sh 
+```
+*Note: This starts a Coolify build in the background, which takes time.*
+
+#### 2. Identify Active Container
+SSH into the server to find the currently running container.
+```bash
+# SSH into Droplet
+ssh -i ~/.ssh/sterling_tunnel root@swaynesystems.ai
+
+# Find Container ID
+docker ps | grep swaynesystems
+# Copy the alphanumeric ID (e.g., d7f28d5d58b3)
+```
+
+#### 3. Hot-Patch (Immediate Fix)
+Inject your fixed files directly into the running container.
+```bash
+# Syntax: docker cp <local_path_on_server> <container_id>:<app_path>
+
+# Example: Fixing CSS and HTML
+docker cp /var/www/swaynesystems.ai/dashboard/style.css <container_id>:/app/dashboard/style.css
+docker cp /var/www/swaynesystems.ai/dashboard/bedrock/index.html <container_id>:/app/dashboard/bedrock/index.html
+```
+*Note: The source files (`/var/www/...`) are updated when you ran `./deploy.sh` (git push live).*
+
+#### 4. Verify
+Check the live site. The fix should be visible **immediately**.
+
+#### 5. Cache Busting (If needed)
+If the fix involves CSS/JS and isn't showing up, update the query parameter in your HTML before deploying:
+```html
+<!-- index.html -->
+<link rel="stylesheet" href="/style.css?v=fix_version">
+```
+Then repeat steps 1 & 3 to update the HTML file in the container.
+
+# Frontier Lab Deployment Instructions
+
+## Quick Deploy
+
+```bash
+cd /Users/daviddswayne/.gemini/antigravity/scratch/sterling_lab
+
+# 1. Commit changes
+git add .
+git commit -m "Deploy Frontier Lab to /lab with Sterling Estate branding"
+
+# 2. Push to BOTH remotes (CRITICAL!)
+git push origin main
+git push live main
+
+# 3. Watch Coolify build
+# Navigate to: http://165.22.146.182:8000
+# Monitor logs for deployment status
+```
+
+## SSH Tunnel Setup (CRITICAL)
+
+You need TWO tunnels running simultaneously:
+
+### Terminal 1: M3 Tunnel (Standard Models)
+```bash
+ssh -R 11434:localhost:11434 root@165.22.146.182
+# Keep this running
+```
+
+### Terminal 2: M1 Tunnel (Oracle Deep Reasoning)  
+```bash
+# From Mac Studio M3, tunnel to M1 then to droplet
+ssh -R 12434:localhost:11434 -J thunderbolt root@165.22.146.182
+# OR if direct from M1:
+ssh -R 12434:localhost:11434 root@165.22.146.182
+```
+
+## Coolify Environment Variables
+
+Add these in Coolify dashboard → Application → Environment:
+
+```env
+OLLAMA_HOST=http://host.docker.internal:11434
+M1_OLLAMA=http://host.docker.internal:12434
+AUTO_INGEST_DIR=/app/auto_ingest
+```
+
+## Testing After Deployment
+
+1. **Dashboard**: https://swaynesystems.ai/ → Should load normally
+2. **Frontier Lab**: https://swaynesystems.ai/lab → Should show Sterling Estate Office
+3. **Test Oracle**: Enable Oracle toggle, ask a complex question
+4. **Test Council**: Enable Council, ask a question  
+5. **Test Vision**: Upload an image in Vision Agent section
+
+## Rollback if Needed
+
+```bash
+cd /Users/daviddswayne/.gemini/antigravity/scratch/sterling_lab
+
+# Restore from backup (if you created one)
+git revert HEAD
+git push origin main
+git push live main
+```
+
+## What Was Changed
+
+- ✅ `chat_app.py` replaced with Frontier Lab
+- ✅ `chroma_db_synthetic` added (106 synthetic nodes)
+- ✅ `auto_ingest` directory created
+- ✅ pysqlite3 fix added for Docker
+- ✅ Paths updated for production
+- ✅ Ollama hosts use tunnel endpoints
+
+## Next Steps
+
+1. Set up M1 tunnel (Terminal 2 above)
+2. Add environment variables in Coolify
+3. Push to deploy
+4. Test all features
+---
+description: Run the Sterling Lab RAG Protocol (Local LLM + Chat App)
+---
+
+# Sterling Lab Protocol
+
+This workflow outlines the steps to run the Sterling Lab local RAG system, including data ingestion, verification, and the persistent chat interface.
+
+## 1. Prerequisites
+- **OS**: macOS (recommended)
+- **Repo/Folder**: `sterling_lab` (located in scratch or home)
+- **Local LLM**: Ollama installed with `llama3.3:latest` and `nomic-embed-text`.
+- **Python**: 3.9+ with `venv`.
+
+## 2. Setup & Installation
+If running for the first time:
+
+```bash
+cd /Users/daviddswayne/.gemini/antigravity/scratch/sterling_lab
+python3 -m venv venv
+source venv/bin/activate
+pip install langchain-chroma langchain-ollama langchain-community unstructured markdown streamlit
+ollama pull nomic-embed-text
+ollama pull llama3.3:latest
+```
+
+## 3. Data Ingestion (ResetDB)
+To process the raw files (`.txt`, `.csv`, `.eml`, `.md`) into the vector database (`chroma_db`):
+
+```bash
+# This will wipe existing chroma_db and re-create it
+./venv/bin/python ingest_sterling.py
+```
+
+**Verification**: Ensure `./chroma_db` folder exists after running.
+
+## 4. Backend Verification
+To test if the LLM can access the data without the UI:
+
+```bash
+./venv/bin/python verify_llm.py
+```
+*Expected Output*: "The Blue Envelope is hidden..."
+
+## 5. Run Chat Application
+To start the persistent web interface:
+
+```bash
+./venv/bin/streamlit run chat_app.py
+```
+- **URL**: `http://localhost:8501`
+- **Features**: Chat history is saved to `chat_history.db`.
+- **Debugging**: Check the sidebar to see which source documents were retrieved for the answer.
