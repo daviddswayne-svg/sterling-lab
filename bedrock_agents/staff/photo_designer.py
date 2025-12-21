@@ -74,7 +74,7 @@ class PhotoDesigner:
             print(f"   Prompt: {positive_prompt[:100]}...")
             
             # 3. Queue to ComfyUI
-            filename = self._queue_comfyui(positive_prompt)
+            filename = self._queue_comfyui(positive_prompt, category)
             if filename:
                 return filename
                 
@@ -85,7 +85,7 @@ class PhotoDesigner:
         print(f"🔄 Using Stock Fallback for {category}...")
         return self._get_fallback_image(category)
 
-    def _queue_comfyui(self, positive_prompt):
+    def _queue_comfyui(self, positive_prompt, category):
         """Standard ComfyUI API Workflow."""
         # ... (Existing ComfyUI logic) ...
         # Generating a random seed
