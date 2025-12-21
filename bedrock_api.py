@@ -160,9 +160,8 @@ def run_meeting():
         mimetype='text/event-stream',
         headers={
             'Cache-Control': 'no-cache',
-            'Transfer-Encoding': 'chunked',
             'Connection': 'keep-alive',
-            'X-Accel-Buffering': 'no' # Tell Nginx specifically
+            'X-Accel-Buffering': 'no'
         }
     )
 
