@@ -850,6 +850,7 @@ def run_app():
                         st.session_state.vision_analysis = final_answer
                         
                         # Save
+                        st.session_state.current_session_messages.append({"role": "assistant", "content": final_answer})
                         st.session_state.db_history.append({"role": "assistant", "content": final_answer})
                         save_message("assistant", final_answer)
                         
@@ -947,10 +948,10 @@ Analysis Instructions:
                         response = requests.post(f"{M1_OLLAMA}/api/generate", json=payload, stream=True)
                         
                         # Clear receptionist and show Oracle response
-                        receptionist_placeholder.empty()
+                        # receptionist_placeholder.empty() # Keep receptionist visible so users can read the handoff
                         
                         # Clear receptionist now that Oracle response is ready
-                        receptionist_placeholder.empty()
+                        # receptionist_placeholder.empty() # Commented out to prevent disappearing too fast
                         
                         st.markdown("### 🔮 Oracle Analysis")
                         final_answer = ""
