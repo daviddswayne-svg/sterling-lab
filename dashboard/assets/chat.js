@@ -39,7 +39,7 @@ async function verifyIdentity(event) {
     document.getElementById('verifyError').style.display = 'none';
 
     try {
-        const response = await fetch('/api/verify', {
+        const response = await fetch('/api/insurance/verify', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name, phone, policyNumber })
@@ -241,7 +241,7 @@ async function sendAIRequest(message) {
     typingIndicator.style.display = 'flex';
 
     try {
-        const response = await fetch('/api/chat', {
+        const response = await fetch('/api/insurance/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

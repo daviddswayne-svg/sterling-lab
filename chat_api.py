@@ -23,7 +23,7 @@ OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://host.docker.internal:11434")
 ollama_client = ollama.Client(host=OLLAMA_HOST)
 
 
-@chat_bp.route('/api/verify', methods=['POST'])
+@chat_bp.route('/api/insurance/verify', methods=['POST'])
 def verify_identity():
     """Verify customer identity and return customer data"""
     data = request.json
@@ -63,7 +63,7 @@ def verify_identity():
         }), 404
 
 
-@chat_bp.route('/api/chat', methods=['POST'])
+@chat_bp.route('/api/insurance/chat', methods=['POST'])
 def chat():
     """Handle AI chat with customer context"""
     data = request.json
@@ -150,7 +150,7 @@ def build_customer_context(customer):
     return context
 
 
-@chat_bp.route('/api/policies/<customer_id>', methods=['GET'])
+@chat_bp.route('/api/insurance/policies/<customer_id>', methods=['GET'])
 def get_policies(customer_id):
     """Get all policies for a customer"""
     customer = next((c for c in CUSTOMER_DB if c['id'] == customer_id), None)
@@ -167,7 +167,7 @@ def get_policies(customer_id):
         }), 404
 
 
-@chat_bp.route('/api/claims/submit', methods=['POST'])
+@chat_bp.route('/api/insurance/claims/submit', methods=['POST'])
 def submit_claim():
     """Submit a new claim (POC - just returns success)"""
     data = request.json
