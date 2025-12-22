@@ -6,154 +6,63 @@ echo "🚀 STERLING LAB STARTUP SEQUENCE"
 echo "=================================="
 echo ""
 
-# Step 1: Run Diagnostics
-echo "[1/8] Running RAG System Diagnostics..."
-python rag_diagnostics.py || echo "⚠️  Warning: Some diagnostic checks failed."
-echo ""
-
-# Step 1.5: Ingest Public Knowledge Base
-echo "[1.5/8] Ingesting Public Knowledge Base..."
-if [ -f "/app/ingest_lab_knowledge.py" ]; then
-    rm -rf /app/chroma_db_public  # Clean start each deploy
-    python ingest_lab_knowledge.py || echo "⚠️  Warning: Public knowledge ingestion had issues."
-    echo "✅ Public knowledge base ready"
-else
-    echo "⚠️  Warning: ingest_lab_knowledge.py not found, skipping..."
-fi
-echo ""
-
-# Step 1.6: Ingest Sterling Estate Knowledge
-echo "[1.6/8] Ingesting Sterling Estate Knowledge Base..."
-if [ -f "/app/ingest_sterling.py" ]; then
-    rm -rf /app/chroma_db_synthetic  # Clean start each deploy
-    python ingest_sterling.py || echo "⚠️  Warning: Sterling ingestion had issues."
-    echo "✅ Sterling Estate knowledge based ready"
-else
-    echo "⚠️  Warning: ingest_sterling.py not found, skipping..."
-fi
-echo ""
-
-# Step 2: Verify Dashboard Exists
-echo "[2/8] Verifying Dashboard Files..."
+# Step 1: Verify Dashboard Exists
+echo "[1/8] Verifying Dashboard Files..."
 if [ ! -d "/app/dashboard" ]; then
     echo "❌ FATAL: /app/dashboard directory not found!"
     exit 1
 fi
-
 if [ ! -f "/app/dashboard/index.html" ]; then
     echo "❌ FATAL: /app/dashboard/index.html not found!"
     exit 1
 fi
-
 echo "✅ Dashboard files verified at /app/dashboard"
-ls -lah /app/dashboard/
-echo ""
 
-# Step 3: Test Nginx Configuration
-echo "[3/8] Testing Nginx Configuration..."
-nginx -t
-echo "✅ Nginx config is valid"
-echo ""
+# Step 2: Start Nginx Early (Critical for Health Checks)
+echo "[2/8] Starting Nginx on port 80..."
+nginx -g 'daemon off;' &
+NGINX_PID=$!
+echo "✅ Nginx started with PID: $NGINX_PID"
+sleep 2 # Allow bind
 
-# Step 3.5: Start Bedrock Chat API
-echo "[3.5/8] Starting Bedrock Chat API..."
-python bedrock_api.py > /tmp/bedrock_api.log 2>&1 &
-API_PID=$!
-echo "✅ Bedrock API started with PID: $API_PID"
-
-# Wait for API to be ready
-echo "Waiting for Bedrock API port 5000..."
-MAX_WAIT_API=15
-COUNTER_API=0
-while [ $COUNTER_API -lt $MAX_WAIT_API ]; do
-    if curl -s http://127.0.0.1:5000/health > /dev/null 2>&1; then
-        echo "✅ Bedrock API is responding on port 5000"
-        break
-    fi
-    echo "   Still waiting for API... ($COUNTER_API/$MAX_WAIT_API)"
-    sleep 1
-    COUNTER_API=$((COUNTER_API + 1))
-done
-
-if [ $COUNTER_API -eq $MAX_WAIT_API ]; then
-    echo "⚠️  WARNING: Bedrock API didn't respond in time. Checking logs:"
-    tail -n 20 /tmp/bedrock_api.log
-    # Don't exit, might be slow startup, but warn
-fi
-echo ""
-
-# Step 4: Start Streamlit
-echo "[4/8] Starting Streamlit on port 8501..."
+# Step 3: Start Streamlit
+echo "[3/8] Starting Streamlit on port 8501..."
 streamlit run chat_app.py \
     --server.port=8501 \
     --server.address=0.0.0.0 \
     --server.headless=true \
     --server.baseUrlPath=/lab \
     2>&1 | tee /tmp/streamlit.log &
-
 STREAMLIT_PID=$!
-echo "✅ Streamlit started with PID: $STREAMLIT_PID"
-echo ""
 
-# Step 5: Wait for Streamlit to be Ready
-echo "[5/8] Waiting for Streamlit to be ready..."
-MAX_WAIT=30
-COUNTER=0
-while [ $COUNTER -lt $MAX_WAIT ]; do
-    if curl -s http://127.0.0.1:8501/_stcore/health > /dev/null 2>&1; then
-        echo "✅ Streamlit is responding on port 8501"
-        break
+# Step 4: Start Bedrock Chat API
+echo "[4/8] Starting Bedrock Chat API..."
+python bedrock_api.py > /tmp/bedrock_api.log 2>&1 &
+API_PID=$!
+
+# Step 5: Run RAG Ingestion (Background)
+# This was blocking startup!
+echo "[5/8] Launching Background RAG Ingestion..."
+(
+    echo "   [BG] Ingesting Public Knowledge Base..."
+    if [ -f "/app/ingest_lab_knowledge.py" ]; then
+        python ingest_lab_knowledge.py || echo "⚠️  Public Ingest Warnings"
     fi
-    echo "   Still waiting... ($COUNTER/$MAX_WAIT)"
-    sleep 1
-    COUNTER=$((COUNTER + 1))
-done
+    
+    echo "   [BG] Ingesting Sterling Estate Knowledge..."
+    if [ -f "/app/ingest_sterling.py" ]; then
+        python ingest_sterling.py || echo "⚠️  Estate Ingest Warnings"
+    fi
+    
+    echo "   [BG] Running Diagnostics..."
+    python rag_diagnostics.py || echo "⚠️  Diagnostic Warnings"
+    
+    echo "✅ Background Ingestion Complete"
+) &
 
-if [ $COUNTER -eq $MAX_WAIT ]; then
-    echo "❌ FATAL: Streamlit failed to start within ${MAX_WAIT}s"
-    echo "Streamlit logs:"
-    tail -20 /tmp/streamlit.log
-    exit 1
-fi
-echo ""
+# Step 6: Wait/Monitor
+echo "[6/8] System started. Monitoring PIDs..."
+echo "      Nginx: $NGINX_PID"
+echo "      App: $STREAMLIT_PID"
 
-# Step 6: Start Nginx
-echo "[6/8] Starting Nginx on port 80..."
-nginx -g 'daemon off;' &
-NGINX_PID=$!
-echo "✅ Nginx started with PID: $NGINX_PID"
-echo ""
-
-# Step 7: Verify Nginx is Actually Running
-echo "[7/8] Verifying Nginx is serving traffic..."
-sleep 2  # Give Nginx time to initialize
-
-# Check if Nginx process is still alive
-if ! ps -p $NGINX_PID > /dev/null 2>&1; then
-    echo "❌ FATAL: Nginx process died immediately after starting!"
-    echo "Nginx error log should be visible above. Checking pid..."
-    ps aux | grep nginx
-    exit 1
-fi
-
-# Test Main App route
-if curl -s -I http://127.0.0.1:80/ 2>&1 | head -1 | grep -q "HTTP"; then
-    echo "✅ App is accessible at /"
-else
-    echo "⚠️  WARNING: App test failed - check nginx error logs above"
-fi
-
-echo ""
-echo "=================================="
-echo "✅ ALL SERVICES STARTED SUCCESSFULLY"
-echo "Streamlit PID: $STREAMLIT_PID"
-echo "Nginx PID: $NGINX_PID"
-echo "=================================="
-echo ""
-echo "📡 Monitoring Nginx (foreground)..."
-echo "   Dashboard: http://localhost/"
-echo "   Lab: http://localhost/lab"
-echo ""
-
-# Keep Nginx running in foreground
 wait $NGINX_PID
