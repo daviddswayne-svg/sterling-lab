@@ -1334,23 +1334,30 @@ Remember: Show ALL reasoning in <think> tags, then provide your final answer out
                                 if 'response' in chunk:
                                     content = chunk['response']
                                     
-                                    # Check for thinking tags
+                                    # Handle tag detection and state changes
                                     if "<think>" in content:
                                         in_think_block = True
                                         content = content.replace("<think>", "")
                                     
-                                    if "</think>" in content:
-                                        in_think_block = False
-                                        content = content.replace("</think>", "")
-                                    
-                                    # Route to appropriate panel
+                                    # Route content BEFORE changing state for closing tag
                                     if in_think_block:
-                                        thinking_content += content
-                                        thinking_placeholder.markdown(thinking_content + " 🤔")
+                                        # Check if this chunk ends the thinking block
+                                        if "</think>" in content:
+                                            # Remove closing tag and add content to thinking
+                                            content = content.replace("</think>", "")
+                                            if content.strip():
+                                                thinking_content += content
+                                                thinking_placeholder.markdown(thinking_content + " ✓")
+                                            # NOW end the thinking block
+                                            in_think_block = False
+                                        else:
+                                            # Normal thinking content
+                                            thinking_content += content
+                                            thinking_placeholder.markdown(thinking_content + " 🤔")
                                     else:
-                                        # Remove any remaining think tags from content
+                                        # This is answer content
                                         clean_content = content.replace("<think>", "").replace("</think>", "")
-                                        if clean_content.strip():  # Only add if there's actual content
+                                        if clean_content.strip():
                                             final_answer += clean_content
                                             answer_placeholder.markdown(final_answer + "▌")
                         
