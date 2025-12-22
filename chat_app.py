@@ -1334,31 +1334,39 @@ Remember: Show ALL reasoning in <think> tags, then provide your final answer out
                                 if 'response' in chunk:
                                     content = chunk['response']
                                     
-                                    # Handle tag detection and state changes
+                                    # Handle content with tags by splitting appropriately
+                                    # Case 1: Content has <think> tag - split before and after
                                     if "<think>" in content:
+                                        parts = content.split("<think>", 1)
+                                        # Any content before <think> goes to answer
+                                        if parts[0].strip():
+                                            final_answer += parts[0]
+                                            answer_placeholder.markdown(final_answer + "▌")
+                                        # Now we're in thinking mode
                                         in_think_block = True
-                                        content = content.replace("<think>", "")
+                                        content = parts[1] if len(parts) > 1 else ""
                                     
-                                    # Route content BEFORE changing state for closing tag
-                                    if in_think_block:
-                                        # Check if this chunk ends the thinking block
-                                        if "</think>" in content:
-                                            # Remove closing tag and add content to thinking
-                                            content = content.replace("</think>", "")
-                                            if content.strip():
-                                                thinking_content += content
-                                                thinking_placeholder.markdown(thinking_content + " ✓")
-                                            # NOW end the thinking block
-                                            in_think_block = False
-                                        else:
-                                            # Normal thinking content
+                                    # Case 2: Content has </think> tag while in thinking mode
+                                    if "</think>" in content and in_think_block:
+                                        parts = content.split("</think>", 1)
+                                        # Content before </think> is thinking
+                                        if parts[0].strip():
+                                            thinking_content += parts[0]
+                                            thinking_placeholder.markdown(thinking_content + " ✓")
+                                        # Exit thinking mode
+                                        in_think_block = False
+                                        # Content after </think> goes to answer
+                                        content = parts[1] if len(parts) > 1 else ""
+                                        if content.strip():
+                                            final_answer += content
+                                            answer_placeholder.markdown(final_answer + "▌")
+                                    # Case 3: Normal content - route based on current state
+                                    elif content.strip():
+                                        if in_think_block:
                                             thinking_content += content
                                             thinking_placeholder.markdown(thinking_content + " 🤔")
-                                    else:
-                                        # This is answer content
-                                        clean_content = content.replace("<think>", "").replace("</think>", "")
-                                        if clean_content.strip():
-                                            final_answer += clean_content
+                                        else:
+                                            final_answer += content
                                             answer_placeholder.markdown(final_answer + "▌")
                         
                         # Final Polish - finalize both panels
