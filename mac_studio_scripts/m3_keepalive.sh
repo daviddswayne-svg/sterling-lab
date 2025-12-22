@@ -50,6 +50,9 @@ else
     fi
 fi
 
+# 2. Check Video Server
+log "[2/3] Checking Video Server..."
+$HOME/mac_studio_scripts/start_video_server.sh | while read line; do log "   $line"; done
 
 # 3. Check SSH Tunnel
 log "[3/3] Checking SSH tunnel to droplet..."
@@ -76,12 +79,14 @@ if [ -z "$TUNNEL_PID" ]; then
     log "   Starting new SSH tunnel..."
     
     # Create tunnel with control socket for health checks
+    # Added -R 8888:localhost:8888 for Video Streaming
     ssh -f -N \
         -o ServerAliveInterval=60 \
         -o ServerAliveCountMax=3 \
         -o ExitOnForwardFailure=yes \
         -M -S ~/.ssh/tunnel-m3-control \
         -R $REMOTE_PORT:localhost:$TUNNEL_PORT \
+        -R 8888:localhost:8888 \
         $DROPLET
     
     sleep 2
