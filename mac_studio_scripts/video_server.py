@@ -1,6 +1,7 @@
 import os
 import sys
 import re
+import socket  # Import socket for TCP options
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from socketserver import ThreadingMixIn
 
@@ -52,8 +53,8 @@ class RangeDataHandler(BaseHTTPRequestHandler):
                     with open(path, 'rb') as f:
                         f.seek(start)
                         bytes_to_send = length
-                        # Increased chunk size to 1MB for better tunnel throughput
-                        chunk_size = 1024 * 1024 
+                        # Optimized chunk size to 256KB for SSH tunnel efficiency (balance latency/throughput)
+                        chunk_size = 256 * 1024 
                         
                         while bytes_to_send > 0:
                             read_len = min(chunk_size, bytes_to_send)
@@ -85,6 +86,11 @@ if __name__ == '__main__':
     os.chdir(os.path.expanduser("~/Movies/SiteVideos"))
     
     server = ThreadingHTTPServer(('0.0.0.0', port), RangeDataHandler)
+    
+    # CRITICAL PERFORMANCE OPTIMIZATION
+    # Disable Nagle's Algorithm to reduce latency over SSH Tunnel
+    server.socket.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)
+    
     print(f"Starting Robust Range-Streaming Server on port {port}")
     try:
         server.serve_forever()
