@@ -1290,25 +1290,51 @@ Analysis Instructions:
                         
                         response = requests.post(f"{M1_OLLAMA}/api/generate", json=payload, stream=True)
                         
-                        # Clear receptionist and show Oracle response
-                        # receptionist_placeholder.empty() # Keep receptionist visible so users can read the handoff
+                        # Split-screen theater mode: Thinking on left, Answer on right
+                        st.markdown("### 🔮 Oracle Analysis Theater")
                         
-                        # Clear receptionist now that Oracle response is ready
-                        # receptionist_placeholder.empty() # Commented out to prevent disappearing too fast
+                        col_think, col_answer = st.columns(2)
                         
-                        st.markdown("### 🔮 Oracle Analysis")
+                        with col_think:
+                            st.markdown("#### 💭 Thinking Process")
+                            st.caption("*Watch the Oracle reason in real-time*")
+                            thinking_placeholder = st.empty()
+                        
+                        with col_answer:
+                            st.markdown("#### ✨ Final Answer")
+                            st.caption("*Distilled analysis*")
+                            answer_placeholder = st.empty()
+                        
+                        # State tracking
+                        thinking_content = ""
                         final_answer = ""
-                        answer_placeholder = st.empty()
+                        in_think_block = False
                         
                         for line in response.iter_lines():
                             if line:
                                 chunk = json.loads(line)
                                 if 'response' in chunk:
                                     content = chunk['response']
-                                    # Skip thinking tags if present
-                                    if "<think>" not in content and "</think>" not in content:
-                                        final_answer += content
-                                        answer_placeholder.markdown(final_answer + "▌")
+                                    
+                                    # Check for thinking tags
+                                    if "<think>" in content:
+                                        in_think_block = True
+                                        content = content.replace("<think>", "")
+                                    
+                                    if "</think>" in content:
+                                        in_think_block = False
+                                        content = content.replace("</think>", "")
+                                    
+                                    # Route to appropriate panel
+                                    if in_think_block:
+                                        thinking_content += content
+                                        thinking_placeholder.markdown(thinking_content + " 🤔")
+                                    else:
+                                        # Remove any remaining think tags from content
+                                        clean_content = content.replace("<think>", "").replace("</think>", "")
+                                        if clean_content.strip():  # Only add if there's actual content
+                                            final_answer += clean_content
+                                            answer_placeholder.markdown(final_answer + "▌")
                         
                         # Final Polish
                         answer_placeholder.markdown(final_answer)
