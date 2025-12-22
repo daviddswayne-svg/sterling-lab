@@ -1261,10 +1261,12 @@ Be friendly but professional - like a high-end concierge service.'''
                             relevant_docs = retriever.invoke(prompt)
                             context_text = "\n\n".join([f"Source: {doc.metadata.get('source', 'Unknown')}\nContent: {doc.page_content}" for doc in relevant_docs])
                         
-                        # Build Oracle Prompt
-                        oracle_prompt = f"""You are the 2026 Frontier Oracle. 
+                        # Build Oracle Prompt with explicit thinking instructions
+                        oracle_prompt = f"""You are the 2026 Frontier Oracle with deep reasoning capabilities.
+
+IMPORTANT: Wrap ALL your reasoning steps in <think> tags. Show your complete thought process.
+
 Use the following context from the Sterling Family Office archive to provide a DEEP DEDUCTIVE ANALYSIS.
-You must find the hidden patterns, contradictions, and clues.
 
 CONTEXT:
 ---
@@ -1274,11 +1276,27 @@ CONTEXT:
 QUESTION:
 {prompt}
 
-Analysis Instructions:
-1. Identify specific transactions or forensic details in the context.
-2. Examine the medical, financial, and legal overlaps.
-3. Locate active statuses of family members or aliases.
-4. Conclude with deductive reasoning on the user's specific query.
+Format your response EXACTLY like this:
+
+<think>
+Step 1: Let me analyze the available documents...
+[Your detailed reasoning process here - be thorough and show all steps]
+Step 2: Cross-referencing the information...
+[Continue showing your work]
+Step 3: Identifying patterns and contradictions...
+[Keep showing reasoning]
+Conclusion: Based on this analysis...
+</think>
+
+[Your final, distilled answer here - clear and concise]
+
+Analysis Focus:
+1. Identify specific transactions or forensic details in the context
+2. Examine medical, financial, and legal overlaps  
+3. Locate active statuses of family members or aliases
+4. Conclude with deductive reasoning on the user's query
+
+Remember: Show ALL reasoning in <think> tags, then provide your final answer outside the tags.
 """
 
                         # Call M1 Oracle
