@@ -2,6 +2,8 @@ import os
 import sys
 import re
 import socket  # Import socket for TCP options
+import time
+from email.utils import formatdate
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from socketserver import ThreadingMixIn
 
@@ -22,8 +24,10 @@ class RangeDataHandler(BaseHTTPRequestHandler):
             return
 
         # Get file stats
-        file_size = os.path.getsize(path)
-        mime_type = "video/mp4" if path.endswith(".mp4") else "application/octet-stream"
+        stats = os.stat(path)
+        file_size = stats.st_size
+        last_modified = formatdate(stats.st_mtime, usegmt=True)
+        mime_type = "video/mp4" if path.endswith(".mp4") else "image/jpeg" if path.endswith(".jpg") else "application/octet-stream"
         
         # Handle Range Header
         range_header = self.headers.get("Range")
@@ -46,6 +50,8 @@ class RangeDataHandler(BaseHTTPRequestHandler):
                 self.send_header("Content-Range", f"bytes {start}-{end}/{file_size}")
                 self.send_header("Content-Length", str(length))
                 self.send_header("Accept-Ranges", "bytes")
+                self.send_header("Last-Modified", last_modified)
+                self.send_header("Cache-Control", "public, max-age=3600")
                 self.end_headers()
                 
                 # Send the chunk
@@ -72,6 +78,8 @@ class RangeDataHandler(BaseHTTPRequestHandler):
         self.send_header("Content-Type", mime_type)
         self.send_header("Content-Length", str(file_size))
         self.send_header("Accept-Ranges", "bytes")
+        self.send_header("Last-Modified", last_modified)
+        self.send_header("Cache-Control", "public, max-age=3600")
         self.end_headers()
         
         try:
