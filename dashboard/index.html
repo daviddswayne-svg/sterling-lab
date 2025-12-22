@@ -145,10 +145,12 @@
                     <!-- YouTube Video Card -->
                     <div class="portfolio-card">
                         <div class="card-thumbnail">
-                            <iframe width="100%" height="315" src="https://www.youtube.com/embed/-jEpskz8DGE"
-                                frameborder="0"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                allowfullscreen loading="lazy" title="David Swayne AI Production Reel"></iframe>
+                            <!-- Local Streamed Video with Preload -->
+                            <video width="100%" height="315" controls preload="auto" playsinline
+                                style="background: #000; border-radius: 4px;">
+                                <source src="/video/sizzle_reel.mp4" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
                         </div>
                         <div class="card-content">
                             <h3>🎬 AI Production Reel</h3>
