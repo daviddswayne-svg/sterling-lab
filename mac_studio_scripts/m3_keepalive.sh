@@ -16,30 +16,40 @@ log "=========================================="
 log "M3 Keepalive Check Started"
 log "=========================================="
 
-# 1. Check if Ollama is running
+# 1. Check if Ollama is running AND responding
 log "[1/3] Checking Ollama status..."
-if pgrep -x "ollama" > /dev/null; then
-    log "✅ Ollama is running"
-else
-    log "⚠️  Ollama not running, starting..."
-    ollama serve > /dev/null 2>&1 &
-    sleep 3
-    
-    if pgrep -x "ollama" > /dev/null; then
-        log "✅ Ollama started successfully"
-    else
-        log "❌ ERROR: Failed to start Ollama"
-    fi
-fi
 
-# 2. Check Ollama API
-log "[2/3] Testing Ollama API..."
-if curl -s http://localhost:11434/api/version > /dev/null 2>&1; then
+# Function to start Ollama
+start_ollama() {
+    log "   Starting Ollama..."
+    ollama serve > /dev/null 2>&1 &
+    sleep 5
+}
+
+# Check API health
+if curl -s --max-time 5 http://localhost:11434/api/version > /dev/null; then
     VERSION=$(curl -s http://localhost:11434/api/version | grep -o '"version":"[^"]*"' | cut -d'"' -f4)
     log "✅ Ollama API responding (version: $VERSION)"
 else
-    log "❌ ERROR: Ollama API not responding"
+    log "⚠️  Ollama API NOT responding (or process missing)"
+    
+    # Check if process exists (zombie?)
+    if pgrep -x "ollama" > /dev/null; then
+        log "   Found unresponsive 'ollama' process. Force killing..."
+        pkill -9 -x ollama
+        sleep 2
+    fi
+    
+    # Restart
+    start_ollama
+    
+    if curl -s --max-time 10 http://localhost:11434/api/version > /dev/null; then
+        log "✅ Ollama restarted successfully"
+    else
+        log "❌ ERROR: Failed to restart Ollama (still unresponsive)"
+    fi
 fi
+
 
 # 3. Check SSH Tunnel
 log "[3/3] Checking SSH tunnel to droplet..."
