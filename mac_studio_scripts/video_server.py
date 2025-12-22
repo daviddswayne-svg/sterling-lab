@@ -52,7 +52,8 @@ class RangeDataHandler(BaseHTTPRequestHandler):
                     with open(path, 'rb') as f:
                         f.seek(start)
                         bytes_to_send = length
-                        chunk_size = 81920 # 80KB chunks
+                        # Increased chunk size to 1MB for better tunnel throughput
+                        chunk_size = 1024 * 1024 
                         
                         while bytes_to_send > 0:
                             read_len = min(chunk_size, bytes_to_send)
