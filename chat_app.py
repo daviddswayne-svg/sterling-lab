@@ -1308,80 +1308,63 @@ Remember: Show ALL reasoning in <think> tags, then provide your final answer out
                         
                         response = requests.post(f"{M1_OLLAMA}/api/generate", json=payload, stream=True)
                         
-                        # Split-screen theater mode: Thinking on left, Answer on right
-                        st.markdown("### 🔮 Oracle Analysis Theater")
+                        # Simple streaming display with collapsible thinking
+                        st.markdown("### 🔮 Oracle Analysis")
                         
-                        col_think, col_answer = st.columns(2)
-                        
-                        with col_think:
-                            st.markdown("#### 💭 Thinking Process")
-                            st.caption("*Watch the Oracle reason in real-time*")
-                            thinking_placeholder = st.empty()
-                        
-                        with col_answer:
-                            st.markdown("#### ✨ Final Answer")
-                            st.caption("*Distilled analysis*")
-                            answer_placeholder = st.empty()
-                        
-                        # State tracking
-                        thinking_content = ""
-                        final_answer = ""
-                        in_think_block = False
+                        # Collect full response while streaming
+                        full_response = ""
+                        response_placeholder = st.empty()
                         
                         for line in response.iter_lines():
                             if line:
                                 chunk = json.loads(line)
                                 if 'response' in chunk:
-                                    content = chunk['response']
-                                    
-                                    # Handle content with tags by splitting appropriately
-                                    # Case 1: Content has <think> tag - split before and after
-                                    if "<think>" in content:
-                                        parts = content.split("<think>", 1)
-                                        # Any content before <think> goes to answer
-                                        if parts[0].strip():
-                                            final_answer += parts[0]
-                                            answer_placeholder.markdown(final_answer + "▌")
-                                        # Now we're in thinking mode
-                                        in_think_block = True
-                                        content = parts[1] if len(parts) > 1 else ""
-                                    
-                                    # Case 2: Content has </think> tag while in thinking mode
-                                    if "</think>" in content and in_think_block:
-                                        parts = content.split("</think>", 1)
-                                        # Content before </think> is thinking
-                                        if parts[0].strip():
-                                            thinking_content += parts[0]
-                                            thinking_placeholder.markdown(thinking_content + " ✓")
-                                        # Exit thinking mode
-                                        in_think_block = False
-                                        # Content after </think> goes to answer
-                                        content = parts[1] if len(parts) > 1 else ""
-                                        if content.strip():
-                                            final_answer += content
-                                            answer_placeholder.markdown(final_answer + "▌")
-                                    # Case 3: Normal content - route based on current state
-                                    elif content.strip():
-                                        if in_think_block:
-                                            thinking_content += content
-                                            thinking_placeholder.markdown(thinking_content + " 🤔")
-                                        else:
-                                            final_answer += content
-                                            answer_placeholder.markdown(final_answer + "▌")
+                                    full_response += chunk['response']
+                                    # Show streaming with cursor
+                                    response_placeholder.markdown(full_response + "▌")
                         
-                        # Final Polish - finalize both panels
-                        if thinking_content.strip():
-                            thinking_placeholder.markdown(thinking_content)
+                        # Response complete - parse and display properly
+                        response_placeholder.empty()  # Clear streaming display
+                        
+                        # Try to extract thinking and answer
+                        if "<think>" in full_response and "</think>" in full_response:
+                            # Extract sections
+                            parts = full_response.split("<think>", 1)
+                            before_think = parts[0].strip()
+                            
+                            parts2 = parts[1].split("</think>", 1)
+                            thinking = parts2[0].strip()
+                            after_think = parts2[1].strip() if len(parts2) > 1 else ""
+                            
+                            # Combine pre-think and post-think as answer
+                            final_answer = before_think
+                            if after_think:
+                                if final_answer:
+                                    final_answer += "\n\n" + after_think
+                                else:
+                                    final_answer = after_think
+                            
+                            # Display thinking in expandable section
+                            if thinking:
+                                with st.expander("💭 View Oracle's Thinking Process", expanded=False):
+                                    st.markdown(thinking)
+                            
+                            # Display final answer
+                            if final_answer:
+                                st.markdown("### ✨ Final Answer")
+                                st.markdown(final_answer)
+                            else:
+                                st.markdown("### ✨ Analysis")
+                                st.info("Oracle provided reasoning only - expand 'Thinking Process' above to view.")
+                            
+                            # Save answer (or thinking if no answer)
+                            content_to_save = final_answer if final_answer else thinking
                         else:
-                            thinking_placeholder.markdown("*No explicit reasoning provided*")
+                            # No tags found - just display everything as answer
+                            st.markdown(full_response)
+                            content_to_save = full_response
                         
-                        if final_answer.strip():
-                            answer_placeholder.markdown(final_answer)
-                        else:
-                            answer_placeholder.markdown("*Oracle provided reasoning only - see thinking panel*")
-                        
-                        # Save to history (use final_answer if available, otherwise use thinking)
-                        content_to_save = final_answer if final_answer.strip() else thinking_content
+                        # Save to history
                         st.session_state.current_session_messages.append({"role": "assistant", "content": content_to_save})
                         st.session_state.db_history.append({"role": "assistant", "content": content_to_save})
                         save_message("assistant", content_to_save)
