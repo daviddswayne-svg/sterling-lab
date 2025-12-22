@@ -12,11 +12,14 @@ if [ ! -d "$VIDEO_DIR" ]; then
 fi
 
 # Check if already running
-if pgrep -f "python3 -m http.server $PORT" > /dev/null; then
+if pgrep -f "video_server.py" > /dev/null; then
     echo "Video server already running on port $PORT"
 else
-    echo "Starting video server on port $PORT..."
+    echo "Starting Threaded Video Server on port $PORT..."
+    # Kill old single-threaded server if it exists
+    pkill -f "python3 -m http.server $PORT" || true
+    
     cd "$VIDEO_DIR"
-    nohup python3 -m http.server $PORT > /dev/null 2>&1 &
-    echo "Video server started (PID $!)"
+    nohup python3 "$HOME/mac_studio_scripts/video_server.py" > "$HOME/video_server.log" 2>&1 &
+    echo "Video server started (PID $!) - Logs at ~/video_server.log"
 fi
