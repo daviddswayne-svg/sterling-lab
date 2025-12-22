@@ -1361,13 +1361,22 @@ Remember: Show ALL reasoning in <think> tags, then provide your final answer out
                                             final_answer += clean_content
                                             answer_placeholder.markdown(final_answer + "▌")
                         
-                        # Final Polish
-                        answer_placeholder.markdown(final_answer)
+                        # Final Polish - finalize both panels
+                        if thinking_content.strip():
+                            thinking_placeholder.markdown(thinking_content)
+                        else:
+                            thinking_placeholder.markdown("*No explicit reasoning provided*")
                         
-                        # Save to history
-                        st.session_state.current_session_messages.append({"role": "assistant", "content": final_answer})
-                        st.session_state.db_history.append({"role": "assistant", "content": final_answer})
-                        save_message("assistant", final_answer)
+                        if final_answer.strip():
+                            answer_placeholder.markdown(final_answer)
+                        else:
+                            answer_placeholder.markdown("*Oracle provided reasoning only - see thinking panel*")
+                        
+                        # Save to history (use final_answer if available, otherwise use thinking)
+                        content_to_save = final_answer if final_answer.strip() else thinking_content
+                        st.session_state.current_session_messages.append({"role": "assistant", "content": content_to_save})
+                        st.session_state.db_history.append({"role": "assistant", "content": content_to_save})
+                        save_message("assistant", content_to_save)
                         
                         # Sources
                         if relevant_docs:
