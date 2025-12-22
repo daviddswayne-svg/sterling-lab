@@ -663,6 +663,27 @@ def run_app():
     
     if "current_session_messages" not in st.session_state:
         st.session_state.current_session_messages = []
+        
+        # Show welcome greeting from receptionist on first load
+        welcome_message = """### 💁 Welcome to the 2026 Frontier Lab
+        
+Good day! I'm **Vivienne**, your receptionist at the Sterling Estate's Frontier Intelligence Office. 
+
+Please, make yourself comfortable. Our advanced AI systems are at your service, ready to assist with any inquiries about the Sterling Estate, our operations, or general analysis.
+
+**Available Services:**
+- **Standard Mode**: Direct RAG-powered analysis with your selected model
+- **🔮 Oracle Mode**: Deep deductive reasoning via our M1 Muscle (DeepSeek-R1:70b) for complex forensic analysis
+- **👥 Council Mode**: Multi-agent collaborative intelligence featuring our specialized team of personas
+
+Feel free to ask anything! The Council and Oracle are standing by whenever you need them. Simply toggle their modes in the sidebar and I'll connect you immediately.
+
+How may I assist you today?"""
+        
+        st.session_state.current_session_messages.append({
+            "role": "assistant",
+            "content": welcome_message
+        })
 
     # Display Active Session
     for message in st.session_state.current_session_messages:
