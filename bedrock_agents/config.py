@@ -9,7 +9,7 @@ OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
 # Local ComfyUI Instance
 # Set COMFYUI_HOST environment variable to point to your ComfyUI instance
 # Examples: http://10.10.10.3:8188 or http://localhost:8188
-COMFYUI_HOST = os.getenv("COMFYUI_HOST", "http://127.0.0.1:8188") 
+COMFYUI_HOST = os.getenv("COMFYUI_HOST", "http://10.0.1.1:8188") 
 
 # Models (Aligned with Swayne Systems standards)
 MODELS = {
