@@ -4,7 +4,7 @@ import os
 
 # Local Ollama Instance
 # Use OLLAMA_HOST env var, default to localhost if not set (but in Docker it's usually host.docker.internal)
-OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
+OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://10.0.1.1:11434")
 
 # Local ComfyUI Instance
 # Set COMFYUI_HOST environment variable to point to your ComfyUI instance
