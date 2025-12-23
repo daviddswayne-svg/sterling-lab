@@ -37,7 +37,7 @@ STREAMLIT_PID=$!
 
 # Step 4: Start Bedrock Chat API
 echo "[4/8] Starting Bedrock Chat API..."
-python bedrock_api.py > /tmp/bedrock_api.log 2>&1 &
+python bedrock_api.py 2>&1 | tee /tmp/bedrock_api.log &
 API_PID=$!
 
 # Step 5: Run RAG Ingestion (Background)
