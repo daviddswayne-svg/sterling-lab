@@ -245,6 +245,20 @@ def tts_proxy():
         print(f"❌ TTS Proxy Error: {e}")
         return jsonify({"error": str(e)}), 500
 
+@app.route('/api/bedrock/market-analysis', methods=['GET'])
+def get_market_analysis():
+    """Generates the live market analysis using RAG and yfinance."""
+    try:
+        from bedrock_agents.staff.content_director import ContentDirector
+        
+        director = ContentDirector()
+        briefing = director.create_daily_brief()
+        
+        return jsonify(briefing)
+    except Exception as e:
+        print(f"❌ Market Analysis Error: {e}")
+        return jsonify({"error": str(e)}), 500
+
 # --- Antigravity Endpoints ---
 
 @app.route('/antigravity/status', methods=['GET'])

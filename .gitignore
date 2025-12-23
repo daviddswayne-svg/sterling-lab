@@ -9,4 +9,5 @@ venv/
 # Ignore all SQLite files EXCEPT the ChromaDB one (needed for RAG)
 *.sqlite3
 !chroma_db/chroma.sqlite3
+!bedrock_agents/data/chroma_bedrock_intel/chroma.sqlite3
 

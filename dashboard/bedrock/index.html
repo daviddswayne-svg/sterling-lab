@@ -35,6 +35,81 @@
 
         <!-- Main content -->
         <main class="main-content">
+
+            <!-- NEW: AI Market Analysis Section -->
+            <section id="market-briefing" style="display:none; margin-bottom: 2rem;">
+                <div class="card-glow"
+                    style="padding: 1.5rem; background: linear-gradient(135deg, rgba(16, 24, 39, 0.8), rgba(0, 0, 0, 0.9)); border: 1px solid rgba(74, 144, 226, 0.3); border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+                    <div style="display: flex; justify-content: space-between; align-items: top; margin-bottom: 1rem;">
+                        <div>
+                            <h3
+                                style="color: #4a90e2; margin:0; font-size: 0.9rem; letter-spacing: 1px; text-transform: uppercase;">
+                                📡 Live Market Intelligence</h3>
+                            <p style="margin:0; font-size: 0.75rem; color: rgba(255,255,255,0.4);">Source: Swiss Re
+                                Sigma '25 • NYSE • Global Wires</p>
+                        </div>
+                        <span id="sentiment-badge"
+                            style="background: rgba(255,255,255,0.1); padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.5px; border: 1px solid rgba(255,255,255,0.1);">INITIALIZING...</span>
+                    </div>
+                    <h2 id="briefing-headline"
+                        style="font-size: 1.8rem; margin: 0.5rem 0 1rem 0; font-weight: 700; background: linear-gradient(to right, #fff, #a5b4fc); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">
+                        Connecting to Global Data Streams...</h2>
+                    <p id="briefing-body"
+                        style="color: rgba(255,255,255,0.8); line-height: 1.7; font-size: 1.05rem; border-left: 3px solid rgba(74, 144, 226, 0.3); padding-left: 1rem; margin: 0;">
+                        Analysing 30-day volatility vectors... Querying Vector Database...</p>
+                </div>
+            </section>
+
+            <script>
+                async function loadMarketAnalysis() {
+                    try {
+                        const section = document.getElementById('market-briefing');
+                        section.style.display = 'block';
+
+                        // Small delay to show "Connecting..." state which adds realism
+                        await new Promise(r => setTimeout(r, 800));
+
+                        const response = await fetch('/api/bedrock/market-analysis');
+                        const data = await response.json();
+
+                        if (data.error) throw new Error(data.error);
+
+                        document.getElementById('briefing-headline').textContent = data.headline;
+                        // Use innerHTML to render bold tags from the LLM
+                        const body = document.getElementById('briefing-body');
+                        body.innerHTML = data.briefing_body;
+                        body.style.borderLeftColor = "#4a90e2"; // Activate color
+
+                        const badge = document.getElementById('sentiment-badge');
+                        badge.textContent = data.market_sentiment.toUpperCase();
+
+                        // Dynamic Sentiment Coloring
+                        const sent = data.market_sentiment.toLowerCase();
+                        if (sent.includes('bull') || sent.includes('positive') || sent.includes('growth')) {
+                            badge.style.background = 'rgba(16, 185, 129, 0.2)';
+                            badge.style.borderColor = 'rgba(16, 185, 129, 0.5)';
+                            badge.style.color = '#34d399';
+                        } else if (sent.includes('bear') || sent.includes('caution') || sent.includes('risk') || sent.includes('volat')) {
+                            badge.style.background = 'rgba(239, 68, 68, 0.2)';
+                            badge.style.borderColor = 'rgba(239, 68, 68, 0.5)';
+                            badge.style.color = '#f87171';
+                        } else {
+                            badge.style.background = 'rgba(245, 158, 11, 0.2)';
+                            badge.style.borderColor = 'rgba(245, 158, 11, 0.5)';
+                            badge.style.color = '#fbbf24';
+                        }
+
+                    } catch (e) {
+                        console.error("Market Analysis Failed", e);
+                        document.getElementById('briefing-headline').textContent = "Market Stream Interrupted";
+                        document.getElementById('briefing-body').textContent = "Unable to sync with HQ. Retrying connection...";
+                    }
+                }
+
+                // Auto-load on page start
+                document.addEventListener('DOMContentLoaded', loadMarketAnalysis);
+            </script>
+
             <section class="hero-card card-glow">
                 <img src='/assets/bedrock_latest.png' class='hero-image' alt='Safe Haven'>
                 <div class="card-content">
@@ -47,31 +122,50 @@
                 </div>
             </section>
 
+            <!-- NEW: Visual Analytics Grid -->
             <section class="info-grid">
-                <div class="info-card">
-                    <h3>Smart Home Security</h3>
-                    <p>Deter intruders with state-of-the-art smart home security systems designed to keep your family
-                        safe.</p>
+                <div class="info-card" style="border: 1px solid rgba(74, 144, 226, 0.2);">
+                    <h3 style="color: #4a90e2; margin-bottom: 0.5rem;">Why Rates Are Up</h3>
+                    <img src="/assets/inflation_chart.png"
+                        style="width:100%; border-radius: 8px; margin-bottom: 0.5rem; opacity: 0.9;"
+                        alt="Inflation Chart">
+                    <p style="font-size: 0.8rem; color: rgba(255,255,255,0.6);">Auto repair costs (Pink) are outpacing
+                        general inflation.</p>
                 </div>
-                <div class="info-card">
-                    <h3>Flood Insurance</h3>
-                    <p>Incorporate flood insurance into your protection plan for comprehensive coverage against
-                        unexpected water damage.</p>
-                </div>
-                <div class="info-card">
-                    <h3>Landscaping & Safety</h3>
-                    <p>Leverage well-designed outdoor spaces to create a natural barrier and enhance the overall safety
-                        of your home.</p>
+                <div class="info-card" style="border: 1px solid rgba(0, 230, 118, 0.2);">
+                    <h3 style="color: #00e676; margin-bottom: 0.5rem;">Real-Time Weather Risk</h3>
+                    <img src="/assets/storm_chart.png"
+                        style="width:100%; border-radius: 8px; margin-bottom: 0.5rem; opacity: 0.9;"
+                        alt="Weather Trend">
+                    <p style="font-size: 0.8rem; color: rgba(255,255,255,0.6);">90-Day Peak Wind Gusts (Tornado Alley).
+                    </p>
                 </div>
             </section>
-        </main>
 
-        <!-- Footer -->
-        <footer class="footer">
-            <p>© 2025 Bedrock Insurance (A Swayne Systems Entity)</p>
-            <p style="margin-top: 0.5rem; font-size: 0.75rem;"><a href="/"
-                    style="color: rgba(255,255,255,0.3); text-decoration: none;">Internal Dashboard</a></p>
-        </footer>
+            <section class="info-grid">
+                <h3>Smart Home Security</h3>
+                <p>Deter intruders with state-of-the-art smart home security systems designed to keep your family
+                    safe.</p>
+    </div>
+    <div class="info-card">
+        <h3>Flood Insurance</h3>
+        <p>Incorporate flood insurance into your protection plan for comprehensive coverage against
+            unexpected water damage.</p>
+    </div>
+    <div class="info-card">
+        <h3>Landscaping & Safety</h3>
+        <p>Leverage well-designed outdoor spaces to create a natural barrier and enhance the overall safety
+            of your home.</p>
+    </div>
+    </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>© 2025 Bedrock Insurance (A Swayne Systems Entity)</p>
+        <p style="margin-top: 0.5rem; font-size: 0.75rem;"><a href="/"
+                style="color: rgba(255,255,255,0.3); text-decoration: none;">Internal Dashboard</a></p>
+    </footer>
     </div>
     <!-- Chat Widget -->
     <div class="chat-widget">

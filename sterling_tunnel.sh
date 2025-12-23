@@ -11,8 +11,9 @@ SSH_KEY="$HOME/.ssh/sterling_tunnel"
 REMOTE_PORT="11434"
 LOCAL_PORT="11434"
 
-exec autossh -M 0 \
+exec /opt/homebrew/bin/autossh -M 0 \
   -N \
+  -R 0.0.0.0:8888:localhost:8888 \
   -R 0.0.0.0:${REMOTE_PORT}:localhost:${LOCAL_PORT} \
   -R 0.0.0.0:8001:localhost:8000 \
   -o ServerAliveInterval=30 \

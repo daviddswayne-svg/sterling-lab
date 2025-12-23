@@ -3,6 +3,7 @@ import sys
 import re
 import socket
 import time
+import glob
 from email.utils import formatdate
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from socketserver import ThreadingMixIn
@@ -13,13 +14,46 @@ from socketserver import ThreadingMixIn
 # 3. Use 256KB Chunks + TCP_NODELAY (vital for SSH latency).
 # 4. Use Cache-Control (vital for preload/refresh).
 
+NIGHT_SHIFT_OUTPUT = "/Users/daviddswayne/.gemini/antigravity/scratch/night_shift_studio/output"
+
 class ThreadingHTTPServer(ThreadingMixIn, HTTPServer):
     daemon_threads = True
 
 class RobustRangeVideoHandler(BaseHTTPRequestHandler):
+    def do_OPTIONS(self):
+        self.send_response(200)
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Range")
+        self.end_headers()
+
     def do_GET(self):
         # Initial check for path
         path = self.path.split('?')[0]
+        
+        # --- NEW: Latest Clip Logic ---
+        if path == '/latest':
+            try:
+                # Find newest .mp4 in Night Shift output
+                list_of_files = glob.glob(os.path.join(NIGHT_SHIFT_OUTPUT, '*.mp4'))
+                if not list_of_files:
+                    self.send_error(404, "No generated videos found")
+                    return
+                latest_file = max(list_of_files, key=os.path.getctime)
+                
+                # Check if it's a real file (and not a symlink/dir just in case)
+                if not os.path.isfile(latest_file):
+                    self.send_error(500, "Latest file is invalid")
+                    return
+                    
+                # Serve this specific file directly
+                self.serve_file(latest_file)
+                return
+            except Exception as e:
+                self.send_error(500, f"Error finding latest video: {e}")
+                return
+        # ------------------------------
+
         # Security: Prevent escaping directory
         if '..' in path or path.startswith('/'):
             path = '.' + path
@@ -27,7 +61,10 @@ class RobustRangeVideoHandler(BaseHTTPRequestHandler):
         if not os.path.exists(path) or os.path.isdir(path):
             self.send_error(404, "File not found")
             return
+            
+        self.serve_file(path)
 
+    def serve_file(self, path):
         # Get file stats
         stats = os.stat(path)
         file_size = stats.st_size
@@ -55,6 +92,7 @@ class RobustRangeVideoHandler(BaseHTTPRequestHandler):
                 self.send_header("Accept-Ranges", "bytes")
                 self.send_header("Last-Modified", last_modified)
                 self.send_header("Cache-Control", "public, max-age=3600")
+                self.send_header("Access-Control-Allow-Origin", "*") # CORS
                 self.end_headers()
                 
                 try:
@@ -81,6 +119,7 @@ class RobustRangeVideoHandler(BaseHTTPRequestHandler):
         self.send_header("Accept-Ranges", "bytes")
         self.send_header("Last-Modified", last_modified)
         self.send_header("Cache-Control", "public, max-age=3600")
+        self.send_header("Access-Control-Allow-Origin", "*") # CORS
         self.end_headers()
         
         try:

@@ -21,11 +21,13 @@ class ContentDirector:
         prompt = """
         Generate ONE provocative, futuristic, or unexpected concept that relates to 'Protection', 'Assets', or 'Lifestyle'.
         
-        Examples of the vibe:
-        - Digital Afterlife Management
-        - Drone-Defense Skies
-        - Nomad-Capitalism
-        - Bio-metric Fortresses
+        Examples of the vibe (Ensure Variety!):
+        - Climate-Adaptive Architecture
+        - Quantum-Encryption Liability
+        - Space-Debris Property Rights
+        - AI-Workforce Displacement Insurance
+        - Sovereign-Individual Data HAVENs
+        - Micro-Grid Energy Trading
         
         Return ONLY the concept name, nothing else. No explanation.
         """
@@ -43,41 +45,68 @@ class ContentDirector:
             return random.choice(["Cyber-Physical Security", "Climate-Resilient Living", "Asset-Tokenization"])
 
     def create_daily_brief(self):
-        """Generates a creative brief using multi-agent brainstorming."""
+        """Generates a professional market briefing using Real-Time Intelligence."""
         
-        date_str = datetime.now().strftime("%Y-%m-%d")
-        time_str = datetime.now().strftime("%H:%M:%S")
+        # Lazy import to avoid circular dep issues if any
+        from ..market_intel import MarketIntelligence
         
-        # Step 1: Get a wild idea from the Trend Scout
-        wild_concept = self._consult_trend_scout()
+        intel = MarketIntelligence()
+        print(f"🧠 Content Director ({self.model}) is gathering market intelligence...")
+        
+        # Gather all data
+        context_data = intel.get_full_briefing_context()
+        
+        market_str = "\n".join([f"- {t}: ${d['price']} ({d['change_pct']}%) [Vol: {d['volatility_30d']}%]" for t, d in context_data['market_data'].items()])
+        news_str = "\n".join([f"- {h}" for h in context_data['news_headlines']])
         
         prompt = f"""
         {self.prompts['system_prompt']}
-        Today's date is {date_str} at {time_str}.
+        DATE: {datetime.now().strftime("%Y-%m-%d %H:%M")}
         
-        INPUT FROM TREND SCOUT: "{wild_concept}"
+        === MARKET INTELLIGENCE STREAM ===
+        HARD DATA (Live Tickers):
+        {market_str}
         
-        INSTRUCTION: 
-        1. We are brainstorming with a futurist consultant (the Trend Scout).
-        2. Take their wild concept: "{wild_concept}"
-        3. GROUND IT into a sophisticated, high-end insurance marketing theme for Bedrock.
-        4. Example: If input is "Digital Afterlife", theme could be "Legacy Conservation for the Digital Age".
+        LATEST NEWS WIRES:
+        {news_str}
         
-        Your goal is to show we are ahead of the curve.
+        DEEP INSIGHT (Swiss Re Sigma Report 2025 Outlook):
+        "{context_data['sigma_report_context']}"
         
-        Return a JSON object with this EXACT structure:
-        {json.dumps(self.prompts['output_format'], indent=4)}
+        === INSTRUCTION ===
+        You are the Chief Market Analyst for Bedrock Insurance.
+        Write a "Morning Briefing" for our high-net-worth protection agents.
+        
+        GUIDELINES:
+        1. Synthesize the Hard Data and News into a cohesive narrative.
+        2. CRITICAL: Explicitly cite the "Swiss Re Sigma Report" for the long-term outlook.
+        3. Tone: Bloomberg Terminal meets Architectural Digest. Sophisticated, urgent, yet reassuring.
+        4. Focus on "Risk Landscape" and "Asset Resilience".
+        
+        Output a JSON object with this EXACT structure:
+        {{
+            "headline": "Punchy, 5-7 word title",
+            "market_sentiment": "One word (e.g., Volatile, Cautious, Bullish)",
+            "briefing_body": "The main paragraph (approx 100-150 words). Use HTML <b> tags for emphasis on key numbers."
+        }}
         """
         
-        print(f"🧠 Content Director ({self.model}) is digesting the scout's idea...")
-        print(f"   💡 Converting '{wild_concept}' into a campaign strategy...")
+        print(f"   💡 Synthesizing brief with Real-Time Data...")
         
-        response = self.client.chat(model=self.model, format='json', messages=[
-            {'role': 'user', 'content': prompt}
-        ])
-        
-        content = response['message']['content']
-        return json.loads(content)
+        try:
+            response = self.client.chat(model=self.model, format='json', messages=[
+                {'role': 'user', 'content': prompt}
+            ])
+            
+            content = response['message']['content']
+            return json.loads(content)
+        except Exception as e:
+            print(f"❌ Content Director Error: {e}")
+            return {
+                "headline": "Market Intelligence Unavailable",
+                "market_sentiment": "Offline",
+                "briefing_body": "Unable to generate live briefing. Please check system logs."
+            }
 
 if __name__ == "__main__":
     director = ContentDirector()

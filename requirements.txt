@@ -13,3 +13,8 @@ streamlit-authenticator>=0.4.0
 flask
 flask-cors
 google-generativeai>=0.3.0
+yfinance==0.2.40
+matplotlib
+seaborn
+pandas
+pypdf
