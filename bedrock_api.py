@@ -98,7 +98,7 @@ def check_rate_limit(ip: str, limit: int = None, window_hours: int = 1) -> bool:
     public_chat_limits[ip].append(now)
     return True
 
-@app.route('/health', methods=['GET'])
+@app.route('/api/health', methods=['GET'])
 def health():
     """Comprehensive system health check for Ollama and ComfyUI"""
     
@@ -138,7 +138,7 @@ def health():
     })
 
 
-@app.route('/chat', methods=['POST'])
+@app.route('/api/chat', methods=['POST'])
 def chat():
     try:
         data = request.json
@@ -175,7 +175,7 @@ def chat():
         print(f"❌ Error in chat endpoint: {e}")
         return jsonify({"error": str(e)}), 500
 
-@app.route('/meeting', methods=['GET'])
+@app.route('/api/meeting', methods=['GET'])
 def run_meeting():
     def generate():
         try:
@@ -210,7 +210,7 @@ def run_meeting():
         }
     )
 
-@app.route('/tts', methods=['POST'])
+@app.route('/api/tts', methods=['POST'])
 def tts_proxy():
     """Proxies TTS request to Local Mac Studio via Tunnel"""
     try:
