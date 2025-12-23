@@ -380,6 +380,9 @@
                         console.log("🚀 Reloading page now!");
                         location.reload();
                     }, 2000);
+                } else {
+                    // Trigger Audio for this agent
+                    handleMeetingAudio(agent, msg);
                 }
             };
 
@@ -390,6 +393,62 @@
                     document.getElementById('staffModal').classList.remove('active');
                 }, 3000);
             };
+        }
+
+        // Meeting Audio Queue System
+        let audioQueue = [];
+        let isPlayingMeetingAudio = false;
+
+        async function handleMeetingAudio(agent, text) {
+            // Ignore system messages or loading states
+            if (agent === 'system' || agent === 'error' || text.includes('...')) return;
+
+            audioQueue.push({ agent, text });
+            processAudioQueue();
+        }
+
+        async function processAudioQueue() {
+            if (isPlayingMeetingAudio || audioQueue.length === 0) return;
+
+            isPlayingMeetingAudio = true;
+            const item = audioQueue.shift();
+
+            try {
+                // Request TTS
+                const response = await fetch('/api/tts', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: item.text })
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+
+                    // Use existing playAudioBlob but wrap in promise to wait for end
+                    await new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onload = async function () {
+                            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                            const audioBuffer = await audioCtx.decodeAudioData(reader.result);
+                            const source = audioCtx.createBufferSource();
+                            source.buffer = audioBuffer;
+                            source.connect(audioCtx.destination);
+
+                            source.onended = () => {
+                                resolve();
+                            };
+
+                            source.start(0);
+                        };
+                        reader.readAsArrayBuffer(blob);
+                    });
+                }
+            } catch (e) {
+                console.error("Meeting audio failed", e);
+            }
+
+            isPlayingMeetingAudio = false;
+            processAudioQueue(); // Process next
         }
     </script>
 
