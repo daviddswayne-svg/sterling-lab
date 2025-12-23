@@ -51,7 +51,10 @@ def run_meeting_generator():
     try:
         yield "director", "Analyzing market trends & drafting brief..."
         brief = director.create_daily_brief()
-        yield "director", f"Theme selected: {brief['theme']}"
+        # Adapting to new Cached Brief structure
+        # Use 'headline' as theme if 'theme' key is missing
+        theme = brief.get('theme', brief.get('headline', 'Global Market Risk'))
+        yield "director", f"Theme selected: {theme}"
     except Exception as e:
         yield "error", f"Director Failed: {e}"
         return
@@ -61,9 +64,9 @@ def run_meeting_generator():
     image_path = None
     try:
         yield "designer", "Composing high-fidelity imagery..."
-        # Extract concept if available, otherwise use title
-        concept = brief.get('image_concept', brief['title'])
-        image_path = designer.generate_image(brief['theme'], concept)
+        # Extract concept if available, otherwise use headline
+        concept = brief.get('image_concept', brief.get('headline', 'Modern Insurance Office'))
+        image_path = designer.generate_image(theme, concept)
         yield "designer", "Image rendering complete."
     except Exception as e:
         yield "designer", f"Rendering failed (Using Stock): {e}"
@@ -82,7 +85,7 @@ def run_meeting_generator():
     publisher = PublishingManager()
     try:
         yield "publisher", "Deploying to production container..."
-        publisher.update_website(html_content, brief['theme'])
+        publisher.update_website(html_content, theme)
         yield "publisher", "Live deployment successful."
     except Exception as e:
         yield "error", f"Publisher Failed: {e}"

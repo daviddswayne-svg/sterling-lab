@@ -267,7 +267,7 @@ def get_market_analysis():
 
 # --- Antigravity Endpoints ---
 
-@app.route('/antigravity/status', methods=['GET'])
+@app.route('/api/antigravity/status', methods=['GET'])
 @require_whitelisted_ip
 def antigravity_status():
     """Check if user is authorized to use Antigravity"""
@@ -281,7 +281,7 @@ def antigravity_status():
         "gemini_configured": bool(GEMINI_API_KEY)
     })
 
-@app.route('/antigravity/chat', methods=['POST'])
+@app.route('/api/antigravity/chat', methods=['POST'])
 @require_whitelisted_ip
 def antigravity_chat():
     """Stream chat responses from Gemini API"""
@@ -381,7 +381,7 @@ Be concise, helpful, and proactive. When suggesting code changes, provide clear 
         print(f"❌ Error in antigravity chat: {e}")
         return jsonify({"error": str(e)}), 500
 
-@app.route('/antigravity/context', methods=['GET'])
+@app.route('/api/antigravity/context', methods=['GET'])
 @require_whitelisted_ip
 def antigravity_context():
     """Get conversation history"""
@@ -389,7 +389,7 @@ def antigravity_context():
     history = antigravity_conversations.get(session_id, [])
     return jsonify({"history": history})
 
-@app.route('/antigravity/apply', methods=['POST'])
+@app.route('/api/antigravity/apply', methods=['POST'])
 @require_whitelisted_ip
 def antigravity_apply():
     """Apply file changes (placeholder - will expand for actual file operations)"""
@@ -416,7 +416,7 @@ def antigravity_apply():
 
 # --- Public Chat Endpoint ---
 
-@app.route('/antigravity/public/chat', methods=['POST'])
+@app.route('/api/antigravity/public/chat', methods=['POST'])
 def antigravity_public_chat():
     """Public chat - Local Qwen RAG, rate-limited, read-only"""
     try:
