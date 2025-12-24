@@ -31,7 +31,10 @@ class PublishingManager:
                 "market_inflation": "market-inflation-val",
                 "market_risk": "market-risk-val",
                 "market_yield": "market-yield-val",
-                "market_sector": "market-sector-val"
+                "market_sector": "market-sector-val",
+                "market_sp500": "market-sp500-val",
+                "market_volatility": "market-volatility-val",
+                "market_outlook": "market-outlook-val"
             }
 
             if isinstance(content_updates, dict):

@@ -37,4 +37,4 @@ os.makedirs(ASSETS_DIR, exist_ok=True)
 
 # Bedrock Specific Config
 BEDROCK_CHROMA_PATH = os.path.join(DATA_DIR, "chroma_bedrock_intel")
-TICKERS = ["KIE", "CB", "PGR", "AON"] # Insurance ETF and Major Carriers
+TICKERS = ["KIE", "CB", "PGR", "AON", "SPY", "^VIX"] # Insurance ETF, Carriers, S&P 500, Volatility Index

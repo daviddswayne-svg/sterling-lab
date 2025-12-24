@@ -124,6 +124,9 @@ class ContentDirector:
             # Ensure date is set
             briefing['date'] = today_str
             
+            # Attach Raw Data for downstream agents (Web Developer)
+            briefing['raw_market_data'] = context_data['market_data']
+            
             # 3. Save to Cache
             try:
                 with open(cache_path, 'w') as f:

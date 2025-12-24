@@ -23,9 +23,24 @@ class WebDeveloper:
         # Image is now embedded in the strict template below
         pass
 
+        # Extract Raw Market Data if available works
+        market_stats = ""
+        if "raw_market_data" in brief:
+             raw = brief["raw_market_data"]
+             # Format specific keys we care about
+             spy = raw.get("SPY", {"price": "N/A", "change_pct": "0.0"})
+             vix = raw.get("^VIX", {"price": "N/A", "change_pct": "0.0"})
+             market_stats = f"""
+             REAL-TIME DATA (Use these EXACT stats):
+             - S&P 500 (SPY): ${spy['price']} ({spy['change_pct']}%)
+             - Volatility (VIX): {vix['price']} (Change: {vix['change_pct']}%)
+             """
+
         prompt = f"""
         {self.prompts['system_prompt']}
         
+        {market_stats}
+
         Brief:
         {brief}
         
@@ -52,6 +67,9 @@ class WebDeveloper:
         - market_risk (e.g. "ELEVATED")
         - market_yield (e.g. "4.12%")
         - market_sector (e.g. "POSITIVE")
+        - market_sp500 (e.g. "+1.2% $500.12")
+        - market_volatility (e.g. "15.4 (LOW)")
+        - market_outlook (e.g. "STABLE")
 
         Example Output:
         ===SECTION: strategy_title===
