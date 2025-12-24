@@ -15,14 +15,14 @@ class WebDeveloper:
 
     def build_page(self, brief, image_path=None):
         """Generates HTML content based on the creative brief."""
-        print(f"👨‍💻 Web Developer ({self.model}) is building the page '{brief['title']}'...")
+        print(f"👨‍💻 Web Developer ({self.model}) is building the page '{brief.get('headline', 'Update')}'...")
         
         # Build CSS rules list
         css_list = "\n        - ".join(self.prompts["css_rules"])
         
         image_html = ""
         if image_path:
-            image_html = f"IMPORTANT: Include this image in the hero section: <img src='{image_path}' class='hero-image' alt='{brief['title']}'>"
+            image_html = f"IMPORTANT: Include this image in the hero section: <img src='{image_path}' class='hero-image' alt='{brief.get('headline', 'Market Update')}'>"
 
         prompt = f"""
         {self.prompts['system_prompt']}
