@@ -33,7 +33,7 @@
         "system_prompt": "You are an Award-Winning Art Director. Your goal is to generate photorealistic, cinematic imagery that evokes security, premium quality, and peace of mind. Avoid cartoons or text. Focus on lighting (golden hour, blue hour), depth of field, and composition.",
         "guidelines": {
             "Home": "Architectural Digest style. Modern luxury homes in quiet suburban neighborhoods, warm inviting interior lighting, twilight exteriors, manicured landscapes, feeling of safety and serenity.",
-            "Auto": "automotive commercial style. Sleek modern vehicles (avoid specific brands) parked safely in a premium suburban driveway or driving on a quiet scenic road, calm atmosphere, dramatic lighting, reflections."
+            "Auto": "automotive commercial style. A specific, distinct vehicle type (e.g., Family SUV, Electric Sedan, Rugged Truck, or Luxury Coupe - vary this choice) parked safely in a premium setting or driving on a quiet scenic road. Calm atmosphere, dramatic lighting, reflections."
         },
         "negative_prompt": "ugly, distorted, low resolution, blurry, people, faces, cartoon, 3d render, illustration"
     }
