@@ -6,7 +6,7 @@ import http.client
 import shutil
 import random
 import ollama
-from ..config import OLLAMA_HOST, COMFYUI_HOST, MODELS, ASSETS_DIR, DATA_DIR
+from ..config import OLLAMA_HOST, COMFYUI_HOST, MODELS, ASSETS_DIR, DATA_DIR, PROMPTS_PATH
 
 class PhotoDesigner:
     def __init__(self):
@@ -14,8 +14,7 @@ class PhotoDesigner:
         self.model = MODELS["designer"]
         
         # Load prompts
-        prompts_path = os.path.join(DATA_DIR, "prompts.json")
-        with open(prompts_path, "r") as f:
+        with open(PROMPTS_PATH, "r") as f:
             self.prompts = json.load(f)["photo_designer"]
 
     def generate_image(self, theme, concept):

@@ -1,7 +1,8 @@
 import ollama
 import json
 import os
-from ..config import OLLAMA_HOST, MODELS, DATA_DIR
+from ..config import OLLAMA_HOST, MODELS, PROMPTS_PATH
+from ..config import DATA_DIR # Keep if used elsewhere, but prompts uses specific path now
 
 class WebDeveloper:
     def __init__(self):
@@ -9,8 +10,7 @@ class WebDeveloper:
         self.model = MODELS["writer"]
         
         # Load external prompts
-        prompts_path = os.path.join(DATA_DIR, "prompts.json")
-        with open(prompts_path, "r") as f:
+        with open(PROMPTS_PATH, "r") as f:
             self.prompts = json.load(f)["web_developer"]
 
     def build_page(self, brief, image_path=None):
