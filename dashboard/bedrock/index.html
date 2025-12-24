@@ -183,6 +183,68 @@
                     /* Match visual height */
                 }
 
+                .editorial-card {
+                    padding: 1.5rem;
+                    background: rgba(16, 24, 39, 0.7);
+                    /* Darker, more substantial */
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    border-top-width: 3px;
+                    /* Accent bar */
+                    border-radius: 10px;
+                    transition: all 0.3s ease;
+                    backdrop-filter: blur(8px);
+                    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+                }
+
+                /* Risk Card */
+                .editorial-card:nth-child(1) {
+                    border-top-color: #ef4444;
+                    /* Red */
+                }
+
+                .editorial-card:nth-child(1) h3 {
+                    color: #ef4444;
+                }
+
+                /* Opportunity Card */
+                .editorial-card:nth-child(2) {
+                    border-top-color: #10b981;
+                    /* Green */
+                }
+
+                .editorial-card:nth-child(2) h3 {
+                    color: #10b981;
+                }
+
+                /* Insight Card */
+                .editorial-card:nth-child(3) {
+                    border-top-color: #6366f1;
+                    /* Indigo */
+                }
+
+                .editorial-card:nth-child(3) h3 {
+                    color: #6366f1;
+                }
+
+                .editorial-card:hover {
+                    transform: translateY(-4px);
+                    background: rgba(30, 41, 59, 0.8);
+                }
+
+                .editorial-card h3 {
+                    font-size: 1rem;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                    margin-bottom: 0.75rem;
+                    font-weight: 600;
+                }
+
+                .editorial-card p {
+                    color: rgba(255, 255, 255, 0.8);
+                    font-size: 0.95rem;
+                    line-height: 1.6;
+                }
+
                 .data-card {
                     flex: 1;
                     background: rgba(16, 24, 39, 0.6);
