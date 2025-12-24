@@ -31,16 +31,33 @@ class PhotoDesigner:
         guideline = self.prompts["guidelines"].get(category, self.prompts["guidelines"]["Home"])
         
         # 2. Refine Prompt with LLM
+        # DYNAMIC CREATIVE DIRECTION (Programmatic Variety)
+        # We inject a specific style directive to force the LLM to vary its output
+        auto_styles = [
+            "Futuristic Family SUV with glass roof",
+            "Rugged Electric 4x4 for extreme climates",
+            "Sleek Autonomous City-Pod",
+            "Vintage 1960s Roadster converted to Electric",
+            "Heavy-Duty Cyber-Truck",
+            "Luxury Executive Sedan with matte finish",
+            "Compact Urban Hatchback in vibrant color"
+        ]
+        
+        style_directive = ""
+        if category == "Auto":
+            selected_style = random.choice(auto_styles)
+            style_directive = f"CREATIVE MANDATE: You are designing an ad for a '{selected_style}'. Focus entirely on this specific vehicle archetype."
+
         prompt_instruction = f"""
         {self.prompts['system_prompt']}
         
         Input Concept: {concept}
         Category Context: {category} - {guideline}
+        {style_directive}
         
         Task: 
         1. Write a detailed, comma-separated image generation prompt. Focus on lighting, texture, and composition. No people.
-        2. DIVERSITY INSTRUCTION: If the category is 'Auto', you MUST select a specific vehicle type (e.g. 'Family SUV', 'Vintage Truck', 'Electric Hatchback'). Do NOT always default to a sports car.
-        3. Create a short, punchy, 2-3 word marketing slogan relevant to the concept.
+        2. Create a short, punchy, 2-3 word marketing slogan relevant to the concept.
            - Examples: "FUTURE PROOF", "TOTAL CLARITY", "RISK ZERO", "PURE DEFENSE".
            - CRITICAL: Do NOT use the phrase "Safe Haven" or "Safe Home". Be creative and unique.
         
