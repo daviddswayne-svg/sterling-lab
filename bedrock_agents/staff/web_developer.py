@@ -64,11 +64,27 @@ class WebDeveloper:
             <div class="bento-strategy card-glow">
                 <h2 class="hero-title">{brief.get('headline', 'Market Update')}</h2>
                 <div class="hero-description">
-                   [Write 2 short, punchy paragraphs based on the Brief. Focus on risk and opportunity.]
+                   [Write 2 short, punchy paragraphs based on the Brief. Focus on risk and opportunity. Max width is 1000px so use good length sentences.]
                 </div>
                 <div class="cta-row">
                     <button class="cta-button" onclick="openInsuranceChat()">Get a Quote</button>
                     <button class="cta-button secondary-cta">Contact Advisor</button>
+                </div>
+            </div>
+
+            <!-- SLOT 4: EDITORIAL (New Tier) -->
+            <div class="bento-editorial">
+                <div class="editorial-card">
+                    <h3>Risk Analysis</h3>
+                    <p>[Generate a 1-sentence insight about current risks based on the brief]</p>
+                </div>
+                <div class="editorial-card">
+                    <h3>Market Opportunity</h3>
+                    <p>[Generate a 1-sentence insight about market timing or savings]</p>
+                </div>
+                <div class="editorial-card">
+                    <h3>Agent Insight</h3>
+                    <p>[Generate a 1-sentence pro-tip for the customer]</p>
                 </div>
             </div>
         </div>
