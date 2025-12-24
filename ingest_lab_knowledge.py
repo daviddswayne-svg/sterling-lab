@@ -14,7 +14,7 @@ from langchain.schema import Document
 # Configuration
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 KNOWLEDGE_FILE = os.path.join(SCRIPT_DIR, "lab_knowledge_complete.txt")
-CHROMA_PATH = os.path.join(SCRIPT_DIR, "chroma_db_public")
+CHROMA_PATH = os.path.join(SCRIPT_DIR, "chroma_db_synthetic")
 EMBEDDING_MODEL = "nomic-embed-text"
 OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
 

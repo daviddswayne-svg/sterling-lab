@@ -45,8 +45,8 @@ API_PID=$!
 echo "[5/8] Launching Background RAG Ingestion..."
     echo "   [BG] Checking Knowledge Bases..."
     
-    # 1. Sterling Lab Public RAG
-    if [ -f "/app/chroma_db/chroma.sqlite3" ]; then
+    # 1. Sterling Lab Public RAG (Synthetic)
+    if [ -f "/app/chroma_db_synthetic/chroma.sqlite3" ]; then
         echo "   [RAG] Public DB exists. Skipping ingestion."
     elif [ -f "/app/ingest_lab_knowledge.py" ]; then
         echo "   [RAG] Ingesting Public Knowledge..."
@@ -54,11 +54,9 @@ echo "[5/8] Launching Background RAG Ingestion..."
     fi
     
     # 2. Sterling Estate Private RAG
-    # (Assuming it merges into chroma_db or has its own check, keeping logic simple)
     if [ -f "/app/ingest_sterling.py" ]; then
-         # Only run if we suspect it's missing or if we want to force update on missing file
-         # For now, let's assume it shares the DB, so we skip if DB exists
-         if [ ! -f "/app/chroma_db/chroma.sqlite3" ]; then
+         # Also writes to synthetic DB per ingest_sterling.py
+         if [ ! -f "/app/chroma_db_synthetic/chroma.sqlite3" ]; then
             echo "   [RAG] Ingesting Estate Knowledge..."
             python ingest_sterling.py || echo "⚠️  Estate Ingest Warnings"
          fi
