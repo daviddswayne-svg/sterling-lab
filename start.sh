@@ -49,45 +49,67 @@ echo "[4/8] Starting Bedrock Chat API..."
 python bedrock_api.py 2>&1 | tee /tmp/bedrock_api.log &
 API_PID=$!
 
-# Step 5: Run RAG Ingestion (Background)
-# This was blocking startup!
-echo "[5/8] Launching Background RAG Ingestion..."
-    echo "   [BG] Checking Knowledge Bases..."
-    
-    # 1. Sterling Lab Public RAG (Synthetic)
-    if [ -f "/app/chroma_db_synthetic/chroma.sqlite3" ]; then
-        echo "   [RAG] Public DB exists. Skipping ingestion."
-    elif [ -f "/app/ingest_lab_knowledge.py" ]; then
-        echo "   [RAG] Ingesting Public Knowledge..."
-        python ingest_lab_knowledge.py || echo "⚠️  Public Ingest Warnings"
-    fi
-    
-    # 2. Sterling Estate Private RAG
-    if [ -f "/app/ingest_sterling.py" ]; then
-         # Also writes to synthetic DB per ingest_sterling.py
-         if [ ! -f "/app/chroma_db_synthetic/chroma.sqlite3" ]; then
-            echo "   [RAG] Ingesting Estate Knowledge..."
-            python ingest_sterling.py || echo "⚠️  Estate Ingest Warnings"
-         fi
-    fi
+# Step 5: Pre-create ChromaDB Directories (Critical for Volume Mounts)
+echo "[5/8] Preparing ChromaDB Storage..."
+mkdir -p /app/chroma_db_synthetic
+mkdir -p /app/bedrock_agents/data/chroma_bedrock_intel
+echo "✅ ChromaDB directories ready"
 
-    # 3. Bedrock Insurance RAG (Swiss Re Sigma)
-    if [ -f "/app/bedrock_agents/data/chroma_bedrock_intel/chroma.sqlite3" ]; then
-        echo "   [RAG] Bedrock DB exists. Skipping ingestion."
-    elif [ -f "/app/bedrock_agents/ingest_sigma.py" ]; then
-        echo "   [RAG] Ingesting Bedrock (Sigma) Knowledge..."
-        python bedrock_agents/ingest_sigma.py || echo "⚠️  Bedrock Ingest Warnings"
-    fi
-    
-    echo "   [BG] Running Diagnostics..."
-    python rag_diagnostics.py || echo "⚠️  Diagnostic Warnings"
-    
-    echo "✅ Background Checks Complete"
+# Step 6: RAG Ingestion (First Boot: Sync, Subsequent: Skip)
+echo "[6/8] Checking Knowledge Bases..."
+
+# First-boot detection: If DBs don't exist, run ingestion synchronously
+FIRST_BOOT=false
+
+# 1. Sterling Lab Public RAG (Synthetic)
+if [ -f "/app/chroma_db_synthetic/chroma.sqlite3" ]; then
+    echo "   [RAG] Public DB exists. Skipping ingestion."
+elif [ -f "/app/ingest_lab_knowledge.py" ]; then
+    echo "   [RAG] First boot detected. Ingesting Public Knowledge..."
+    FIRST_BOOT=true
+    python ingest_lab_knowledge.py 2>&1 | tee /tmp/ingest_public.log || {
+        echo "⚠️  Public Ingest Failed - Check /tmp/ingest_public.log"
+    }
+fi
+
+# 2. Sterling Estate Private RAG
+if [ -f "/app/ingest_sterling.py" ] && [ ! -f "/app/chroma_db_synthetic/chroma.sqlite3" ]; then
+    echo "   [RAG] Ingesting Estate Knowledge..."
+    python ingest_sterling.py 2>&1 | tee /tmp/ingest_estate.log || {
+        echo "⚠️  Estate Ingest Failed - Check /tmp/ingest_estate.log"
+    }
+fi
+
+# 3. Bedrock Insurance RAG (Swiss Re Sigma)
+if [ -f "/app/bedrock_agents/data/chroma_bedrock_intel/chroma.sqlite3" ]; then
+    echo "   [RAG] Bedrock DB exists. Skipping ingestion."
+elif [ -f "/app/bedrock_agents/ingest_sigma.py" ]; then
+    echo "   [RAG] First boot detected. Ingesting Bedrock (Sigma) Knowledge..."
+    FIRST_BOOT=true
+    python bedrock_agents/ingest_sigma.py 2>&1 | tee /tmp/ingest_bedrock.log || {
+        echo "⚠️  Bedrock Ingest Failed - Check /tmp/ingest_bedrock.log"
+    }
+fi
+
+if [ "$FIRST_BOOT" = true ]; then
+    echo "✅ First-boot ingestion complete. ChromaDB initialized."
+else
+    echo "✅ Using existing ChromaDB data."
+fi
+
+# Diagnostics (Background, non-blocking)
+(
+    echo "[BG] Running Diagnostics..."
+    python rag_diagnostics.py 2>&1 | tee /tmp/diagnostics.log || echo "⚠️  Diagnostic Warnings"
+    echo "✅ Background Diagnostics Complete"
 ) &
 
-# Step 6: Wait/Monitor
-echo "[6/8] System started. Monitoring PIDs..."
+# Step 7: Wait/Monitor
+echo "[7/8] System started. Monitoring PIDs..."
 echo "      Nginx: $NGINX_PID"
-echo "      App: $STREAMLIT_PID"
+echo "      Streamlit: $STREAMLIT_PID"  
+echo "      API: $API_PID"
+echo ""
+echo "✅ Sterling Lab is online!"
 
 wait $NGINX_PID

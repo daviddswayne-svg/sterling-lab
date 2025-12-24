@@ -37,5 +37,7 @@ os.makedirs(ASSETS_DIR, exist_ok=True)
 
 # Bedrock Specific Config
 BEDROCK_CHROMA_PATH = os.path.join(DATA_DIR, "chroma_bedrock_intel")
+os.makedirs(BEDROCK_CHROMA_PATH, exist_ok=True)  # Ensure ChromaDB path exists
+
 PROMPTS_PATH = os.path.join(BASE_DIR, "prompts.json") # Moved out of DATA_DIR to avoid volume masking
 TICKERS = ["KIE", "CB", "PGR", "AON", "SPY", "^VIX"] # Insurance ETF, Carriers, S&P 500, Volatility Index

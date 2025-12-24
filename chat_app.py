@@ -28,6 +28,10 @@ import os
 # Configuration - Production Ready
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 CHROMA_PATH = os.path.join(SCRIPT_DIR, "chroma_db_synthetic")
+
+# Ensure ChromaDB directory exists (defensive initialization for volume mounts)
+os.makedirs(CHROMA_PATH, exist_ok=True)
+
 EMBEDDING_MODEL = "nomic-embed-text"
 DEFAULT_LLM = "qwen2.5-coder:32b"
 DB_PATH = os.path.join(SCRIPT_DIR, "chat_history_frontier.db")
