@@ -22,161 +22,182 @@
     <div class="container">
         <!-- Header -->
         <header class="header">
-            <div class="header-content">
-                <div class="header-title">
+            <div class="logo-section">
+                <img src="assets/swaynesystems_logo.png" alt="Swayne Systems"
+                    style="height: 40px; margin-right: 15px; opacity: 0.9;">
+                <div class="logo-text">
                     <h1>Swayne Systems</h1>
-                    <p>AI Infrastructure Platform</p>
+                    <p class="subtitle">AI Infrastructure Platform</p>
                 </div>
-                <div class="header-actions">
-                    <div class="status-indicator" id="systemStatus">
-                        <span class="status-dot"></span>
-                        <span class="status-text">Checking Systems...</span>
-                    </div>
-                </div>
+            </div>
+            <div class="status-indicator" id="systemStatus">
+                <span class="status-dot"></span>
+                <span class="status-text">Checking Systems...</span>
             </div>
         </header>
 
-        <!-- Main Content -->
+        <!-- Main content -->
         <main class="main-content">
-            <!-- Hero Card with Logo -->
-            <div class="hero-card">
-                <div class="hero-content-with-logo">
-                    <div class="hero-logo-section">
-                        <img src="assets/swaynesystems_logo.png" alt="Swayne Systems" class="hero-logo">
-                    </div>
 
-                    <div class="hero-text-section">
-                        <div class="status-badge">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                                <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                            </svg>
-                            <span>Deployment Successful</span>
+            <!-- AI News Briefing Section -->
+            <section id="market-briefing" style="display:none; margin-bottom: 2rem;">
+                <div class="card-glow"
+                    style="padding: 1.5rem; background: linear-gradient(135deg, rgba(16, 24, 39, 0.8), rgba(0, 0, 0, 0.9)); border: 1px solid rgba(74, 144, 226, 0.3); border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+                    <div style="display: flex; justify-content: space-between; align-items: top; margin-bottom: 1rem;">
+                        <div>
+                            <h3
+                                style="color: #4a90e2; margin:0; font-size: 0.9rem; letter-spacing: 1px; text-transform: uppercase;">
+                                📡 Global Intelligence Update</h3>
+                            <p style="margin:0; font-size: 0.75rem; color: rgba(255,255,255,0.4);">Source: OpenAI •
+                                TechCrunch • The Verge</p>
                         </div>
-                        <h1 class="hero-title">Welcome to Swayne Systems</h1>
+                        <span id="sentiment-badge"
+                            style="background: rgba(255,255,255,0.1); padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.5px; border: 1px solid rgba(255,255,255,0.1);">INITIALIZING...</span>
+                    </div>
+                    <h2 id="briefing-headline"
+                        style="font-size: 1.8rem; margin: 0.5rem 0 1rem 0; font-weight: 700; background: linear-gradient(to right, #fff, #a5b4fc); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">
+                        Synthesizing Future Trends...</h2>
+                    <p id="briefing-body"
+                        style="color: rgba(255,255,255,0.8); line-height: 1.7; font-size: 1.05rem; border-left: 3px solid rgba(74, 144, 226, 0.3); padding-left: 1rem; margin: 0;">
+                        Accessing global news feeds. Optimizing infrastructure logic. Stand by for executive summary.
+                    </p>
+                </div>
+            </section>
+
+            <script>
+                async function loadMarketAnalysis() {
+                    try {
+                        const section = document.getElementById('market-briefing');
+                        section.style.display = 'block';
+
+                        // Small delay to show "Connecting..."
+                        await new Promise(r => setTimeout(r, 800));
+
+                        const response = await fetch('/api/bedrock/market-analysis');
+                        const data = await response.json();
+
+                        if (data.error) throw new Error(data.error);
+
+                        document.getElementById('briefing-headline').textContent = data.headline;
+                        const body = document.getElementById('briefing-body');
+                        body.innerHTML = data.briefing_body;
+                        body.style.borderLeftColor = "#4a90e2";
+
+                        const badge = document.getElementById('sentiment-badge');
+                        badge.textContent = data.market_sentiment.toUpperCase();
+
+                        // Dynamic Sentiment Coloring
+                        const sent = data.market_sentiment.toLowerCase();
+                        if (sent.includes('accelerating') || sent.includes('growth') || sent.includes('positive')) {
+                            badge.style.background = 'rgba(16, 185, 129, 0.2)'; // Green
+                            badge.style.borderColor = 'rgba(16, 185, 129, 0.5)';
+                            badge.style.color = '#34d399';
+                        } else if (sent.includes('disruptive') || sent.includes('caution') || sent.includes('risk')) {
+                            badge.style.background = 'rgba(245, 158, 11, 0.2)'; // Orange
+                            badge.style.borderColor = 'rgba(245, 158, 11, 0.5)';
+                            badge.style.color = '#fbbf24';
+                        } else {
+                            badge.style.background = 'rgba(74, 144, 226, 0.2)'; // Blue
+                            badge.style.borderColor = 'rgba(74, 144, 226, 0.5)';
+                            badge.style.color = '#60a5fa';
+                        }
+
+                    } catch (e) {
+                        console.error("Analysis Failed", e);
+                        document.getElementById('briefing-headline').textContent = "Stream Interrupted";
+                        document.getElementById('briefing-body').textContent = "Unable to sync with HQ. Retrying connection...";
+                    }
+                }
+
+                // Auto-load on page start
+                document.addEventListener('DOMContentLoaded', loadMarketAnalysis);
+            </script>
+
+            <!-- Bento Grid Zone -->
+            <div class="bento-grid">
+                <!-- 1. Visual Zone (Left) -->
+                <div class="bento-visual card-glow">
+                    <!-- Using specific relevant image or generic tech visual -->
+                    <img src='/assets/bedrock_latest.png' class='hero-image' alt='Swayne Systems AI'>
+                    <div class="visual-overlay">
+                        <h3>2026 Frontier Lab</h3>
+                        <p>DeepSeek-R1 Logic + Vision Analysis</p>
+                    </div>
+                </div>
+
+                <!-- 2. Data Zone (Right) -->
+                <div class="bento-data">
+
+                    <a href="/lab/" class="data-card link-card">
+                        <div class="icon-large">🧬</div>
+                        <h4>Launch Lab</h4>
+                        <p>Enter the Reasoning Grid</p>
+                    </a>
+
+                    <div class="data-card">
+                        <h4>System Status</h4>
+                        <div class="status-row">
+                            <div class="stat-item">
+                                <span class="label">M3 Studio</span>
+                                <span class="value success">ONLINE</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="label">M1 Muscle</span>
+                                <span class="value success">ONLINE</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Strategy Zone (Bottom) -->
+                <div class="bento-strategy card-glow">
+                    <div class="strategy-content">
+                        <h2 class="hero-title">Deploy Intelligence</h2>
                         <p class="hero-description">
-                            Your AI infrastructure is fully operational and ready for intelligent workloads.
-                            Access 2026 Frontier Lab, our advanced AI chat interface, for document analysis, multi-agent
-                            collaboration,
-                            and real-time AI processing. Explore interactive 3D voxel simulations showcasing technical
-                            creativity,
-                            or test drive the Bedrock Insurance demo—a production-ready AI agent system.
-                            Chat with our platform using the green assistant to chat with one of our local LLMs for
-                            instant answers about our
-                            technology stack and capabilities.
+                            Your infrastructure is ready. Whether it's processing 100k tokens of context,
+                            generating diverse video assets, or running autonomous agents, Swayne Systems delivers.
                         </p>
                     </div>
-                </div>
-
-                <!-- Stats grid -->
-                <div class="stats-grid">
-                    <div class="stat-item">
-                        <div class="stat-icon">🔒</div>
-                        <div class="stat-content">
-                            <div class="stat-label">Security</div>
-                            <div class="stat-value">SSL Active</div>
-                        </div>
+                    <div class="cta-row">
+                        <a href="/lab/" class="cta-button">Open Console</a>
+                        <a href="/bedrock/" class="cta-button secondary-cta">View Demos</a>
                     </div>
-                    <div class="stat-item">
-                        <div class="stat-icon">⚡</div>
-                        <div class="stat-content">
-                            <div class="stat-label">AI Backend</div>
-                            <div class="stat-value">Mac Studio</div>
-                        </div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-icon">🧠</div>
-                        <div class="stat-content">
-                            <div class="stat-label">Models</div>
-                            <div class="stat-value">4+ Online</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- CTA Buttons -->
-                <div class="cta-grid">
-                    <a href="/lab/" class="cta-button primary-cta">
-                        <span>Launch 2026 Frontier Lab</span>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <line x1="5" y1="12" x2="19" y2="12"></line>
-                            <polyline points="12 5 19 12 12 19"></polyline>
-                        </svg>
-                    </a>
-                    <a href="/bedrock/" class="cta-button secondary-cta">
-                        <span>Bedrock Insurance</span>
-                    </a>
                 </div>
             </div>
 
-            <!-- Platform Features (Info Cards) -->
-            <div class="info-grid">
-                <div class="info-card">
-                    <h3>Council Mode</h3>
-                    <p>Multi-agent AI system with specialized personas for comprehensive analysis</p>
-                </div>
-                <div class="info-card">
-                    <h3>RAG Pipeline</h3>
-                    <p>ChromaDB vector database with 8+ estate documents for intelligent retrieval</p>
-                </div>
-                <div class="info-card">
-                    <h3>Real-time Streaming</h3>
-                    <p>Live AI responses with token counting and performance metrics</p>
-                </div>
-            </div>
-
-            <!-- Featured Bacteriophage Section -->
-            <div class="featured-phage">
-                <div class="featured-header">
-                    <h2>🦠 T4 Bacteriophage</h2>
-                    <span class="featured-badge">Interactive 3D Simulation</span>
-                </div>
-                <iframe src="https://daviddswayne-svg.github.io/Voxel-Art/" frameborder="0" allowfullscreen
-                    loading="lazy" title="T4 Bacteriophage Voxel Art"></iframe>
-                <p class="featured-description">Voxel art simulation of bacterial virus injection sequence with
-                    real-time 3D rendering</p>
-            </div>
-
-            <!-- Portfolio Section (Side by Side) -->
-            <section class="portfolio-section">
-                <h2 class="section-title">Creative Portfolio</h2>
+            <!-- Portfolio Section (Kept from original but styled) -->
+            <section class="portfolio-section" style="margin-top: 3rem;">
+                <h2 class="section-title" style="margin-bottom: 1.5rem; font-size: 1.5rem; color:white;">Creative
+                    Capabilities</h2>
                 <div class="portfolio-grid">
                     <!-- YouTube Video Card -->
                     <div class="portfolio-card">
                         <div class="card-thumbnail">
-                            <!-- Local Streamed Video with Preload -->
-                            <video width="100%" height="315" controls preload="auto" playsinline
-                                poster="/video/sizzle_poster.jpg" style="background: #000; border-radius: 4px;">
+                            <video width="100%" height="240" controls preload="auto" playsinline
+                                poster="/video/sizzle_poster.jpg" style="background: #000; border-radius: 8px;">
                                 <source src="/video/sizzle_reel_web.mp4" type="video/mp4">
-                                Your browser does not support the video tag.
                             </video>
                         </div>
                         <div class="card-content">
                             <h3>🎬 AI Production Reel</h3>
-                            <p>Generative AI video workflows for enterprise storytelling and character consistency</p>
                         </div>
                     </div>
 
                     <!-- Voxel Monorail Card -->
                     <div class="portfolio-card">
                         <div class="card-thumbnail">
-                            <a href="https://daviddswayne-svg.github.io/Voxel-Seattle-Center-V4/" target="_blank"
-                                rel="noopener noreferrer">
+                            <a href="https://daviddswayne-svg.github.io/Voxel-Seattle-Center-V4/" target="_blank">
                                 <img src="assets/monorail_preview.png" alt="Seattle Voxel Monorail"
-                                    style="width: 100%; height: 315px; object-fit: cover;">
-                                <div class="card-overlay">
-                                    <span>Launch Interactive Demo →</span>
-                                </div>
+                                    style="width: 100%; height: 240px; object-fit: cover; border-radius: 8px;">
                             </a>
                         </div>
                         <div class="card-content">
-                            <h3>🚝 Seattle Voxel Monorail</h3>
-                            <p>Interactive 3D voxel simulation with real-time rendering</p>
+                            <h3>🚝 Voxel Interaction</h3>
                         </div>
                     </div>
                 </div>
             </section>
+
         </main>
 
         <!-- Footer -->
@@ -185,7 +206,7 @@
         </footer>
     </div>
 
-    <!-- Antigravity Admin Panel -->
+    <!-- Admin & Public Trigger (Preserved) -->
     <button id="antigravity-trigger" class="ag-trigger" style="display: none;" title="Antigravity Admin">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="3" />
@@ -193,7 +214,14 @@
             <path d="M4.2 4.2l4.2 4.2m5.6 0l4.2-4.2M4.2 19.8l4.2-4.2m5.6 0l4.2 4.2" />
         </svg>
     </button>
+    <!-- Public Chat Trigger -->
+    <button id="public-chat-trigger" class="pc-trigger" title="Chat with Antigravity">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+        </svg>
+    </button>
 
+    <!-- Modals (Preserved) -->
     <div id="antigravity-modal" class="ag-modal">
         <div class="ag-container">
             <div class="ag-header">
@@ -208,9 +236,7 @@
                     style="background:none; border:none; color:white; font-size:1.2rem; margin-right:1rem; cursor:pointer;">🔇</button>
                 <button id="antigravity-close" class="ag-close">×</button>
             </div>
-
             <div id="antigravity-messages" class="ag-messages"></div>
-
             <div class="ag-input-area">
                 <textarea id="antigravity-input" placeholder="Ask Antigravity anything about Sterling Lab..."
                     rows="1"></textarea>
@@ -223,13 +249,6 @@
         </div>
     </div>
 
-    <!-- Public Chat Widget (always visible to all users) -->
-    <button id="public-chat-trigger" class="pc-trigger" title="Chat with Antigravity">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-        </svg>
-    </button>
-
     <div id="public-chat-modal" class="pc-modal">
         <div class="pc-container">
             <div class="pc-header">
@@ -241,9 +260,7 @@
                 </div>
                 <button id="public-chat-close" class="pc-close">×</button>
             </div>
-
             <div id="public-chat-messages" class="pc-messages"></div>
-
             <div class="pc-input-area">
                 <textarea id="public-chat-input" placeholder="Ask about Sterling Lab..." rows="1"></textarea>
                 <button id="public-chat-send" class="pc-send">
@@ -279,8 +296,6 @@
                     indicator.querySelector('.status-text').textContent = 'Status Unknown';
                 });
         }
-
-        // Check status immediately on page load and every 30 seconds
         checkSystemStatus();
         setInterval(checkSystemStatus, 30000);
     </script>
