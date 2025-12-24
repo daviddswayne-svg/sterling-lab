@@ -72,20 +72,14 @@ def run_meeting_generator():
         yield "designer", f"Rendering failed (Using Stock): {e}"
 
     # 3. Web Developer Builds (with Image)
+    web_dev = WebDeveloper()
     try:
-        yield "developer", "Initializing web architecture protocols..."
-        web_dev = WebDeveloper()
-        
         yield "developer", "Coding responsive HTML structure..."
         html_content = web_dev.build_page(brief, image_path)
-        
-        yield "developer", "Frontend code compiled & minimized."
+        yield "developer", "Frontend code compiled."
     except Exception as e:
-        yield "developer", f"Dev Failed ({e}). Using Backup Protocol."
-        # Fallback HTML if developer crashes completely
-        html_content = f"<h1>{brief.get('headline', 'System Update')}</h1><p>Market data visualized. Automated update pending.</p>"
-        if image_path:
-             html_content += f"<img src='{image_path}' class='hero-image'>"
+        yield "error", f"Web Dev Failed: {e}"
+        return
 
     # 4. Publishing Manager Deploys
     publisher = PublishingManager()
