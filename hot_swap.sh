@@ -32,8 +32,7 @@ ssh -o StrictHostKeyChecking=no -i ~/.ssh/sterling_tunnel root@165.22.146.182 "
     docker cp /var/www/swaynesystems.ai/bedrock_agents $CONTAINER_ID:/app/ && \
     docker cp /var/www/swaynesystems.ai/nginx.conf $CONTAINER_ID:/etc/nginx/nginx.conf && \
     docker exec $CONTAINER_ID nginx -s reload && \
-    docker exec -d $CONTAINER_ID sh -c \"pkill -f bedrock_api.py; nohup python bedrock_api.py > /tmp/bedrock_api.log 2>&1 &\" && \
-    echo '✅ Content Injected & API Restarted'
+    echo '✅ Content Injected (Skipping API Restart to preserve connection)'
 "
 
 echo "✨ Hot-Swap Complete! Site updated instantly."
