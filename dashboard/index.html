@@ -163,11 +163,16 @@
                 <h2 class="section-title" style="margin-bottom: 1.5rem; font-size: 1.5rem; color:white;">Voxel Science &
                     Engineering</h2>
                 <div class="portfolio-grid">
-                    <!-- Voxel Art Card (Moved from Top) -->
-                    <div class="portfolio-card">
+                    <!-- Voxel Art Card -->
+                    <div class="portfolio-card"
+                        onclick="openProjectModal('https://daviddswayne-svg.github.io/Voxel-Art/')"
+                        style="cursor: pointer;">
                         <div class="card-thumbnail">
-                            <iframe src="https://daviddswayne-svg.github.io/Voxel-Art/" frameborder="0"
-                                style="width: 100%; height: 240px; pointer-events: auto;"></iframe>
+                            <img src="assets/voxel_art_preview.png" onerror="this.src='/assets/placeholder.jpg'"
+                                alt="Micro-Simulation" style="width: 100%; height: 240px; object-fit: cover;">
+                            <div class="card-overlay">
+                                <span>▶ Play Simulation</span>
+                            </div>
                         </div>
                         <div class="card-content">
                             <h3>🧊 Micro-Simulation Engine</h3>
@@ -175,17 +180,19 @@
                     </div>
 
                     <!-- Voxel Monorail Card -->
-                    <div class="portfolio-card">
+                    <div class="portfolio-card"
+                        onclick="openProjectModal('https://daviddswayne-svg.github.io/Voxel-Seattle-Center-V4/')"
+                        style="cursor: pointer;">
                         <div class="card-thumbnail">
-                            <a href="https://daviddswayne-svg.github.io/Voxel-Seattle-Center-V4/" target="_blank">
-                                <img src="assets/monorail_preview.png" alt="Seattle Voxel Monorail"
-                                    style="width: 100%; height: 240px; object-fit: cover; border-radius: 8px;">
-                                <!-- Added Informational Text Overlay -->
-                                <div class="card-overlay-text"
-                                    style="position: absolute; bottom: 10px; left: 10px; right: 10px; background: rgba(0,0,0,0.6); padding: 8px; border-radius: 4px; color: white; font-size: 0.8rem;">
-                                    Interactive WebGL Environment • Seattle Center V4
-                                </div>
-                            </a>
+                            <img src="assets/monorail_preview.png" alt="Seattle Voxel Monorail"
+                                style="width: 100%; height: 240px; object-fit: cover; border-radius: 8px;">
+                            <div class="card-overlay">
+                                <span>▶ Play Simulation</span>
+                            </div>
+                            <div class="card-overlay-text"
+                                style="position: absolute; bottom: 10px; left: 10px; right: 10px; background: rgba(0,0,0,0.6); padding: 8px; border-radius: 4px; color: white; font-size: 0.8rem;">
+                                Interactive WebGL Environment • Seattle Center V4
+                            </div>
                         </div>
                         <div class="card-content">
                             <h3>🚝 City Infrastructure</h3>
@@ -268,7 +275,46 @@
         </div>
     </div>
 
+    <!-- Project Viewer Modal (New) -->
+    <div id="project-modal" class="project-modal">
+        <button class="project-close" onclick="closeProjectModal()">×</button>
+        <div class="project-container">
+            <iframe id="project-frame" src="" frameborder="0"></iframe>
+        </div>
+    </div>
+
     <script>
+        // Project Modal Logic
+        function openProjectModal(url) {
+            const modal = document.getElementById('project-modal');
+            const frame = document.getElementById('project-frame');
+            frame.src = url;
+            modal.classList.add('active');
+        }
+
+        function closeProjectModal() {
+            const modal = document.getElementById('project-modal');
+            const frame = document.getElementById('project-frame');
+            modal.classList.remove('active');
+            setTimeout(() => {
+                frame.src = ""; // Stop execution/sound
+            }, 400);
+        }
+
+        // Close on outside click
+        document.getElementById('project-modal').addEventListener('click', function (e) {
+            if (e.target === this) {
+                closeProjectModal();
+            }
+        });
+
+        // Esc key to close
+        document.addEventListener('keydown', function (e) {
+            if (e.key === "Escape") {
+                closeProjectModal();
+            }
+        });
+
         // System Status Checker
         function checkSystemStatus() {
             fetch('/api/health')
