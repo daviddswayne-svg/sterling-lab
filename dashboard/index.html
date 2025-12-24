@@ -73,7 +73,7 @@
                         // Small delay to show "Connecting..."
                         await new Promise(r => setTimeout(r, 800));
 
-                        const response = await fetch('/api/bedrock/market-analysis');
+                        const response = await fetch('/api/dashboard/brief');
                         const data = await response.json();
 
                         if (data.error) throw new Error(data.error);
