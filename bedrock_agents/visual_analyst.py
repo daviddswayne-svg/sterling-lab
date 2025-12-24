@@ -146,7 +146,14 @@ class VisualAnalyst:
             end_date = datetime.now()
             start_date = end_date - pd.DateOffset(months=6)
             tickers = ['KIE', 'SPY'] 
-            data = yf.download(tickers, start=start_date, end=end_date, progress=False)['Close']
+            
+            # WORKAROUND: Use custom session to avoid anti-bot blocks
+            session = requests.Session()
+            session.headers.update({
+                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            })
+            
+            data = yf.download(tickers, start=start_date, end=end_date, progress=False, session=session)['Close']
             
             if data.empty: raise ValueError("No data returned")
             

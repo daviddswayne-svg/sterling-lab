@@ -28,8 +28,16 @@ class MarketIntelligence:
         try:
             # Download data for all tickers at once
             tickers_str = " ".join(TICKERS)
+            
+            # WORKAROUND: Custom Session for Anti-Bot Evasion
+            import requests
+            session = requests.Session()
+            session.headers.update({
+                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            })
+
             # 1 month history for volatility calc
-            history = yf.download(tickers_str, period="1mo", progress=False)
+            history = yf.download(tickers_str, period="1mo", progress=False, session=session)
             
             for ticker in TICKERS:
                 try:
