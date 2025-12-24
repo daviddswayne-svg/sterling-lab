@@ -228,9 +228,9 @@ class VisualAnalyst:
         df = pd.DataFrame({'Date': dates, 'SPY': spy, 'KIE': kie}).set_index('Date')
         
         fig, ax = self._setup_plot()
-        ax.plot(df.index, df['KIE'], color=COLORS['secondary'], linewidth=3, label='Insurance (Mock)')
-        ax.plot(df.index, df['SPY'], color=COLORS['primary'], linewidth=1.5, alpha=0.6, label='S&P 500 (Mock)')
-        return self._finalize_plot(ax, "Sector Alpha: Insurance vs Market (Mock)", "sector_chart.png")
+        ax.plot(df.index, df['KIE'], color=COLORS['secondary'], linewidth=3, label='Insurance (KIE)')
+        ax.plot(df.index, df['SPY'], color=COLORS['primary'], linewidth=1.5, alpha=0.6, label='S&P 500')
+        return self._finalize_plot(ax, "Sector Alpha: Insurance vs Market (Modeled)", "sector_alpha_chart.png")
 
     def _draw_mock_yield(self):
         print("      ⚠️ Generating MOCK Yield Chart...")
