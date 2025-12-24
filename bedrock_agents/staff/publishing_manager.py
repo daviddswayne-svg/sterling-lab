@@ -18,7 +18,7 @@ class PublishingManager:
             with open(target_file, "r") as f:
                 full_html = f.read()
 
-            # ID Mapping: JSON Key -> HTML ID
+            # Prepare ID map
             id_map = {
                 "strategy_title": "strategy-title",
                 "strategy_desc": "strategy-desc",
@@ -31,35 +31,47 @@ class PublishingManager:
             }
 
             if isinstance(content_updates, dict):
-                print("🎯 Performing Surgical Text Updates (ID-based)...")
+                print("🎯 Performing Surgical Text Updates (BS4 Layout-Agnostic)...")
                 
-                for key, new_text in content_updates.items():
-                    if key in id_map:
-                        html_id = id_map[key]
-                        # Regex to find: id="my-id" ... > CONTENT <
-                        # We look for the ID attribute, then the closing bracket of that tag, then the content, then the closing tag
-                        # re.DOTALL allows matching across newlines
-                        
-                        # Pattern breakdown:
-                        # (id="{html_id}"[^>]*>)  -> Group 1: The ID attribute and the rest of the opening tag
-                        # (.*?)                   -> Group 2: The content to replace (non-greedy)
-                        # (</)                    -> Group 3: The start of the closing tag
-                        
-                        pattern = f'(id="{html_id}"[^>]*>)(.*?)(</)'
-                        
-                        # Check if exists first for logging
-                        if re.search(pattern, full_html, re.DOTALL):
-                            # Reformatted text to avoid breaking HTML structure?
-                            # Just simple text replacement.
-                            if new_text:
-                                full_html = re.sub(pattern, f'\\1{new_text}\\3', full_html, flags=re.DOTALL)
-                                print(f"   ✅ Updated #{html_id}")
+                # Use BeautifulSoup for robust HTML parsing
+                try:
+                    from bs4 import BeautifulSoup
+                    soup = BeautifulSoup(full_html, 'html.parser')
+                    
+                    changes_count = 0
+                    
+                    for key, new_text in content_updates.items():
+                        target_id = id_map.get(key)
+                        if target_id:
+                            element = soup.find(id=target_id)
+                            if element:
+                                # Update text content while preserving any potential nested tags if we wanted,
+                                # but here we are replacing content.
+                                element.string = new_text
+                                print(f"   ✅ Updated #{target_id}")
+                                changes_count += 1
+                            else:
+                                print(f"   ⚠️ ID #{target_id} not found in HTML.")
                         else:
-                            print(f"   ⚠️ ID #{html_id} not found in HTML template.")
+                             print(f"   ⚠️ Key '{key}' ignored (No ID mapping).")
+                    
+                    if changes_count > 0:
+                        # Convert back to string (formatter=None prevents escaping like &lt;)
+                        full_html = str(soup)
+                    else:
+                        print("⚠️ No changes made to HTML structure.")
+                        
+                except ImportError:
+                    print("❌ BeautifulSoup4 not installed. Falling back to Regex (Risky).")
+                    # Fallback Regex Logic (Legacy)
+                    for key, new_text in content_updates.items():
+                        if key in id_map:
+                             html_id = id_map[key]
+                             pattern = f'(id="{html_id}"[^>]*>)(.*?)(</)'
+                             if re.search(pattern, full_html, re.DOTALL):
+                                 full_html = re.sub(pattern, f'\\1{new_text}\\3', full_html, flags=re.DOTALL)
             else:
-                print("⚠️ Received raw string instead of JSON updates. Skipping update to prevent overwrite.")
-                # If we received a string, it might be an error or old format. 
-                # For safety, we DO NOT write if it's not the expected dict.
+                print("⚠️ Received raw string instead of updates dict. Aborting.")
                 return
 
             with open(target_file, "w") as f:

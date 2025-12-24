@@ -31,32 +31,31 @@ class WebDeveloper:
         
         Output a JSON object mapping element IDs to their new text content.
         
-        The Layout is FIXED. You are only updating the text.
+        Output format must be STRICT DELIMITER BLOCKS.
+        Do NOT use JSON. Do NOT use Markdown.
         
-        Keys required:
-        - "strategy_title": Headline for the main strategy card.
-        - "strategy_desc": 2 short paragraphs for the strategy description.
-        
-        - "risk_title": Title for Risk Analysis card.
-        - "risk_desc": 1-sentence insight on risk.
-        
-        - "opp_title": Title for Market Opportunity card.
-        - "opp_desc": 1-sentence insight on opportunity.
-        
-        - "insight_title": Title for Agent Insight card.
-        - "insight_desc": 1-sentence insight for agents.
+        Format:
+        ===SECTION: key_name===
+        Content goes here...
+        ===END===
 
-        Output JSON ONLY. No markdown formatted blocks.
-        {
-            "strategy_title": "...",
-            "strategy_desc": "...",
-            "risk_title": "...",
-            "risk_desc": "...",
-            "opp_title": "...",
-            "opp_desc": "...",
-            "insight_title": "...",
-            "insight_desc": "..."
-        }
+        Keys required:
+        - strategy_title
+        - strategy_desc
+        - risk_title
+        - risk_desc
+        - opp_title
+        - opp_desc
+        - insight_title
+        - insight_desc
+
+        Example Output:
+        ===SECTION: strategy_title===
+        Coastal Resilience Strategy
+        ===END===
+        ===SECTION: strategy_desc===
+        Focus on flood mitigation and green infrastructure.
+        ===END===
         """
         
         response = self.client.chat(model=self.model, messages=[
@@ -65,27 +64,27 @@ class WebDeveloper:
         
         content = response['message']['content']
         
-        content = response['message']['content']
+
+        # Parse Delimiter Blocks
+        import re
+        updates = {}
         
-        # 1. Extract from Markdown block if present
-        if "```json" in content:
-            content = content.split("```json")[1].split("```")[0].strip()
-        elif "```" in content:
-            content = content.split("```")[1].split("```")[0].strip()
-            
-        # 2. Parse JSON
-        try:
-            updates = json.loads(content)
+        # Regex to capture content between ===SECTION: key=== and ===END===
+        # Flags: DOTALL (dot matches newline)
+        pattern = r"===SECTION:\s*(\w+)===(.*?)===END==="
+        matches = re.findall(pattern, content, re.DOTALL)
+        
+        if matches:
+            for key, val in matches:
+                updates[key.strip()] = val.strip()
             return updates
-        except json.JSONDecodeError:
-            print(f"❌ Web Developer failed to produce valid JSON: {content[:100]}...")
-            # Fallback
+        else:
+            print("❌ Web Developer failed to produce valid blocks. Raw content:")
+            print(content[:200])
+             # Fallback
             return {
                 "strategy_title": brief.get('headline', 'Update Failed'),
                 "strategy_desc": "Unable to generate content structure. System Maintenance.",
-                "risk_desc": "Data stream interrupted.",
-                "opp_desc": "Data stream interrupted.",
-                "insight_desc": "Data stream interrupted."
             }
 
 if __name__ == "__main__":
