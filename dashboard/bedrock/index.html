@@ -132,15 +132,37 @@
 
                     <!-- 3. Strategy Zone (Bottom) -->
                     <div class="bento-strategy card-glow">
-                        <h2 class="hero-title">Safe Haven</h2>
-                        <p class="hero-description">
+                        <h2 class="hero-title" id="strategy-title">Safe Haven</h2>
+                        <div class="hero-description" id="strategy-desc">
                             Discover advanced home protection strategies tailored for suburban homeowners.
                             Implement smart security, understand flood insurance, and enhance safety through landscape
                             design.
-                        </p>
+                        </div>
                         <div class="cta-row">
                             <button class="cta-button" onclick="openInsuranceChat()">Get a Quote</button>
                             <button class="cta-button secondary-cta">Contact Advisor</button>
+                        </div>
+                    </div>
+
+                    <!-- 4. Editorial Zone (Bottom Cards) -->
+                    <div class="bento-editorial">
+                        <div class="editorial-card">
+                            <h3 id="risk-title">Risk Analysis</h3>
+                            <p id="risk-desc">Natural catastrophes and medical cost inflation are major risks expected
+                                to impact
+                                high-net-worth individuals in 2025-26.</p>
+                        </div>
+                        <div class="editorial-card">
+                            <h3 id="opp-title">Market Opportunity</h3>
+                            <p id="opp-desc">The re-pricing of risk in property and casualty insurance offers an
+                                opportunity for
+                                improved profitability and better risk management strategies.</p>
+                        </div>
+                        <div class="editorial-card">
+                            <h3 id="insight-title">Agent Insight</h3>
+                            <p id="insight-desc">Prioritize comprehensive coverage that includes resilience against
+                                natural disasters and
+                                high medical costs to safeguard your assets.</p>
                         </div>
                     </div>
                 </div>
@@ -286,6 +308,14 @@
                     gap: 1rem;
                 }
 
+                .bento-editorial {
+                    grid-column: 1 / -1;
+                    grid-row: 3;
+                    display: grid;
+                    grid-template-columns: repeat(3, 1fr);
+                    gap: 1.5rem;
+                }
+
                 /* Mobile Response */
                 @media (max-width: 768px) {
                     .bento-grid {
@@ -295,10 +325,15 @@
 
                     .bento-visual,
                     .bento-data,
-                    .bento-strategy {
+                    .bento-strategy,
+                    .bento-editorial {
                         grid-column: 1;
                         grid-row: auto;
                         height: auto;
+                    }
+
+                    .bento-editorial {
+                        grid-template-columns: 1fr;
                     }
                 }
             </style>
