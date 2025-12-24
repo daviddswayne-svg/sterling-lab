@@ -45,8 +45,26 @@ class WebDeveloper:
         ])
         
         content = response['message']['content']
-        # Strip markdown if present
-        content = content.replace("```html", "").replace("```", "")
+        
+        # 1. Extract from Markdown block if present
+        if "```html" in content:
+            content = content.split("```html")[1].split("```")[0].strip()
+        elif "```" in content:
+            content = content.split("```")[1].split("```")[0].strip()
+            
+        # 2. Heuristic Cleanup (Remove conversational filler if no markdown)
+        # Find first < and last >
+        start_idx = content.find("<")
+        end_idx = content.rfind(">")
+        
+        if start_idx != -1 and end_idx != -1:
+            content = content[start_idx:end_idx+1]
+            
+        # 3. Security: Remove <html>, <head>, <body> tags if included despite prompt
+        content = content.replace("<!DOCTYPE html>", "").replace("<html>", "").replace("</html>", "")
+        content = content.replace("<head>", "").replace("</head>", "")
+        content = content.replace("<body>", "").replace("</body>", "")
+            
         return content
 
 if __name__ == "__main__":
