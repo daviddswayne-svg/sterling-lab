@@ -43,25 +43,15 @@ class VisualAnalyst:
         # We now rotate the "Chart of the Day" to keep the dashboard fresh
         # But we generate ALL of them so they are available if we want to switch manually
         
-        charts = [
-            ("inflation", self.generate_inflation_chart),
-            ("storm", self.generate_storm_chart),
-            ("sector", self.generate_sector_chart),
-            ("rate", self.generate_yield_chart)
-        ]
+        # SIMPLIFICATION: User requested only Inflation Chart for stability
+        print("   ⚠️ Forced Mode: Inflation Chart Only")
         
-        import random
-        # Pick one to be the "Main Feature" -> copied to bedrock_chart.png
-        selected_type, selected_func = random.choice(charts)
-        print(f"   🎲 Chart of the Day selected: {selected_type.upper()}")
-        
-        # Run the selected one first and check output
-        output_path = selected_func()
+        output_path = self.generate_inflation_chart()
         
         if output_path and os.path.exists(output_path):
             import shutil
             shutil.copy(output_path, os.path.join(self.output_dir, "bedrock_chart.png"))
-            print("   ✅ Updated bedrock_chart.png")
+            print("   ✅ Updated bedrock_chart.png (Inflation Only)")
             
         print("✅ Visual assets updated.")
 
