@@ -20,9 +20,8 @@ class WebDeveloper:
         # Build CSS rules list
         css_list = "\n        - ".join(self.prompts["css_rules"])
         
-        image_html = ""
-        if image_path:
-            image_html = f"IMPORTANT: Include this image in the hero section: <img src='{image_path}' class='hero-image' alt='{brief.get('headline', 'Market Update')}'>"
+        # Image is now embedded in the strict template below
+        pass
 
         prompt = f"""
         {self.prompts['system_prompt']}
@@ -36,10 +35,45 @@ class WebDeveloper:
         - {css_list}
         
         Output ONLY the HTML content to be injected into the dynamic update zone.
-        Structure:
-        1. <section class="hero-card card-glow"> ... </section>
-        2. <section class="info-grid"> ... </section> (Visual Analytics)
         
+        CRITICAL LAYOUT INSTRUCTION: "Split Command Center"
+        You MUST generate a single <section> with a 2-column grid layout.
+        
+        HTML Structure:
+        <section class="hero-card card-glow" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start;">
+            
+            <!-- LEFT COLUMN: VISUAL -->
+            <div class="visual-col">
+                 <img src='{image_path}' class='hero-image' style="width: 100%; height: auto; border-radius: 8px; object-fit: cover; aspect-ratio: 1/1;">
+            </div>
+            
+            <!-- RIGHT COLUMN: INTELLIGENCE -->
+            <div class="content-col" style="display: flex; flex-direction: column; gap: 1rem;">
+                <h2 class="hero-title">{brief.get('headline', 'Market Update')}</h2>
+                <div class="hero-description">
+                   [Write 2 short, punchy paragraphs based on the Brief. Focus on risk and opportunity.]
+                </div>
+                
+                <!-- DATA GRID (Compact) -->
+                <div class="data-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                    <div class="data-card" style="background: rgba(255,255,255,0.05); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(74, 144, 226, 0.2);">
+                        <h4 style="color: #4a90e2; margin: 0 0 0.5rem 0; font-size: 0.7rem;">INFLATION VECTOR</h4>
+                        <img src="/assets/inflation_chart.png" style="width: 100%; border-radius: 4px;">
+                    </div>
+                    <div class="data-card" style="background: rgba(255,255,255,0.05); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(0, 230, 118, 0.2);">
+                        <h4 style="color: #00e676; margin: 0 0 0.5rem 0; font-size: 0.7rem;">CLIMATE RISK</h4>
+                        <img src="/assets/storm_chart.png" style="width: 100%; border-radius: 4px;">
+                    </div>
+                </div>
+                
+                <div class="cta-row" style="margin-top: 1rem;">
+                    <button class="cta-button" onclick="openInsuranceChat()">Get a Quote</button>
+                    <button class="cta-button secondary-cta">Contact Advisor</button>
+                </div>
+            </div>
+            
+        </section>
+
         Do NOT output <html>, <head>, <body>, or <main> tags.
         Do NOT wrap in markdown code blocks.
         """
