@@ -1,4 +1,6 @@
 import os
+import matplotlib
+matplotlib.use('Agg') # Force headless backend for Docker/Server
 import matplotlib.pyplot as plt
 import pandas as pd
 import json
