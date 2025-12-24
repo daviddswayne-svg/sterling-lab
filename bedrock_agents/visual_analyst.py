@@ -43,15 +43,15 @@ class VisualAnalyst:
         # We now rotate the "Chart of the Day" to keep the dashboard fresh
         # But we generate ALL of them so they are available if we want to switch manually
         
-        # SIMPLIFICATION: User requested only Inflation Chart for stability
-        print("   ⚠️ Forced Mode: Inflation Chart Only")
+        # PRIORITIZED: User requested "Sector Alpha" (Real Stats)
+        print("   🚀 Generating Sector Alpha Chart (Real Data)...")
         
-        output_path = self.generate_inflation_chart()
+        output_path = self.generate_sector_chart()
         
         if output_path and os.path.exists(output_path):
             import shutil
             shutil.copy(output_path, os.path.join(self.output_dir, "bedrock_chart.png"))
-            print("   ✅ Updated bedrock_chart.png (Inflation Only)")
+            print("   ✅ Updated bedrock_chart.png (Sector Alpha)")
             
         print("✅ Visual assets updated.")
 
