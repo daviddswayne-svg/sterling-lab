@@ -175,40 +175,67 @@ def chat():
         print(f"❌ Error in chat endpoint: {e}")
         return jsonify({"error": str(e)}), 500
 
-@app.route('/api/meeting', methods=['GET'])
-def run_meeting():
-    def generate():
-        try:
-            # Import here to avoid circular dependencies if any
-            from bedrock_agents.orchestrator import run_meeting_generator
-            import json
-            import time
-            
-            # Initial Connection Message
-            yield f"data: {json.dumps({'agent': 'system', 'message': 'Connection Stable. Agents convening...'})}\n\n"
-            
-            # Use a generator that we can pulse
-            meeting = run_meeting_generator()
-            
-            while True:
-                try:
-                    agent, message = next(meeting)
-                    data = json.dumps({"agent": agent, "message": message})
-                    yield f"data: {data}\n\n"
-                except StopIteration:
-                    break
-        except Exception as e:
-            yield f"data: {{\"agent\": \"error\", \"message\": \"{str(e)}\"}}\n\n"
+import threading
 
-    return Response(
-        stream_with_context(generate()), 
-        mimetype='text/event-stream',
-        headers={
-            'Cache-Control': 'no-cache',
-            'Connection': 'keep-alive',
-            'X-Accel-Buffering': 'no'
-        }
-    )
+# Global Meeting State
+MEETING_STATE = {
+    "is_running": False,
+    "start_time": 0,
+    "completed_at": 0,
+    "current_agent": "idle"
+}
+
+def run_meeting_background():
+    """Background worker that runs the meeting generator to completion."""
+    global MEETING_STATE
+    
+    MEETING_STATE["is_running"] = True
+    MEETING_STATE["start_time"] = time.time()
+    MEETING_STATE["completed_at"] = 0
+    MEETING_STATE["current_agent"] = "system"
+    
+    print("🧵 Background Meeting Thread Started")
+    
+    try:
+        # Import here to avoid circular dependencies
+        from bedrock_agents.orchestrator import run_meeting_generator
+        
+        # Iterate through the generator to execute the workflow
+        # We don't stream the output, but we update the state for basic tracking
+        for agent, message in run_meeting_generator():
+            MEETING_STATE["current_agent"] = agent
+            print(f"   PLEASE WAIT: [{agent.upper()}] {message}")
+            
+    except Exception as e:
+        print(f"❌ Background Meeting Error: {e}")
+        MEETING_STATE["current_agent"] = "error"
+    finally:
+        MEETING_STATE["is_running"] = False
+        MEETING_STATE["completed_at"] = time.time()
+        print("✅ Background Meeting Thread Finished")
+
+@app.route('/api/meeting', methods=['POST', 'GET'])
+def run_meeting():
+    """Starts the meeting asynchronously in a background thread."""
+    global MEETING_STATE
+    
+    if MEETING_STATE["is_running"]:
+        return jsonify({"status": "already_running", "message": "Meeting already in progress"}), 409
+        
+    # Start background thread
+    thread = threading.Thread(target=run_meeting_background)
+    thread.daemon = True # Daemon thread so it doesn't block server shutdown
+    thread.start()
+    
+    return jsonify({
+        "status": "started", 
+        "message": "Staff meeting initiated in background."
+    })
+
+@app.route('/api/meeting/status', methods=['GET'])
+def meeting_status():
+    """Returns the current status of the meeting."""
+    return jsonify(MEETING_STATE)
 
 @app.route('/api/tts', methods=['POST'])
 def tts_proxy():

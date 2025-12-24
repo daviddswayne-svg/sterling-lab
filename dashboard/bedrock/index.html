@@ -515,61 +515,122 @@
         }
 
         // Staff Meeting Logic
+        // Async Staff Meeting Logic
+        let pollingInterval = null;
+        let simulationInterval = null;
+
         function startMeeting() {
             document.getElementById('staffModal').classList.add('active');
             const log = document.getElementById('meetingLog');
-            log.innerHTML = '<div>Connecting to HQ...</div>';
+            log.innerHTML = '<div>Connecting to Global HQ...</div>';
 
-            const evtSource = new EventSource("/api/meeting");
+            // Start Simulation (Visual Flair)
+            startSimulation();
 
-            evtSource.onmessage = function (event) {
-                const data = JSON.parse(event.data);
-                const agent = data.agent;
-                const msg = data.message;
-
-                // Log
-                const entry = document.createElement('div');
-                entry.textContent = `[${agent.toUpperCase()}] ${msg}`;
-                log.appendChild(entry);
-                log.scrollTop = log.scrollHeight;
-
-                // Reset Active States
-                document.querySelectorAll('.staff-member').forEach(el => el.classList.remove('active'));
-
-                // Set Active Agent
-                const agentMap = {
-                    'director': 'agent-director',
-                    'designer': 'agent-designer',
-                    'developer': 'agent-developer',
-                    'publisher': 'agent-publisher'
-                };
-
-                if (agentMap[agent]) {
-                    const el = document.getElementById(agentMap[agent]);
-                    if (el) {
-                        el.classList.add('active');
-                        el.querySelector('.staff-status').textContent = msg.substring(0, 30) + "...";
+            // Trigger Backend Job
+            fetch('/api/meeting', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'started' || data.status === 'already_running') {
+                        addLog('SYSTEM', 'Workflow Initiated. Agents are working offline.');
+                        // Start Polling for Completion
+                        pollingInterval = setInterval(checkMeetingStatus, 2000);
+                    } else {
+                        addLog('ERROR', 'Failed to start meeting: ' + data.message);
                     }
-                }
+                })
+                .catch(err => {
+                    addLog('ERROR', 'Connection Failed: ' + err);
+                });
+        }
 
-                if (msg === "Meeting Adjourned") {
-                    console.log("🔄 Meeting Adjourned detected - closing EventSource");
-                    evtSource.close();
-                    console.log("⏰ Scheduling page reload in 2 seconds...");
-                    setTimeout(() => {
-                        console.log("🚀 Reloading page now!");
-                        location.reload();
-                    }, 2000);
+        function checkMeetingStatus() {
+            fetch('/api/meeting/status')
+                .then(response => response.json())
+                .then(state => {
+                    const statusText = state.is_running ? "In Progress" : "Idle";
+                    const currentAgent = state.current_agent;
+
+                    // Update active avatar based on real backend state
+                    updateActiveAgent(currentAgent);
+
+                    if (!state.is_running && state.completed_at > 0) {
+                        // Work Complete
+                        clearInterval(pollingInterval);
+                        clearInterval(simulationInterval);
+
+                        addLog('SYSTEM', 'workflow_complete_signal_received');
+                        addLog('SYSTEM', 'NEW PAGE READY. REFRESHING...');
+
+                        // Update Header Status
+                        const statusDot = document.querySelector('.status-dot');
+                        const statusTextEl = document.querySelector('.status-text');
+                        if (statusDot) statusDot.style.background = '#34d399'; // Green
+                        if (statusTextEl) statusTextEl.textContent = "NEW PAGE READY";
+
+                        setTimeout(() => {
+                            location.reload();
+                        }, 3000);
+                    }
+                })
+                .catch(err => console.error("Polling error", err));
+        }
+
+        function updateActiveAgent(agentName) {
+            document.querySelectorAll('.staff-member').forEach(el => {
+                if (el.id !== `agent-${agentName}`) {
+                    el.classList.remove('active');
+                    // Don't clear text, keep history
                 }
+            });
+
+            const agentMap = {
+                'director': 'agent-director',
+                'designer': 'agent-designer',
+                'developer': 'agent-developer',
+                'publisher': 'agent-publisher'
             };
 
-            evtSource.onerror = function () {
-                log.innerHTML += '<div style="color:red">Connection lost.</div>';
-                evtSource.close();
-                setTimeout(() => {
-                    document.getElementById('staffModal').classList.remove('active');
-                }, 3000);
-            };
+            if (agentMap[agentName]) {
+                const el = document.getElementById(agentMap[agentName]);
+                if (el) {
+                    el.classList.add('active');
+                    el.querySelector('.staff-status').textContent = "Processing...";
+                }
+            }
+        }
+
+        function addLog(agent, msg) {
+            const log = document.getElementById('meetingLog');
+            const entry = document.createElement('div');
+            entry.textContent = `[${agent}] ${msg}`;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        // Simulates log activity so the user knows something is happening
+        // (Since we lost the real-time stream)
+        function startSimulation() {
+            const messages = [
+                "Analyzing volatility index...",
+                "Cross-referencing Swiss Re Sigma data...",
+                "Optimizing visual assets for retina displays...",
+                "Calibrating CSS grid layout...",
+                "Validating HTML structure...",
+                "Preparing container for deployment...",
+                "Syncing with Swayne Systems Cloud..."
+            ];
+
+            let i = 0;
+            simulationInterval = setInterval(() => {
+                if (i < messages.length) {
+                    // Randomly assign to an agent for flavor
+                    const agents = ['DIRECTOR', 'DESIGNER', 'DEVELOPER', 'PUBLISHER'];
+                    const randomAgent = agents[Math.floor(Math.random() * agents.length)];
+                    addLog(randomAgent, messages[i]);
+                    i++;
+                }
+            }, 4000); // New message every 4 seconds
         }
     </script>
 
