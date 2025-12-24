@@ -9,11 +9,18 @@ from flask import Blueprint, request, jsonify
 import ollama
 
 # Load mock customer data
+# Load mock customer data
 DATA_DIR = os.path.dirname(os.path.abspath(__file__))
-CUSTOMERS_FILE = os.path.join(DATA_DIR, "data", "mock_customers.json")
+# Moved to root to avoid volume masking issues
+CUSTOMERS_FILE = os.path.join(DATA_DIR, "mock_customers.json")
 
-with open(CUSTOMERS_FILE, 'r') as f:
-    CUSTOMER_DB = json.load(f)['customers']
+try:
+    with open(CUSTOMERS_FILE, 'r') as f:
+        CUSTOMER_DB = json.load(f)['customers']
+    print(f"✅ Loaded {len(CUSTOMER_DB)} mock customers")
+except Exception as e:
+    print(f"⚠️ Failed to load mock customers: {e}")
+    CUSTOMER_DB = []
 
 # Create Blueprint
 chat_bp = Blueprint('chat', __name__)
