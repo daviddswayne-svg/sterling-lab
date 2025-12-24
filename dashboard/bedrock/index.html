@@ -128,41 +128,65 @@
                             </h4>
                         </div>
 
-                        <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
+                        <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;"
+                            class="vital-row">
                             <span style="color: rgba(255,255,255,0.6); font-size: 0.9rem;">Inflation (CPI)</span>
                             <span id="market-inflation-val" style="color: #f87171; font-weight: 700;">+3.2% ▲</span>
                         </div>
 
-                        <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
+                        <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;"
+                            class="vital-row">
                             <span style="color: rgba(255,255,255,0.6); font-size: 0.9rem;">Catastrophe Risk</span>
                             <span id="market-risk-val" style="color: #fbbf24; font-weight: 700;">ELEVATED</span>
                         </div>
 
-                        <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
+                        <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;"
+                            class="vital-row">
                             <span style="color: rgba(255,255,255,0.6); font-size: 0.9rem;">Yield (10Y)</span>
                             <span id="market-yield-val" style="color: #34d399; font-weight: 700;">4.12%</span>
                         </div>
 
-                        <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
+                        <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;"
+                            class="vital-row">
                             <span style="color: rgba(255,255,255,0.6); font-size: 0.9rem;">Sector Alpha</span>
                             <span id="market-sector-val" style="color: #34d399; font-weight: 700;">POSITIVE</span>
                         </div>
 
-                        <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
+                        <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;"
+                            class="vital-row">
                             <span style="color: rgba(255,255,255,0.6); font-size: 0.9rem;">S&P 500</span>
                             <span id="market-sp500-val" style="color: #34d399; font-weight: 700;">...</span>
                         </div>
 
-                        <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
+                        <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;"
+                            class="vital-row">
                             <span style="color: rgba(255,255,255,0.6); font-size: 0.9rem;">Volatility (VIX)</span>
                             <span id="market-volatility-val" style="color: #f87171; font-weight: 700;">...</span>
                         </div>
 
-                        <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
+                        <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;"
+                            class="vital-row">
                             <span style="color: rgba(255,255,255,0.6); font-size: 0.9rem;">Reinsurance</span>
                             <span id="market-outlook-val" style="color: #60a5fa; font-weight: 700;">STABLE</span>
                         </div>
                     </div>
+
+                    <script>
+                        // Auto-hide incomplete vitals
+                        function cleanVitals() {
+                            const vitals = document.querySelectorAll('.vital-row span[id$="-val"]');
+                            vitals.forEach(el => {
+                                if (el.innerText.trim() === '...') {
+                                    el.parentElement.style.display = 'none';
+                                } else {
+                                    el.parentElement.style.display = 'flex';
+                                }
+                            });
+                        }
+                        // Run on load and after updates
+                        document.addEventListener('DOMContentLoaded', cleanVitals);
+                        setInterval(cleanVitals, 2000); // Check periodically for async updates
+                    </script>
 
                     <!-- 3. Strategy Zone (Bottom) - NOW INCLUDES GRAPH ON RIGHT -->
                     <div class="bento-strategy card-glow">
