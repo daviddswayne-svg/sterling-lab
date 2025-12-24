@@ -18,3 +18,4 @@ matplotlib
 seaborn
 pandas
 pypdf
+feedparser
