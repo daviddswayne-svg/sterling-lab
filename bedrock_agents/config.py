@@ -14,7 +14,7 @@ COMFYUI_HOST = os.getenv("COMFYUI_HOST", "http://10.0.1.1:8188")
 # Models (Aligned with Swayne Systems standards)
 MODELS = {
     "director": "llama3.3",       # Strategic planning
-    "writer": "dolphin-llama3",       # Technical writing/HTML
+    "writer": "qwen2.5-coder:32b",  # Technical writing/HTML
     "marketing": "dolphin-llama3", # Promotional copy
     "reviewer": "verify-llm",     # Compliance (Placeholder)
     "designer": "llama3.3"        # Image Prompting
