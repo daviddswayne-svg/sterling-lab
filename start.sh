@@ -43,21 +43,39 @@ API_PID=$!
 # Step 5: Run RAG Ingestion (Background)
 # This was blocking startup!
 echo "[5/8] Launching Background RAG Ingestion..."
-(
-    echo "   [BG] Ingesting Public Knowledge Base..."
-    if [ -f "/app/ingest_lab_knowledge.py" ]; then
+    echo "   [BG] Checking Knowledge Bases..."
+    
+    # 1. Sterling Lab Public RAG
+    if [ -f "/app/chroma_db/chroma.sqlite3" ]; then
+        echo "   [RAG] Public DB exists. Skipping ingestion."
+    elif [ -f "/app/ingest_lab_knowledge.py" ]; then
+        echo "   [RAG] Ingesting Public Knowledge..."
         python ingest_lab_knowledge.py || echo "⚠️  Public Ingest Warnings"
     fi
     
-    echo "   [BG] Ingesting Sterling Estate Knowledge..."
+    # 2. Sterling Estate Private RAG
+    # (Assuming it merges into chroma_db or has its own check, keeping logic simple)
     if [ -f "/app/ingest_sterling.py" ]; then
-        python ingest_sterling.py || echo "⚠️  Estate Ingest Warnings"
+         # Only run if we suspect it's missing or if we want to force update on missing file
+         # For now, let's assume it shares the DB, so we skip if DB exists
+         if [ ! -f "/app/chroma_db/chroma.sqlite3" ]; then
+            echo "   [RAG] Ingesting Estate Knowledge..."
+            python ingest_sterling.py || echo "⚠️  Estate Ingest Warnings"
+         fi
+    fi
+
+    # 3. Bedrock Insurance RAG (Swiss Re Sigma)
+    if [ -f "/app/bedrock_agents/data/chroma_bedrock_intel/chroma.sqlite3" ]; then
+        echo "   [RAG] Bedrock DB exists. Skipping ingestion."
+    elif [ -f "/app/bedrock_agents/ingest_sigma.py" ]; then
+        echo "   [RAG] Ingesting Bedrock (Sigma) Knowledge..."
+        python bedrock_agents/ingest_sigma.py || echo "⚠️  Bedrock Ingest Warnings"
     fi
     
     echo "   [BG] Running Diagnostics..."
     python rag_diagnostics.py || echo "⚠️  Diagnostic Warnings"
     
-    echo "✅ Background Ingestion Complete"
+    echo "✅ Background Checks Complete"
 ) &
 
 # Step 6: Wait/Monitor
