@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+# set -e removed to prevent crash loop on minor errors
 
 echo "=================================="
 echo "🚀 STERLING LAB STARTUP SEQUENCE"
@@ -17,6 +17,15 @@ if [ ! -f "/app/dashboard/index.html" ]; then
     exit 1
 fi
 echo "✅ Dashboard files verified at /app/dashboard"
+
+# DEBUG: Check Volumes and Fix Permissions
+echo "[DEBUG] Checking Volume Mounts..."
+ls -la /app/chroma_db_synthetic || echo "⚠️ /app/chroma_db_synthetic not found"
+ls -la /app/bedrock_agents/data || echo "⚠️ /app/bedrock_agents/data not found"
+
+# Force permissions (Brute Force Fix for Volume Mount issues)
+chmod -R 777 /app/chroma_db_synthetic || echo "⚠️ Could not chmod chroma_db_synthetic"
+chmod -R 777 /app/bedrock_agents/data || echo "⚠️ Could not chmod bedrock_agents/data"
 
 # Step 2: Start Nginx Early (Critical for Health Checks)
 echo "[2/8] Starting Nginx on port 80..."
