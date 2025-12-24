@@ -36,43 +36,42 @@ class WebDeveloper:
         
         Output ONLY the HTML content to be injected into the dynamic update zone.
         
-        CRITICAL LAYOUT INSTRUCTION: "Split Command Center"
-        You MUST generate a single <section> with a 2-column grid layout.
+        Output ONLY the HTML content.
         
-        HTML Structure:
-        <section class="hero-card card-glow" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start;">
-            
-            <!-- LEFT COLUMN: VISUAL -->
-            <div class="visual-col">
-                 <img src='{image_path}' class='hero-image' style="width: 100%; height: auto; border-radius: 8px; object-fit: cover; aspect-ratio: 1/1;">
+        CRITICAL LAYOUT INSTRUCTION: "Bento Grid Content Filling"
+        You are NOT building the layout. The CSS Grid is already set.
+        You must output the content for the 3 slots:
+        
+        <div class="bento-grid">
+            <!-- SLOT 1: VISUAL (Top Left) -->
+            <div class="bento-visual card-glow">
+                 <img src='{image_path}' alt='Visual Analysis'>
             </div>
             
-            <!-- RIGHT COLUMN: INTELLIGENCE -->
-            <div class="content-col" style="display: flex; flex-direction: column; gap: 1rem;">
+            <!-- SLOT 2: DATA (Top Right) -->
+            <div class="bento-data">
+                <div class="data-card">
+                    <h4>Inflation Vector</h4>
+                    <img src="/assets/inflation_chart.png">
+                </div>
+                <div class="data-card">
+                    <h4>Climate Risk</h4>
+                    <img src="/assets/storm_chart.png">
+                </div>
+            </div>
+            
+            <!-- SLOT 3: STRATEGY (Bottom Full) -->
+            <div class="bento-strategy card-glow">
                 <h2 class="hero-title">{brief.get('headline', 'Market Update')}</h2>
                 <div class="hero-description">
                    [Write 2 short, punchy paragraphs based on the Brief. Focus on risk and opportunity.]
                 </div>
-                
-                <!-- DATA GRID (Compact) -->
-                <div class="data-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
-                    <div class="data-card" style="background: rgba(255,255,255,0.05); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(74, 144, 226, 0.2);">
-                        <h4 style="color: #4a90e2; margin: 0 0 0.5rem 0; font-size: 0.7rem;">INFLATION VECTOR</h4>
-                        <img src="/assets/inflation_chart.png" style="width: 100%; border-radius: 4px;">
-                    </div>
-                    <div class="data-card" style="background: rgba(255,255,255,0.05); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(0, 230, 118, 0.2);">
-                        <h4 style="color: #00e676; margin: 0 0 0.5rem 0; font-size: 0.7rem;">CLIMATE RISK</h4>
-                        <img src="/assets/storm_chart.png" style="width: 100%; border-radius: 4px;">
-                    </div>
-                </div>
-                
-                <div class="cta-row" style="margin-top: 1rem;">
+                <div class="cta-row">
                     <button class="cta-button" onclick="openInsuranceChat()">Get a Quote</button>
                     <button class="cta-button secondary-cta">Contact Advisor</button>
                 </div>
             </div>
-            
-        </section>
+        </div>
 
         Do NOT output <html>, <head>, <body>, or <main> tags.
         Do NOT wrap in markdown code blocks.
