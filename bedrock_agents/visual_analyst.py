@@ -50,8 +50,8 @@ class VisualAnalyst:
         
         if output_path and os.path.exists(output_path):
             import shutil
-            shutil.copy(output_path, os.path.join(self.output_dir, "bedrock_chart.png"))
-            print("   ✅ Updated bedrock_chart.png (Sector Alpha)")
+            shutil.copy(output_path, os.path.join(self.output_dir, "sector_alpha_chart.png"))
+            print("   ✅ Updated sector_alpha_chart.png (Sector Alpha)")
             
         print("✅ Visual assets updated.")
 
