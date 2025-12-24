@@ -29,8 +29,6 @@ class WebDeveloper:
         Brief:
         {brief}
         
-        {image_html}
-        
         You must use the following CSS classes from our design system:
         - {css_list}
         
