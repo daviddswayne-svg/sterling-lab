@@ -17,21 +17,40 @@ class PublishingManager:
         with open(target_file, "r") as f:
             full_html = f.read()
             
-        # VERY Simple Template Injection (Replace <main... with new content)
-        # Note: This assumes the structure created in bedrock.html initially
-        # A more robust way would be to keep a separate template file.
+        # TARGETED INJECTION: Update only the dynamic 'agent-updates' container
+        # This preserves the Market Briefing widget and other layout elements
+        start_marker = '<div id="agent-updates">'
+        end_marker = '<!-- END DYNAMIC ZONE -->'
         
-        # For this MVP, let's just reconstruct the file with the new content
-        # We need to preserve the header/footer
-        
-        header_part = full_html.split('<main class="main-content">')[0]
-        footer_part = full_html.split('</main>')[1]
-        
-        # Sanitize content (Remove duplicate <main> tags if LLM added them)
-        html_content = html_content.replace('<main class="main-content">', '').replace("</main>", "").strip()
-        
-        new_full_html = f"{header_part}<main class=\"main-content\">\n{html_content}\n</main>{footer_part}"
-        
+        if start_marker in full_html and end_marker in full_html:
+            print("🎯 Targeting specific container: #agent-updates")
+            header_part = full_html.split(start_marker)[0]
+            # We want to preserve the footer (which starts at the comment)
+            # split(end_marker) gives [content_before, content_after_start_of_marker] ... wait logic check
+            
+            # Correct logic:
+            # part1 = 0 to start_marker
+            # part2 = end_marker to EOF
+            
+            p1 = full_html.find(start_marker)
+            p2 = full_html.find(end_marker)
+            
+            header_part = full_html[:p1]
+            footer_part = full_html[p2:]
+            
+            # Construct new HTML: Header + Wrapper + Content + Footer
+            # Note: We re-add the wrapper div because we are replacing the *entire block* between markers logic?
+            # actually if split at start_marker, header doesn't include it. 
+            # So we must add it back.
+            
+            new_full_html = f"{header_part}{start_marker}\n{html_content}\n</div>\n            {footer_part}"
+        else:
+            print("⚠️ Target container not found. Falling back to Main replacement.")
+            header_part = full_html.split('<main class="main-content">')[0]
+            footer_part = full_html.split('</main>')[1]
+            html_content = html_content.replace('<main class="main-content">', '').replace("</main>", "").strip()
+            new_full_html = f"{header_part}<main class=\"main-content\">\n{html_content}\n</main>{footer_part}"
+
         with open(target_file, "w") as f:
             f.write(new_full_html)
             

@@ -110,37 +110,43 @@
                 document.addEventListener('DOMContentLoaded', loadMarketAnalysis);
             </script>
 
-            <section class="hero-card card-glow">
-                <img src='/assets/bedrock_latest.png' class='hero-image' alt='Safe Haven'>
-                <div class="card-content">
-                    <h2 class="hero-title">Safe Haven</h2>
-                    <p class="hero-description">Discover advanced home protection strategies tailored for suburban
-                        homeowners. Implement smart security, understand flood insurance, and enhance safety through
-                        landscape design.</p>
-                    <button class="cta-button" onclick="openInsuranceChat()">Get a Quote</button>
-                    <button class="cta-button secondary-cta">Contact Advisor</button>
-                </div>
-            </section>
+            <!-- DYNAMIC AGENT UPDATE ZONE -->
+            <div id="agent-updates">
+                <section class="hero-card card-glow">
+                    <img src='/assets/bedrock_latest.png' class='hero-image' alt='Safe Haven'>
+                    <div class="card-content">
+                        <h2 class="hero-title">Safe Haven</h2>
+                        <p class="hero-description">Discover advanced home protection strategies tailored for suburban
+                            homeowners. Implement smart security, understand flood insurance, and enhance safety through
+                            landscape design.</p>
+                        <button class="cta-button" onclick="openInsuranceChat()">Get a Quote</button>
+                        <button class="cta-button secondary-cta">Contact Advisor</button>
+                    </div>
+                </section>
 
-            <!-- NEW: Visual Analytics Grid -->
-            <section class="info-grid">
-                <div class="info-card" style="border: 1px solid rgba(74, 144, 226, 0.2);">
-                    <h3 style="color: #4a90e2; margin-bottom: 0.5rem;">Why Rates Are Up</h3>
-                    <img src="/assets/inflation_chart.png"
-                        style="width:100%; border-radius: 8px; margin-bottom: 0.5rem; opacity: 0.9;"
-                        alt="Inflation Chart">
-                    <p style="font-size: 0.8rem; color: rgba(255,255,255,0.6);">Auto repair costs (Pink) are outpacing
-                        general inflation.</p>
-                </div>
-                <div class="info-card" style="border: 1px solid rgba(0, 230, 118, 0.2);">
-                    <h3 style="color: #00e676; margin-bottom: 0.5rem;">Real-Time Weather Risk</h3>
-                    <img src="/assets/storm_chart.png"
-                        style="width:100%; border-radius: 8px; margin-bottom: 0.5rem; opacity: 0.9;"
-                        alt="Weather Trend">
-                    <p style="font-size: 0.8rem; color: rgba(255,255,255,0.6);">90-Day Peak Wind Gusts (Tornado Alley).
-                    </p>
-                </div>
-            </section>
+                <!-- NEW: Visual Analytics Grid -->
+                <section class="info-grid">
+                    <div class="info-card" style="border: 1px solid rgba(74, 144, 226, 0.2);">
+                        <h3 style="color: #4a90e2; margin-bottom: 0.5rem;">Why Rates Are Up</h3>
+                        <img src="/assets/inflation_chart.png"
+                            style="width:100%; border-radius: 8px; margin-bottom: 0.5rem; opacity: 0.9;"
+                            alt="Inflation Chart">
+                        <p style="font-size: 0.8rem; color: rgba(255,255,255,0.6);">Auto repair costs (Pink) are
+                            outpacing
+                            general inflation.</p>
+                    </div>
+                    <div class="info-card" style="border: 1px solid rgba(0, 230, 118, 0.2);">
+                        <h3 style="color: #00e676; margin-bottom: 0.5rem;">Real-Time Weather Risk</h3>
+                        <img src="/assets/storm_chart.png"
+                            style="width:100%; border-radius: 8px; margin-bottom: 0.5rem; opacity: 0.9;"
+                            alt="Weather Trend">
+                        <p style="font-size: 0.8rem; color: rgba(255,255,255,0.6);">90-Day Peak Wind Gusts (Tornado
+                            Alley).
+                        </p>
+                    </div>
+                </section>
+            </div>
+            <!-- END DYNAMIC ZONE -->
 
             <section class="info-grid">
                 <div class="info-card">

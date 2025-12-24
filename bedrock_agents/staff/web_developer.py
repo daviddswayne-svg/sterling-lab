@@ -35,8 +35,12 @@ class WebDeveloper:
         You must use the following CSS classes from our design system:
         - {css_list}
         
-        Output ONLY the HTML that goes inside the <main class="main-content"> tag. 
-        Do NOT output <html>, <head>, or <body> tags.
+        Output ONLY the HTML content to be injected into the dynamic update zone.
+        Structure:
+        1. <section class="hero-card card-glow"> ... </section>
+        2. <section class="info-grid"> ... </section> (Visual Analytics)
+        
+        Do NOT output <html>, <head>, <body>, or <main> tags.
         Do NOT wrap in markdown code blocks.
         """
         
