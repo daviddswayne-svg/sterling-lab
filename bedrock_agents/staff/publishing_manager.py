@@ -27,7 +27,11 @@ class PublishingManager:
                 "opp_title": "opp-title",
                 "opp_desc": "opp-desc",
                 "insight_title": "insight-title",
-                "insight_desc": "insight-desc"
+                "insight_desc": "insight-desc",
+                "market_inflation": "market-inflation-val",
+                "market_risk": "market-risk-val",
+                "market_yield": "market-yield-val",
+                "market_sector": "market-sector-val"
             }
 
             if isinstance(content_updates, dict):

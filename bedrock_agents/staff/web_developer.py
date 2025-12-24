@@ -48,10 +48,17 @@ class WebDeveloper:
         - opp_desc
         - insight_title
         - insight_desc
+        - market_inflation (e.g. "+3.2% ▲")
+        - market_risk (e.g. "ELEVATED")
+        - market_yield (e.g. "4.12%")
+        - market_sector (e.g. "POSITIVE")
 
         Example Output:
         ===SECTION: strategy_title===
         Coastal Resilience Strategy
+        ===END===
+        ===SECTION: market_risk===
+        SEVERE
         ===END===
         ===SECTION: strategy_desc===
         Focus on flood mitigation and green infrastructure.
