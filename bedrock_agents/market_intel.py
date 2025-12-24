@@ -1,9 +1,15 @@
 import yfinance as yf
 import random
 from datetime import datetime, timedelta
+import feedparser
 from langchain_chroma import Chroma
 from langchain_ollama import OllamaEmbeddings
 from .config import BEDROCK_CHROMA_PATH, OLLAMA_HOST, TICKERS
+
+INSURANCE_RSS_FEEDS = [
+    "https://www.insurancejournal.com/rss/news/",
+    "https://www.cnbc.com/id/10000664/device/rss/rss.html"  # CNBC Finance
+]
 
 class MarketIntelligence:
     def __init__(self):
@@ -64,25 +70,49 @@ class MarketIntelligence:
         return data
 
     def fetch_news_headlines(self):
-        """Generates realistic mock headlines (since no NewsAPI key provided)."""
-        # In a real scenario, use requests.get("https://newsapi.org/v2/...")
+        """Fetches real insurance/finance headlines using RSS."""
+        headlines = []
+        print("📡 Scanning Insurance RSS Feeds...")
         
-        headlines = [
-            "Global Reinsurance Rates Stabilize Ahead of Renewal Season",
-            "Climate Resilience Bonds Gain Traction Among Major Insurers",
-            "Cyber Liability Premiums Adjust as Ransomware Attacks Evolve",
-            "Swiss Re Report Highlights Inflationary Pressures on Claims",
-            "PropTech Integration: The New Frontier for Home Insurance",
-            "Florida Legislation Impacting Property Catastrophe Reinsurance",
-            "AI-Driven Underwriting reducing processing times by 40%",
-            "Severe Convective Storm Losses Top $50B in 2024",
-            "Parametric Insurance Solutions Expanding for High-Net-Worth Assets",
-            "Smart Home Sensors Becoming Standard for Premium Policy Discounts"
-        ]
-        
-        # Shuffle and pick top 5
-        random.shuffle(headlines)
-        return headlines[:5]
+        try:
+            for url in INSURANCE_RSS_FEEDS:
+                try:
+                    feed = feedparser.parse(url)
+                    # Get top 3 from each
+                    for entry in feed.entries[:3]:
+                        # Extract summary if available, limit to 250 chars
+                        summary = getattr(entry, 'summary', '')[:250] + "..." if getattr(entry, 'summary', '') else ""
+                        # Clean up HTML tags if present (basic check)
+                        summary = summary.replace("<p>", "").replace("</p>", "").strip()
+                        
+                        item_text = f"{entry.title}"
+                        if summary:
+                            item_text += f" - {summary}"
+                            
+                        headlines.append(item_text)
+
+                except Exception as e:
+                    print(f"⚠️ RSS Error {url}: {e}")
+
+            if not headlines:
+                 raise Exception("No headlines found from RSS feeds")
+
+            # Shuffle and pick top 5
+            random.shuffle(headlines)
+            return headlines[:5]
+
+        except Exception as e:
+            print(f"⚠️ News Fetch Failed: {e}. Using mocks.")
+            # Fallback Mock Data
+            mock_headlines = [
+                "Global Reinsurance Rates Stabilize Ahead of Renewal Season - Carriers are pushing for higher attachment points.",
+                "Climate Resilience Bonds Gain Traction Among Major Insurers - New financial instruments are being tested to mitigate catastrophe risk.",
+                "Cyber Liability Premiums Adjust as Ransomware Attacks Evolve - Underwriters are demanding stricter security protocols.",
+                "Swiss Re Report Highlights Inflationary Pressures on Claims - Social inflation continues to drive up settled claim amounts.",
+                "PropTech Integration: The New Frontier for Home Insurance - IoT sensors are reducing water damage claims by 30%."
+            ]
+            random.shuffle(mock_headlines)
+            return mock_headlines[:5]
 
     def query_sigma_rag(self, query="risks opportunities 2025"):
         """Queries the Swiss Re Sigma report for insights."""
