@@ -62,7 +62,7 @@ def get_ollama_models():
     try:
         response = requests.get(f"{OLLAMA_HOST}/api/tags")
         if response.status_code == 200:
-            models = [model['name'] for model in response.json()['models']]
+            models = [model['name'] for model in response.json()['models'] if 'deepseek' not in model['name'].lower()]
             return models
     except Exception as e:
         pass
