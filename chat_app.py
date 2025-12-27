@@ -68,6 +68,37 @@ def get_ollama_models():
         pass
     return [DEFAULT_LLM, "llama3.1:latest", "gemma2:27b"] # Fallback
 
+# --- Helper: Busy Lock ---
+LOCK_FILE = os.path.join(SCRIPT_DIR, "busy.lock")
+LOCK_TIMEOUT = 120  # Seconds
+
+def is_system_busy():
+    """Check if the system is currently locked by another user."""
+    if not os.path.exists(LOCK_FILE):
+        return False, None
+    
+    try:
+        with open(LOCK_FILE, 'r') as f:
+            data = json.load(f)
+        
+        # Check timeout
+        if time.time() - data['timestamp'] > LOCK_TIMEOUT:
+            os.remove(LOCK_FILE) # Auto-release stale lock
+            return False, None
+            
+        return True, data.get('user', 'Unknown')
+    except:
+        return False, None
+
+def set_system_busy(busy=True, user="Unknown"):
+    """Set or clear the system busy lock."""
+    if busy:
+        with open(LOCK_FILE, 'w') as f:
+            json.dump({"user": user, "timestamp": time.time()}, f)
+    else:
+        if os.path.exists(LOCK_FILE):
+            os.remove(LOCK_FILE)
+
 # --- Callbacks ---
 class TokenCallbackHandler(BaseCallbackHandler):
     """Callback Handler that tracks token usage and speed for Ollama."""
@@ -621,6 +652,13 @@ def run_app():
     st.sidebar.title("⚜️ Sterling Estate Office")
     st.sidebar.caption("Multi-Family Intelligence & Advisory")
     
+    # System Status
+    is_busy, busy_user = is_system_busy()
+    if is_busy:
+        st.sidebar.error("🔴 Neural Network Busy")
+    else:
+        st.sidebar.success("🟢 System Ready")
+    
     # Selection Console
     available_models = get_ollama_models()
     if DEFAULT_LLM not in available_models:
@@ -784,7 +822,17 @@ How may I assist you today?"""
     st.sidebar.markdown('<a href="/" target="_self" class="dash-link-button">← Dashboard</a>', unsafe_allow_html=True)
 
     # User Input
-    if prompt := st.chat_input("Ask a question..."):
+    is_busy, busy_user = is_system_busy()
+    prompt = st.chat_input("Ask a question...", disabled=is_busy)
+    
+    if prompt:
+        if is_busy:
+            st.error(f"System is busy processing a request from {busy_user}.")
+            st.stop()
+            
+        set_system_busy(True, "User")
+        
+        # UI Update
         # UI Update
         st.session_state.current_session_messages.append({"role": "user", "content": prompt})
         st.session_state.db_history.append({"role": "user", "content": prompt})
@@ -841,8 +889,10 @@ How may I assist you today?"""
 
             elif uploaded_image:
                 # --- VISION AGENT MODE (Priority if image is present) ---
+                # --- VISION AGENT MODE (Priority if image is present) ---
                 if not get_lab_status():
                     st.error("❌ M1 Muscle is Offline. Vision requires the Thunderbolt bridge.")
+                    set_system_busy(False)
                     st.stop()
                 
                 with st.spinner("👁️ Frontier Vision Agent is analyzing..."):
@@ -1374,8 +1424,10 @@ Format:
 
             else:
                 # --- STANDARD LOCAL MODE ---
+                # --- STANDARD LOCAL MODE ---
                 if not qa_chain:
                     st.error("❌ RAG Engine is not initialized. Please verify Local Ollama status.")
+                    set_system_busy(False)
                     st.stop()
                 try:
                     # Setup Callback for this run
@@ -1426,6 +1478,8 @@ Format:
                                     
                 except Exception as e:
                     st.error(f"Error: {e}")
+        
+        set_system_busy(False)
 
 if __name__ == "__main__":
     main()
