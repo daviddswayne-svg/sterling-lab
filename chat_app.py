@@ -645,9 +645,10 @@ def run_app():
     # Intelligence Options
     col_a, col_b = st.sidebar.columns(2)
     with col_a:
-        use_oracle = st.toggle("Oracle", value=False)
-        if use_oracle:
-            st.caption("DeepSeek Logic Active")
+        use_oracle = st.toggle("Oracle", value=False, disabled=True)
+        st.caption("⚠️ M1 Network Training Active")
+        # if use_oracle:
+        #    st.caption("DeepSeek Logic Active")
     with col_b:
         use_distributed = st.checkbox("Council", value=False)
     
