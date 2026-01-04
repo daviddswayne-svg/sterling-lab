@@ -21,3 +21,11 @@ pypdf
 feedparser
 beautifulsoup4
 lxml
+trimesh
+pillow
+numpy
+fastapi
+uvicorn
+python-multipart
+scipy
+scikit-image

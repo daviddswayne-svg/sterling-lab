@@ -1,0 +1,6 @@
+::1 - - [03/Jan/2026 15:47:25] "GET / HTTP/1.1" 200 -
+::1 - - [03/Jan/2026 15:47:25] "GET /style.css HTTP/1.1" 200 -
+::1 - - [03/Jan/2026 15:47:25] "GET /viewer.js HTTP/1.1" 200 -
+::1 - - [03/Jan/2026 15:47:25] "GET /app.js HTTP/1.1" 200 -
+::1 - - [03/Jan/2026 15:47:26] code 404, message File not found
+::1 - - [03/Jan/2026 15:47:26] "GET /favicon.ico HTTP/1.1" 404 -

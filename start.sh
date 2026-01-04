@@ -104,12 +104,20 @@ fi
     echo "✅ Background Diagnostics Complete"
 ) &
 
-# Step 7: Wait/Monitor
-echo "[7/8] System started. Monitoring PIDs..."
+# Step 8: Start VoxSure Forensic Audit Services
+echo "[8/8] Starting VoxSure Forensic Audit Services..."
+# Backend on 12346
+cd /app/voxsure/backend && python3 main.py 2>&1 | tee /tmp/voxsure_backend.log &
+VOXSURE_PID=$!
+echo "✅ VoxSure Services started (PID: $VOXSURE_PID)"
+
+# Step 9: Wait/Monitor
+echo "[9/9] System started. Monitoring PIDs..."
 echo "      Nginx: $NGINX_PID"
 echo "      Streamlit: $STREAMLIT_PID"  
 echo "      API: $API_PID"
+echo "      VoxSure: $VOXSURE_PID"
 echo ""
-echo "✅ Sterling Lab is online!"
+echo "✅ Sterling Lab (Unified) is online!"
 
 wait $NGINX_PID

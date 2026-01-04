@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VoxSure | Voxel Insurance Audit</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Outfit:wght@300;400;600&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div id="nexus">
+        <header>
+            <div class="logo">VOX<span>SURE</span> / Forensic Audit</div>
+            <div class="status-pill" id="queue-status">RAM Safety: Active</div>
+        </header>
+
+        <main>
+            <section id="viewer-container">
+                <canvas id="vox-canvas"></canvas>
+                <div id="overlay-stats">
+                    <div class="stat-box">
+                        <label>Audit ID</label>
+                        <span id="audit-id">---</span>
+                    </div>
+                    <div class="stat-box">
+                        <label>Voxel Count</label>
+                        <span id="voxel-count">0</span>
+                    </div>
+                    <div class="stat-box">
+                        <label>Risk Level</label>
+                        <span id="risk-level">LOW</span>
+                    </div>
+                </div>
+            </section>
+
+            <aside id="control-panel">
+                <div class="panel-card glass">
+                    <h3>Asset Intake</h3>
+                    <p>Standardized digital twinning for comparison.</p>
+
+                    <div class="dual-intake">
+                        <div id="drop-zone-baseline" class="drop-zone mini">
+                            <span class="label">1. Baseline Asset</span>
+                            <span class="hint">How it should look</span>
+                            <input type="file" id="file-baseline" hidden accept=".obj,.stl,.png,.jpg,.jpeg">
+                        </div>
+
+                        <div id="drop-zone-damage" class="drop-zone mini">
+                            <span class="label">2. Post-Loss Asset</span>
+                            <span class="hint">Point of damage</span>
+                            <input type="file" id="file-damage" hidden accept=".obj,.stl,.png,.jpg,.jpeg">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="audit-controls" class="panel-card glass" style="display: none;">
+                    <h3>Audit Controls</h3>
+                    <button id="btn-compare" class="btn-primary" disabled>Generate Differential Audit</button>
+                    <div class="toggle-group">
+                        <label><input type="checkbox" id="toggle-baseline" checked> Show Baseline (Ghost)</label>
+                        <label><input type="checkbox" id="toggle-damage" checked> Show Post-Loss</label>
+                    </div>
+                </div>
+
+                <div class="panel-card glass audit-note">
+                    <h3>Why Voxelize?</h3>
+                    <p>Raw 3D evidence is messy. Our engine normalizes physical volume into high-resolution voxel grids,
+                        creating a tamper-proof "Digital Snapshot" for insurance adjusters.</p>
+                </div>
+
+                <div class="panel-card glass" id="metadata-panel">
+                    <h3>Claim Details</h3>
+                    <div class="input-group">
+                        <label>Asset Class</label>
+                        <input type="text" placeholder="e.g. Industrial Equipment">
+                    </div>
+                    <div class="input-group">
+                        <label>Assessed Value</label>
+                        <input type="text" placeholder="$0.00">
+                    </div>
+                    <button id="process-btn" disabled>Generate Forensic Scan</button>
+                </div>
+
+                <div id="progress-container" class="hidden">
+                    <div class="progress-bar">
+                        <div id="progress-fill"></div>
+                    </div>
+                    <p id="progress-text">Queueing Job...</p>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+    <script type="module" src="viewer.js"></script>
+    <script type="module" src="app.js"></script>
+</body>
+
+</html>

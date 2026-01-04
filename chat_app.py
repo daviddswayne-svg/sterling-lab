@@ -693,9 +693,13 @@ def run_app():
     if st.sidebar.button("System Health Check", use_container_width=True):
         try:
             r1_status = requests.get(f"{M1_OLLAMA}/api/ps").json()
-            st.sidebar.success("✅ M1 Weights Ready")
+            is_loaded = any(m['name'] == FRONTIER_MODEL for m in r1_status.get('models', []))
+            if is_loaded:
+                st.success("🟢 **M1 Link Active** (DeepSeek Loaded)")
+            else:
+                st.warning("🟡 M1 Online (Model Loading...)")
         except:
-            st.sidebar.warning("M1 Hub Offline")
+            st.error("🔴 M1 Link Offline")
 
     # Main Chat Interface
     st.title("🧬 2026 Frontier Lab")
