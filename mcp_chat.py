@@ -92,7 +92,12 @@ def execute_tool(name: str, args: dict, status_callback=None) -> dict:
                 result["error"] = "Exa API key not configured"
                 return result
 
-            from exa_py import Exa
+            try:
+                from exa_py import Exa
+            except ImportError:
+                result["error"] = "Exa library not installed"
+                return result
+
             exa = Exa(api_key=EXA_API_KEY)
 
             search_results = exa.search(
