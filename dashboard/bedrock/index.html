@@ -98,8 +98,9 @@
                 document.addEventListener('DOMContentLoaded', loadMarketAnalysis);
             </script>
 <!-- DYNAMIC AGENT UPDATE ZONE -->
+<div class="bento-grid">
 <div class="bento-visual card-glow">
-<img alt="Safe Haven" class="hero-image" src="/assets/bedrock_latest.png"/>
+<img alt="Safe Haven" class="hero-image" id="hero-image" src="/assets/bedrock_latest.png"/>
 </div>
 <!-- 2. Data Zone (Right) - PREVIOUSLY GRAPH, NOW INFO TEXT -->
 <div class="bento-data card-glow" style="background: linear-gradient(135deg, rgba(16, 24, 39, 0.8), rgba(0, 0, 0, 0.9)); border: 1px solid rgba(74, 144, 226, 0.2); padding: 1.5rem; display: flex; flex-direction: column; justify-content: center; gap: 1rem;">
@@ -152,8 +153,9 @@
                 document.addEventListener('DOMContentLoaded', cleanVitals);
                 setInterval(cleanVitals, 2000); // Check periodically for async updates
             </script>
+</div>
 <!-- 3. Strategy Zone (Bottom) - NOW INCLUDES GRAPH ON RIGHT -->
-<div class="bento-strategy card-glow">
+<div class="bento-strategy card-glow" style="margin-top: 1.5rem;">
 <!-- Left Content -->
 <div style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
 <h2 class="hero-title" id="strategy-title">Customized Risk Management Plans</h2>
@@ -169,7 +171,7 @@
 </div>
 </div>
 <!-- 4. Editorial Zone (Bottom Cards) -->
-<div class="bento-editorial">
+<div class="bento-editorial" style="margin-top: 1.5rem;">
 <div class="editorial-card">
 <h3 id="risk-title">Navigating Technological Disruptions</h3>
 <p id="risk-desc">Stay ahead of technological shifts that pose threats to your investments and assets. We provide insights and strategies to safeguard against cyber risks, data breaches, and other tech-related vulnerabilities.</p>
