@@ -11,3 +11,8 @@ venv/
 !chroma_db/chroma.sqlite3
 !bedrock_agents/data/chroma_bedrock_intel/chroma.sqlite3
 
+# User uploads (large 3D files)
+voxsure/backend/uploads/*.stl
+voxsure/backend/uploads/*.obj
+voxsure/backend/uploads/*.ply
+

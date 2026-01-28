@@ -1,0 +1,30 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+
+# User uploads (large files)
+voxsure/backend/uploads/*.stl
+voxsure/backend/uploads/*.obj
+voxsure/backend/uploads/*.ply
+
+# Test files
+*.test.py
+tests/
+
+# Documentation
+*.md
+!README.md
