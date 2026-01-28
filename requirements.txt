@@ -8,7 +8,7 @@ unstructured
 streamlit
 requests
 ollama
-exa-py
+exa-py==2.2.0
 pysqlite3-binary ; sys_platform == 'linux'
 streamlit-authenticator>=0.4.0
 flask
