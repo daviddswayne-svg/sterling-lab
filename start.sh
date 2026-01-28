@@ -55,54 +55,11 @@ mkdir -p /app/chroma_db_synthetic
 mkdir -p /app/bedrock_agents/data/chroma_bedrock_intel
 echo "✅ ChromaDB directories ready"
 
-# Step 6: RAG Ingestion (First Boot: Sync, Subsequent: Skip)
-echo "[6/8] Checking Knowledge Bases..."
-
-# First-boot detection: If DBs don't exist, run ingestion synchronously
-FIRST_BOOT=false
-
-# 1. Sterling Lab Public RAG (Synthetic)
-if [ -f "/app/chroma_db_synthetic/chroma.sqlite3" ]; then
-    echo "   [RAG] Public DB exists. Skipping ingestion."
-elif [ -f "/app/ingest_lab_knowledge.py" ]; then
-    echo "   [RAG] First boot detected. Ingesting Public Knowledge..."
-    FIRST_BOOT=true
-    python ingest_lab_knowledge.py 2>&1 | tee /tmp/ingest_public.log || {
-        echo "⚠️  Public Ingest Failed - Check /tmp/ingest_public.log"
-    }
-fi
-
-# 2. Sterling Estate Private RAG
-if [ -f "/app/ingest_sterling.py" ] && [ ! -f "/app/chroma_db_synthetic/chroma.sqlite3" ]; then
-    echo "   [RAG] Ingesting Estate Knowledge..."
-    python ingest_sterling.py 2>&1 | tee /tmp/ingest_estate.log || {
-        echo "⚠️  Estate Ingest Failed - Check /tmp/ingest_estate.log"
-    }
-fi
-
-# 3. Bedrock Insurance RAG (Swiss Re Sigma)
-if [ -f "/app/bedrock_agents/data/chroma_bedrock_intel/chroma.sqlite3" ]; then
-    echo "   [RAG] Bedrock DB exists. Skipping ingestion."
-elif [ -f "/app/bedrock_agents/ingest_sigma.py" ]; then
-    echo "   [RAG] First boot detected. Ingesting Bedrock (Sigma) Knowledge..."
-    FIRST_BOOT=true
-    python bedrock_agents/ingest_sigma.py 2>&1 | tee /tmp/ingest_bedrock.log || {
-        echo "⚠️  Bedrock Ingest Failed - Check /tmp/ingest_bedrock.log"
-    }
-fi
-
-if [ "$FIRST_BOOT" = true ]; then
-    echo "✅ First-boot ingestion complete. ChromaDB initialized."
-else
-    echo "✅ Using existing ChromaDB data."
-fi
-
-# Diagnostics (Background, non-blocking)
-(
-    echo "[BG] Running Diagnostics..."
-    python rag_diagnostics.py 2>&1 | tee /tmp/diagnostics.log || echo "⚠️  Diagnostic Warnings"
-    echo "✅ Background Diagnostics Complete"
-) &
+# Step 6: RAG Disabled - Using MCP Tools Instead
+echo "[6/8] RAG Ingestion Skipped (MCP Migration)"
+echo "   [INFO] ChromaDB/RAG has been replaced with MCP tools (Exa, GitHub)"
+echo "   [INFO] Main chat at /lab uses real-time web search"
+echo "✅ MCP-powered system ready"
 
 # Step 8: Start VoxSure Forensic Audit Services
 echo "[8/8] Starting VoxSure Forensic Audit Services..."

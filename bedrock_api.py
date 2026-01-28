@@ -1,8 +1,3 @@
-# pysqlite3 fix for Docker deployment
-__import__('pysqlite3')
-import sys
-sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
-
 from flask import Flask, request, jsonify, stream_with_context, Response
 from flask_cors import CORS
 import os
@@ -475,153 +470,22 @@ def antigravity_apply():
 
 @app.route('/api/antigravity/public/chat', methods=['POST'])
 def antigravity_public_chat():
-    """Public chat - Local Qwen RAG, rate-limited, read-only"""
-    try:
-        if not PUBLIC_CHAT_ENABLED:
-            return jsonify({"error": "Public chat is disabled"}), 403
-        
-        # Get client IP
-        client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
-        if ',' in client_ip:
-            client_ip = client_ip.split(',')[0].strip()
-        
-        # Check rate limit
-        if not check_rate_limit(client_ip):
-            return jsonify({
-                "error": "Rate limit exceeded",
-                "retry_after": 3600,
-                "message": "You've reached the message limit. Please try again in 1 hour."
-            }), 429
-        
-        data = request.json
-        if not data or 'message' not in data:
-            return jsonify({"error": "No message provided"}), 400
-        
-        user_message = data['message']
-        session_id = data.get('session_id', f'public_{client_ip}')
-        
-        # Get or create conversation history
-        if session_id not in public_chat_conversations:
-            public_chat_conversations[session_id] = []
-        
-        history = public_chat_conversations[session_id]
-        
-        def generate():
-            try:
-                # Load public ChromaDB
-                from langchain_chroma import Chroma
-                from langchain_ollama import OllamaEmbeddings
-                from ollama import Client
-                
-                chroma_path = os.path.join(os.path.dirname(__file__), 'chroma_db_public')
-                print(f"🔍 PUBLIC RAG: Loading ChromaDB from: {chroma_path}")
-                print(f"🔍 PUBLIC RAG: Path exists: {os.path.exists(chroma_path)}")
-                
-                embeddings = OllamaEmbeddings(model="nomic-embed-text", base_url=OLLAMA_HOST)
-                db = Chroma(persist_directory=chroma_path, embedding_function=embeddings)
-                
-                print(f"🔍 PUBLIC RAG: ChromaDB loaded successfully")
-                print(f"🔍 PUBLIC RAG: User question: '{user_message}'")
-                
-                # Retrieve relevant context - more documents for better coverage
-                relevant_docs = db.similarity_search(user_message, k=5)
-                context = "\n\n".join([doc.page_content for doc in relevant_docs])
-                
-                print(f"🔍 PUBLIC RAG: Retrieved {len(relevant_docs)} documents")
-                print(f"🔍 PUBLIC RAG: Context length: {len(context)} chars")
-                print(f"🔍 PUBLIC RAG: First 200 chars of context: {context[:200]}...")
-                
-                # Build conversation for Qwen
-                messages = [
-                    {
-                        "role": "system",
-                        "content": """You are an enthusiastic AI assistant for Swayne Systems AI Lab at swaynesystems.ai. You're proud of this cutting-edge platform and love highlighting its impressive capabilities.
+    """Public chat - Temporarily disabled during MCP migration"""
+    # RAG has been removed in favor of MCP tools
+    # Return a friendly message directing users to the main chat
+    def generate():
+        message = "Public chat is being upgraded to use our new MCP-powered system. Please visit the main chat at /lab for the full AI experience with real-time web search and tool capabilities!"
+        yield f"data: {json.dumps({'chunk': message})}\n\n"
+        yield f"data: {json.dumps({'done': True})}\n\n"
 
-CRITICAL: You have been provided with comprehensive documentation about the platform. ALWAYS check and use this documentation FIRST before providing general knowledge.
-
-Your knowledge base includes:
-- Platform features and capabilities
-- Deployment procedures
-- Technical architecture
-- How-to guides
-- FAQ and troubleshooting
-
-Personality:
-- Be genuinely enthusiastic about the platform's technology
-- Highlight impressive features: local AI (no external APIs!), dual Mac Studios, advanced RAG, multi-agent systems
-- Use phrases like "pretty cool," "cutting-edge," "powerful," "state-of-the-art"
-- Show excitement about running 70B+ models locally, Docker deployment, real-time streaming
-- Professional but not stuffy - like a knowledgeable friend showing off their impressive setup
-
-Response Guidelines:
-- Answer ONLY from the provided context when available
-- Be concise but engaging (2-3 paragraphs)
-- Naturally weave in why features are impressive when relevant
-- If asked about something not in your knowledge base, say so clearly
-
-YOU CANNOT:
-- Write or suggest code edits
-- Reveal credentials or sensitive details
-- Access admin features
-- Exaggerate or make things up if not in the knowledge base"""
-                    }
-                ]
-                
-                # Add recent history for context
-                for msg in history[-3:]:
-                    messages.append({
-                        "role": msg["role"],
-                        "content": msg["content"]
-                    })
-                
-                # Add current question with context
-                messages.append({
-                    "role": "user",
-                    "content": f"CONTEXT:\n{context}\n\nQUESTION: {user_message}"
-                })
-                
-                # Stream from Qwen
-                client = Client(host=OLLAMA_HOST)
-                response = client.chat(
-                    model='qwen2.5-coder:32b',
-                    messages=messages,
-                    stream=True
-                )
-                
-                full_response = ""
-                for chunk in response:
-                    if 'message' in chunk and 'content' in chunk['message']:
-                        text = chunk['message']['content']
-                        full_response += text
-                        yield f"data: {json.dumps({'chunk': text})}\n\n"
-                
-                # Save to history
-                history.append({"role": "user", "content": user_message})
-                history.append({"role": "assistant", "content": full_response})
-                
-                # Log usage
-                print(f"📊 Public RAG chat from {client_ip}: {len(full_response)} chars")
-                
-                yield f"data: {json.dumps({'done': True})}\n\n"
-                
-            except Exception as e:
-                print(f"❌ Public RAG chat error: {e}")
-                import traceback
-                traceback.print_exc()
-                yield f"data: {json.dumps({'error': 'Chat service temporarily unavailable'})}\n\n"
-        
-        return Response(
-            stream_with_context(generate()),
-            mimetype='text/event-stream',
-            headers={
-                'Cache-Control': 'no-cache',
-                'X-Accel-Buffering': 'no'
-            }
-        )
-    
-    except Exception as e:
-        print(f"❌ Error in public chat endpoint: {e}")
-        return jsonify({"error": str(e)}), 500
+    return Response(
+        stream_with_context(generate()),
+        mimetype='text/event-stream',
+        headers={
+            'Cache-Control': 'no-cache',
+            'X-Accel-Buffering': 'no'
+        }
+    )
 
 # === Session Token Management ===
 

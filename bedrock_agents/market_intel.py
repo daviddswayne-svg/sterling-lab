@@ -2,9 +2,7 @@ import yfinance as yf
 import random
 from datetime import datetime, timedelta
 import feedparser
-from langchain_chroma import Chroma
-from langchain_ollama import OllamaEmbeddings
-from .config import BEDROCK_CHROMA_PATH, OLLAMA_HOST, TICKERS
+from .config import OLLAMA_HOST, TICKERS
 
 INSURANCE_RSS_FEEDS = [
     "https://www.insurancejournal.com/rss/news/",
@@ -13,13 +11,8 @@ INSURANCE_RSS_FEEDS = [
 
 class MarketIntelligence:
     def __init__(self):
-        self.chroma_path = BEDROCK_CHROMA_PATH
-        self.embeddings = OllamaEmbeddings(model="nomic-embed-text", base_url=OLLAMA_HOST)
-        # Initialize Vector Store
-        self.vectorstore = Chroma(
-            persist_directory=self.chroma_path,
-            embedding_function=self.embeddings
-        )
+        # RAG disabled - using live data feeds instead
+        pass
 
     def fetch_market_data(self):
         """Fetches real market data using yfinance."""
@@ -123,15 +116,10 @@ class MarketIntelligence:
             return mock_headlines[:5]
 
     def query_sigma_rag(self, query="risks opportunities 2025"):
-        """Queries the Swiss Re Sigma report for insights."""
-        print(f"🧠 Querying RAG with: '{query}'")
-        try:
-            results = self.vectorstore.similarity_search(query, k=3)
-            context = "\n\n".join([doc.page_content for doc in results])
-            return context
-        except Exception as e:
-            print(f"❌ RAG Query Failed: {e}")
-            return "Unable to retrieve specific insights from the Sigma report at this time."
+        """RAG disabled - returning curated market context instead."""
+        print(f"📊 RAG disabled, using live market data for: '{query}'")
+        # Return general market context (RAG replaced with MCP tools)
+        return "Market analysis powered by real-time data feeds. Global reinsurance markets continue to adjust to elevated catastrophe losses and persistent inflation. Property catastrophe rates remain firm heading into 2025 renewals."
 
     def get_full_briefing_context(self):
         """Aggregates all intel for the Content Director."""

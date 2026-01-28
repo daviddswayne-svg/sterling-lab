@@ -1,19 +1,47 @@
 import os
 import shutil
-from langchain_community.document_loaders import TextLoader,  UnstructuredMarkdownLoader, UnstructuredEmailLoader
+from langchain_community.document_loaders import TextLoader
 from langchain_community.document_loaders.csv_loader import CSVLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_ollama import OllamaEmbeddings
 from langchain_chroma import Chroma
+from langchain.schema import Document
 
 # Determine script directory to safely locate files
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
+# Simple loaders to avoid heavy 'unstructured' dependency
+def load_markdown(file_path):
+    """Load markdown file as plain text document"""
+    with open(file_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+    return [Document(page_content=content, metadata={"source": file_path})]
+
+def load_email(file_path):
+    """Load .eml file using Python's email module"""
+    import email
+    from email import policy
+    with open(file_path, 'rb') as f:
+        msg = email.message_from_binary_file(f, policy=policy.default)
+
+    # Extract text content
+    body = ""
+    if msg.is_multipart():
+        for part in msg.walk():
+            if part.get_content_type() == "text/plain":
+                body += part.get_content()
+    else:
+        body = msg.get_content()
+
+    # Include headers for context
+    content = f"From: {msg['from']}\nTo: {msg['to']}\nSubject: {msg['subject']}\nDate: {msg['date']}\n\n{body}"
+    return [Document(page_content=content, metadata={"source": file_path})]
+
 DATA_FILES = [
     (os.path.join(SCRIPT_DIR, "Last_Will_2020.txt"), TextLoader),
     (os.path.join(SCRIPT_DIR, "Assets_Estimate.csv"), CSVLoader),
-    (os.path.join(SCRIPT_DIR, "Secret_Email.eml"), UnstructuredEmailLoader),
-    (os.path.join(SCRIPT_DIR, "Groundskeeper_Log.md"), UnstructuredMarkdownLoader),
+    (os.path.join(SCRIPT_DIR, "Secret_Email.eml"), load_email),
+    (os.path.join(SCRIPT_DIR, "Groundskeeper_Log.md"), load_markdown),
 ]
 CHROMA_PATH = os.path.join(SCRIPT_DIR, "chroma_db_synthetic")
 EMBEDDING_MODEL = "nomic-embed-text"  # Must match chat_app.py
@@ -33,12 +61,18 @@ def ingest_data():
 
     print("--- 1. Loading Documents ---")
     documents = []
-    for filename, LoaderClass in DATA_FILES:
+    for filename, loader in DATA_FILES:
         if os.path.exists(filename):
             print(f"Loading {filename}...")
             try:
-                loader = LoaderClass(filename)
-                documents.extend(loader.load())
+                # Handle both class-based loaders and function-based loaders
+                if callable(loader) and not isinstance(loader, type):
+                    # It's a function (load_markdown, load_email)
+                    documents.extend(loader(filename))
+                else:
+                    # It's a class (TextLoader, CSVLoader)
+                    loader_instance = loader(filename)
+                    documents.extend(loader_instance.load())
             except Exception as e:
                 print(f"Error loading {filename}: {e}")
         else:

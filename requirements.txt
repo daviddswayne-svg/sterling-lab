@@ -1,32 +1,38 @@
-langchain==0.3.12
-langchain-chroma==0.1.4
+# === Core LangChain (minimal - no ChromaDB/RAG) ===
 langchain-ollama==0.2.0
 langchain-community==0.3.12
 langchain-core==0.3.25
-langchain-text-splitters==0.3.3
-unstructured
+
+# === Web Framework ===
 streamlit
-requests
-ollama
-exa-py==2.2.0
-pysqlite3-binary ; sys_platform == 'linux'
 streamlit-authenticator>=0.4.0
 flask
 flask-cors
-google-generativeai>=0.3.0
-yfinance==0.2.40
-matplotlib
-seaborn
-pandas
-pypdf
-feedparser
-beautifulsoup4
-lxml
-trimesh
-pillow
-numpy
 fastapi
 uvicorn
 python-multipart
-scipy
-scikit-image
+
+# === LLM Clients ===
+ollama
+google-generativeai>=0.3.0
+exa-py==2.2.0
+
+# === Data & Documents ===
+pandas
+pypdf
+beautifulsoup4
+lxml
+feedparser
+# pysqlite3-binary removed (was only needed for ChromaDB)
+
+# === Bedrock Agents (Market/News) ===
+yfinance==0.2.40
+matplotlib
+
+# === VoxSure 3D Processing ===
+trimesh
+pillow
+numpy
+
+# === HTTP ===
+requests
