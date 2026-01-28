@@ -25,8 +25,11 @@ OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://host.docker.internal:11434")
 M1_OLLAMA = os.getenv("M1_OLLAMA", "http://host.docker.internal:12434")
 
 # Models
-TOOL_MODEL = "llama3.3"  # Smart model for tool-calling decisions
+TOOL_MODEL = "qwen2.5:14b"  # Fast model for tool-calling decisions
 SYNTH_MODEL = "gemma2:27b"  # Fast model for synthesizing responses
+
+# User Info
+GITHUB_USERNAME = "daviddswayne-svg"
 
 # API Keys (loaded from environment)
 EXA_API_KEY = os.getenv("EXA_API_KEY", "")
@@ -318,7 +321,7 @@ def main():
         st.sidebar.markdown("❌ **Exa Search** - Key missing")
 
     if GITHUB_TOKEN:
-        st.sidebar.markdown("✅ **GitHub** - Repo & commit access")
+        st.sidebar.markdown(f"✅ **GitHub** - `{GITHUB_USERNAME}`")
     else:
         st.sidebar.markdown("❌ **GitHub** - Token missing")
 
