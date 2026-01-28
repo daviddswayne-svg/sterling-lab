@@ -365,8 +365,8 @@ How can I help you today?"""
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
-            # Show tool trace if present
-            if "tool_trace" in message:
+            # Show tool trace if present and not None
+            if message.get("tool_trace"):
                 with st.expander("🔧 Agent Actions", expanded=False):
                     for action in message["tool_trace"]:
                         status_icon = "✅" if action["success"] else "❌"
