@@ -389,8 +389,8 @@ How can I help you today?"""
 
             with st.status("🤖 Agent thinking...", expanded=True) as status:
                 try:
-                    # Call Llama 3.3 with tools
-                    status.write("📤 Sending to Llama 3.3...")
+                    # Call tool model for decision
+                    status.write(f"📤 Sending to {TOOL_MODEL}...")
 
                     client = Client(host=OLLAMA_HOST)
                     response = client.chat(
