@@ -83,10 +83,10 @@ class PhotoDesigner:
             
             # Fallback parsing if strict format fails
             if not positive_prompt: positive_prompt = content
-            
-            # Enhance prompt with slogan for Flux
-            if slogan:
-                positive_prompt += f', the text "{slogan}" is written in large, bold, modern, cinematic 3D typography superimposed in the center'
+
+            # Enhance prompt with slogan for Flux (50% chance to include text)
+            if slogan and random.random() > 0.5:
+                positive_prompt += f', the text "{slogan}" is written in clean, bold, white sans-serif font centered on the image'
             
             # HARDCODED AESTHETIC: Mixed-media hybrid style
             aesthetic_suffix = (
@@ -121,11 +121,9 @@ class PhotoDesigner:
 
     def _queue_comfyui(self, positive_prompt, category):
         """Standard ComfyUI API Workflow."""
-        # ... (Existing ComfyUI logic) ...
-        # Generating a random seed
         seed = random.randint(1, 1000000000)
         
-        # Flux.1 [dev] Workflow
+        # Flux.1 [dev] Workflow (RESTORED TO KNOWN GOOD)
         payload = {
             "prompt": {
                 "3": {
@@ -155,7 +153,7 @@ class PhotoDesigner:
                 "7": {
                     "class_type": "CLIPTextEncode",
                     "inputs": {
-                        "text": self.prompts["negative_prompt"], # Flux doesn't use neg prompt much, but BasicGuider takes it
+                        "text": self.prompts["negative_prompt"], 
                         "clip": ["11", 0]
                     }
                 },
@@ -198,7 +196,7 @@ class PhotoDesigner:
                 },
                 "14": {
                     "class_type": "RandomNoise",
-                    "inputs": {"noise_seed": random.randint(1, 1000000000)}
+                    "inputs": {"noise_seed": seed}
                 },
                 "15": {
                     "class_type": "BasicGuider",
