@@ -48,12 +48,34 @@ class PublishingManager:
                     changes_count = 0
                     
                     for key, new_text in content_updates.items():
+                        # Handle Asset Updates (Image/Video) specifically
+                        if key == "hero_image":
+                            element = soup.find(id="hero-image")
+                            if element:
+                                element['src'] = new_text
+                                element['style'] = "display: block;"
+                                print(f"   🎬 Hero Image updated: {new_text}")
+                                changes_count += 1
+                            continue
+                        
+                        if key == "hero_video":
+                            video_el = soup.find(id="hero-video")
+                            img_el = soup.find(id="hero-image")
+                            if video_el and img_el:
+                                # Update Source tag
+                                source = video_el.find("source")
+                                if source:
+                                    source['src'] = new_text
+                                    video_el['style'] = "display: block; width:100%; height:100%; object-fit:cover;"
+                                    img_el['style'] = "display: none;"
+                                    print(f"   🎥 Hero Video activated: {new_text}")
+                                    changes_count += 1
+                            continue
+
                         target_id = id_map.get(key)
                         if target_id:
                             element = soup.find(id=target_id)
                             if element:
-                                # Update text content while preserving any potential nested tags if we wanted,
-                                # but here we are replacing content.
                                 element.string = new_text
                                 print(f"   ✅ Updated #{target_id}")
                                 changes_count += 1
@@ -100,8 +122,9 @@ class PublishingManager:
                 # Pull first
                 subprocess.run(["git", "pull", "origin", GIT_BRANCH], cwd=repo_dir, check=False)
                 
-                # Add
+                # Add HTML and generated image
                 subprocess.run(["git", "add", "dashboard/bedrock/index.html"], cwd=repo_dir, check=True)
+                subprocess.run(["git", "add", "dashboard/assets/bedrock_latest.png"], cwd=repo_dir, check=False)
                 
                 # Commit
                 subprocess.run(["git", "commit", "-m", f"Bedrock Insurance Auto-Update: {theme}"], cwd=repo_dir, check=True)
