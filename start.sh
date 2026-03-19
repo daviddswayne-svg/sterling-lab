@@ -44,6 +44,16 @@ streamlit run chat_app.py \
     2>&1 | tee /tmp/streamlit.log &
 STREAMLIT_PID=$!
 
+# Step 3b: Start ESC Family History Explorer on port 8502
+echo "[3b/8] Starting ESC Chat on port 8502..."
+streamlit run esc_chat.py \
+    --server.port=8502 \
+    --server.address=0.0.0.0 \
+    --server.headless=true \
+    --server.baseUrlPath=/esc \
+    2>&1 | tee /tmp/esc_chat.log &
+ESC_PID=$!
+
 # Step 4: Start Bedrock Chat API
 echo "[4/8] Starting Bedrock Chat API..."
 python bedrock_api.py 2>&1 | tee /tmp/bedrock_api.log &
@@ -71,7 +81,8 @@ echo "✅ VoxSure Services started (PID: $VOXSURE_PID)"
 # Step 9: Wait/Monitor
 echo "[9/9] System started. Monitoring PIDs..."
 echo "      Nginx: $NGINX_PID"
-echo "      Streamlit: $STREAMLIT_PID"  
+echo "      Streamlit: $STREAMLIT_PID"
+echo "      ESC Chat: $ESC_PID"
 echo "      API: $API_PID"
 echo "      VoxSure: $VOXSURE_PID"
 echo ""
