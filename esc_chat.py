@@ -211,7 +211,7 @@ def render_image_grid(image_ids: list[int]):
 
 
 def render_photo_browser(image_data: list[dict], msg_idx: int):
-    """Lazy-loading photo browser: shows all mac_paths with thumbnails, 25 at a time."""
+    """Lazy-loading photo gallery: 4-column thumbnail grid, 25 at a time. Skips off-disk images."""
     if not image_data:
         return
 
@@ -222,29 +222,33 @@ def render_photo_browser(image_data: list[dict], msg_idx: int):
     total = len(image_data)
     shown = min(st.session_state[count_key], total)
 
-    with st.expander(f"📁 All photos — {total} file paths", expanded=False):
+    COLS = 4
+    with st.expander(f"📷 Photos — {total} found", expanded=True):
+        rendered = 0
+        grid_cols = None
         for item in image_data[:shown]:
             img_id = item["id"]
-            mac_path = item.get("mac_path") or f"ID {img_id}"
             thumb = fetch_thumbnail(img_id)
-            col1, col2 = st.columns([1, 5])
-            with col1:
-                if thumb:
-                    st.image(thumb, width=70)
-                    with st.popover("🔍"):
-                        large = fetch_large_image(img_id)
-                        if large:
-                            st.image(large, use_container_width=True)
-                            st.caption(mac_path)
-                else:
-                    st.caption("no img")
-            with col2:
-                st.code(mac_path, language=None)
+            if thumb is None:
+                continue  # skip images not on disk
+            if rendered % COLS == 0:
+                grid_cols = st.columns(COLS)
+            with grid_cols[rendered % COLS]:
+                st.image(thumb, use_container_width=True)
+                with st.popover("🔍", use_container_width=True):
+                    large = fetch_large_image(img_id)
+                    if large:
+                        st.image(large, use_container_width=True)
+            rendered += 1
 
-        st.caption(f"Showing {shown} of {total}")
+        if rendered == 0:
+            st.caption("No images found on disk for this query.")
+        else:
+            st.caption(f"Showing {rendered} of {total}")
+
         if shown < total:
             remaining = total - shown
-            if st.button(f"Load 25 more  ({remaining} remaining)", key=f"load_more_{msg_idx}"):
+            if st.button(f"Load 25 more ({remaining} remaining)", key=f"load_more_{msg_idx}"):
                 st.session_state[count_key] = shown + 25
                 st.rerun()
 
