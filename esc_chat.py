@@ -459,7 +459,7 @@ Ask questions about the Swayne family database in plain English — I'll query 1
 
 🏔️ **"Climbing trips" vs "trips"** — saying *"climbing trips"* filters to officially tagged climbing expeditions (more accurate for elevation queries). *"Trips"* is broader and includes everything.
 
-👤 **Shared names** — *"Mike"* means **Michael Dennis Swayne**. *"Michael"* means **Michael Thomas Swayne**. *"Elizabeth"* could be **Elizabeth Brown "Lillie" Swayne** or **Elizabeth Ann Swayne** — please be specific.
+👤 **Names & nicknames** — *"Mike"* = Michael Dennis Swayne · *"Michael"* = Michael Thomas Swayne · *"Dave"* = David · *"Don"* = Donald · *"Lillie"* = Elizabeth Brown Swayne · *"Liz"* = Elizabeth Ann Swayne. Say *"Elizabeth"* alone and I'll ask which one.
 
 📅 **Decades work naturally** — "trips in the 1970s," "photos from the 1990s," "species photographed in the 1960s" all work as expected."""
         st.session_state.messages.append({"role": "assistant", "content": welcome})
