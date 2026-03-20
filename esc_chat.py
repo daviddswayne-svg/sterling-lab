@@ -106,8 +106,9 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
+@st.cache_data(ttl=3600, show_spinner=False)
 def fetch_thumbnail(image_id: int) -> bytes | None:
-    """Fetch a thumbnail (400px) from the ESC image endpoint."""
+    """Fetch a thumbnail (400px). Cached so reruns on Load More don't re-fetch."""
     try:
         r = requests.get(f"{ESC_API_URL}/image/{image_id}", params={"size": "thumb"}, timeout=10)
         if r.status_code == 200:
@@ -117,8 +118,9 @@ def fetch_thumbnail(image_id: int) -> bytes | None:
     return None
 
 
+@st.cache_data(ttl=3600, show_spinner=False)
 def fetch_large_image(image_id: int) -> bytes | None:
-    """Fetch a large (1200px) version of an image for lightbox display."""
+    """Fetch a large (1200px) version. Cached for fast repeat opens."""
     try:
         r = requests.get(f"{ESC_API_URL}/image/{image_id}", params={"size": "large"}, timeout=20)
         if r.status_code == 200:
@@ -206,6 +208,45 @@ def render_image_grid(image_ids: list[int]):
                             st.image(large, caption=name, use_container_width=True)
                 with col2:
                     st.code(path, language=None)
+
+
+def render_photo_browser(image_data: list[dict], msg_idx: int):
+    """Lazy-loading photo browser: shows all mac_paths with thumbnails, 25 at a time."""
+    if not image_data:
+        return
+
+    count_key = f"shown_{msg_idx}"
+    if count_key not in st.session_state:
+        st.session_state[count_key] = 25
+
+    total = len(image_data)
+    shown = min(st.session_state[count_key], total)
+
+    with st.expander(f"📁 All photos — {total} file paths", expanded=False):
+        for item in image_data[:shown]:
+            img_id = item["id"]
+            mac_path = item.get("mac_path") or f"ID {img_id}"
+            thumb = fetch_thumbnail(img_id)
+            col1, col2 = st.columns([1, 5])
+            with col1:
+                if thumb:
+                    st.image(thumb, width=70)
+                    with st.popover("🔍"):
+                        large = fetch_large_image(img_id)
+                        if large:
+                            st.image(large, use_container_width=True)
+                            st.caption(mac_path)
+                else:
+                    st.caption("no img")
+            with col2:
+                st.code(mac_path, language=None)
+
+        st.caption(f"Showing {shown} of {total}")
+        if shown < total:
+            remaining = total - shown
+            if st.button(f"Load 25 more  ({remaining} remaining)", key=f"load_more_{msg_idx}"):
+                st.session_state[count_key] = shown + 25
+                st.rerun()
 
 
 def fetch_stats():
@@ -393,13 +434,17 @@ Ask questions about the Swayne family database in plain English — I'll query 1
         st.session_state.messages.append({"role": "assistant", "content": welcome})
 
     # Display chat history
-    for message in st.session_state.messages:
+    for msg_idx, message in enumerate(st.session_state.messages):
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
-            # Image grid (replayed from stored image_ids)
+            # Image grid (top 12)
             if message.get("image_ids"):
                 render_image_grid(message["image_ids"])
+
+            # Photo browser (all images, lazy-loaded)
+            if message.get("image_data"):
+                render_photo_browser(message["image_data"], msg_idx)
 
             # Show SQL trace if present
             if message.get("sql_trace"):
@@ -433,10 +478,16 @@ Ask questions about the Swayne family database in plain English — I'll query 1
                 if result:
                     st.markdown(result["response"])
 
-                    # Photos mode: show image grid
+                    # Photos mode: top 12 grid
                     image_ids = result.get("image_ids", [])
                     if image_ids and mode == "photos":
                         render_image_grid(image_ids)
+
+                    # Photos mode: full lazy-loading browser
+                    image_data = result.get("image_data", []) if mode == "photos" else []
+                    new_msg_idx = len(st.session_state.messages)
+                    if image_data:
+                        render_photo_browser(image_data, new_msg_idx)
 
                     # Show SQL/tool trace (collapsed by default)
                     sql_trace = result.get("sql_trace", [])
@@ -461,6 +512,7 @@ Ask questions about the Swayne family database in plain English — I'll query 1
                         "content": result["response"],
                         "sql_trace": sql_trace,
                         "image_ids": image_ids if mode == "photos" else [],
+                        "image_data": image_data,
                     })
                 else:
                     error_msg = "Failed to get a response from the ESC API. Is the Mac Studio connected?"
