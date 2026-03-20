@@ -388,18 +388,6 @@ def main():
         else:
             st.sidebar.caption("qwen3 status unknown")
 
-    # Database stats
-    stats = fetch_stats()
-    if stats:
-        st.sidebar.markdown("---")
-        st.sidebar.subheader("Database")
-        st.sidebar.metric("Photos", f"{stats.get('photos', 0):,}")
-        col1, col2 = st.sidebar.columns(2)
-        col1.metric("People", f"{stats.get('people', 0):,}")
-        col2.metric("Trips", f"{stats.get('trips', 0):,}")
-        col1, col2 = st.sidebar.columns(2)
-        col1.metric("Geo Features", f"{stats.get('geo_features', 0):,}")
-        col2.metric("Species", f"{stats.get('species', 0):,}")
 
     # Stop / Clear buttons
     st.sidebar.markdown("---")
@@ -471,7 +459,7 @@ Ask questions about the Swayne family database in plain English — I'll query 1
 
 🏔️ **"Climbing trips" vs "trips"** — saying *"climbing trips"* filters to officially tagged climbing expeditions (more accurate for elevation queries). *"Trips"* is broader and includes everything.
 
-👤 **Shared names** — "Michael" could be Dad (Mike) or brother, and "Elizabeth" could be Mom or sister. Use *"Dad," "Mom," "my brother,"* or *"my sister"* to be specific, or I'll ask you to clarify.
+👤 **Shared names** — *"Mike"* means **Michael Dennis Swayne**. *"Michael"* means **Michael Thomas Swayne**. *"Elizabeth"* could be **Elizabeth Brown "Lillie" Swayne** or **Elizabeth Ann Swayne** — please be specific.
 
 📅 **Decades work naturally** — "trips in the 1970s," "photos from the 1990s," "species photographed in the 1960s" all work as expected."""
         st.session_state.messages.append({"role": "assistant", "content": welcome})
