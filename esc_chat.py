@@ -130,8 +130,9 @@ def fetch_large_image(image_id: int) -> bytes | None:
     return None
 
 
+@st.cache_data(ttl=3600, show_spinner=False)
 def fetch_image_meta(image_id: int) -> dict | None:
-    """Fetch image metadata (filename, date, people, location)."""
+    """Fetch image metadata (filename, date, people, location). Cached so Load More is instant."""
     try:
         r = requests.get(f"{ESC_API_URL}/image/{image_id}/meta", timeout=5)
         if r.status_code == 200:
@@ -210,6 +211,39 @@ def render_image_grid(image_ids: list[int]):
                     st.code(path, language=None)
 
 
+def _photo_caption(meta: dict | None, img_id: int) -> str:
+    """Build a short 1-line caption: filename + year."""
+    if not meta:
+        return f"ID {img_id}"
+    name = meta.get("filename") or f"ID {img_id}"
+    date = meta.get("date") or ""
+    year = ""
+    if len(date) >= 8:
+        yr = int(date[6:8])
+        year = f"  {'20' if yr <= 26 else '19'}{yr:02d}"
+    return f"{name}{year}"
+
+
+def _photo_popover_content(large_bytes: bytes | None, meta: dict | None):
+    """Render large image + metadata inside a popover."""
+    if large_bytes:
+        st.image(large_bytes, use_container_width=True)
+    if meta:
+        parts = []
+        if meta.get("trip"):
+            parts.append(f"**Trip:** {meta['trip']}")
+        people = meta.get("people", [])
+        if people:
+            parts.append(f"**People:** {', '.join(people)}")
+        locs = meta.get("locations", [])
+        if locs:
+            parts.append(f"**Location:** {', '.join(locs[:2])}")
+        if meta.get("quality"):
+            parts.append(f"**Quality:** {meta['quality']}")
+        if parts:
+            st.markdown("  \n".join(parts))
+
+
 def render_photo_browser(image_data: list[dict], msg_idx: int):
     """Lazy-loading photo gallery: 4-column thumbnail grid, 25 at a time. Skips off-disk images."""
     if not image_data:
@@ -231,14 +265,16 @@ def render_photo_browser(image_data: list[dict], msg_idx: int):
             thumb = fetch_thumbnail(img_id)
             if thumb is None:
                 continue  # skip images not on disk
+            meta = fetch_image_meta(img_id)
             if rendered % COLS == 0:
                 grid_cols = st.columns(COLS)
             with grid_cols[rendered % COLS]:
                 st.image(thumb, use_container_width=True)
+                caption = _photo_caption(meta, img_id)
                 with st.popover("🔍", use_container_width=True):
                     large = fetch_large_image(img_id)
-                    if large:
-                        st.image(large, use_container_width=True)
+                    _photo_popover_content(large, meta)
+                st.caption(caption)
             rendered += 1
 
         if rendered == 0:
