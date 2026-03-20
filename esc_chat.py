@@ -179,7 +179,7 @@ def render_image_grid(image_ids: list[int]):
                     caption_parts.append(loc[0])
                 caption = "  ·  ".join(caption_parts)
                 if meta.get("mac_path"):
-                    mac_paths.append((name, meta["mac_path"]))
+                    mac_paths.append((img_id, name, meta["mac_path"], thumb_bytes))
             else:
                 caption = f"Image {img_id}"
 
@@ -193,11 +193,19 @@ def render_image_grid(image_ids: list[int]):
 
     st.caption(f"Showing {len(items)} of {len(image_ids)} photo{'s' if len(image_ids) != 1 else ''} found")
 
-    # Mac path expander
+    # Mac path expander — thumbnail + 🔍 popover + copyable path
     if mac_paths:
         with st.expander(f"📁 File paths ({len(mac_paths)})", expanded=False):
-            for name, path in mac_paths:
-                st.code(path, language=None)
+            for img_id, name, path, thumb_bytes in mac_paths:
+                col1, col2 = st.columns([1, 4])
+                with col1:
+                    st.image(thumb_bytes, width=70)
+                    with st.popover("🔍"):
+                        large = fetch_large_image(img_id)
+                        if large:
+                            st.image(large, caption=name, use_container_width=True)
+                with col2:
+                    st.code(path, language=None)
 
 
 def fetch_stats():
