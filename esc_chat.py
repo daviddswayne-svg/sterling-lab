@@ -8,6 +8,7 @@ import requests
 import json
 import os
 from io import BytesIO
+from pathlib import Path
 
 # === CONFIGURATION ===
 ESC_API_URL = os.getenv("ESC_API_URL", "http://localhost:8002")
@@ -388,6 +389,17 @@ def main():
         else:
             st.sidebar.caption("qwen3 status unknown")
 
+
+    # Database schema diagram
+    schema_path = Path(__file__).parent / "ESC-Swayne-Database.png"
+    if schema_path.exists():
+        st.sidebar.markdown("---")
+        st.sidebar.markdown("**Database Schema**")
+        with open(schema_path, "rb") as f:
+            schema_bytes = f.read()
+        st.sidebar.image(schema_bytes, use_container_width=True)
+        with st.sidebar.popover("🔍 Full size", use_container_width=True):
+            st.image(schema_bytes, caption="ESC Swayne Database Schema", use_container_width=True)
 
     # Stop / Clear buttons
     st.sidebar.markdown("---")
