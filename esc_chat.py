@@ -11,7 +11,7 @@ from io import BytesIO
 
 # === CONFIGURATION ===
 ESC_API_URL = os.getenv("ESC_API_URL", "http://localhost:8002")
-REQUEST_TIMEOUT = 300  # seconds — Qwen queries typically take 60-200s
+REQUEST_TIMEOUT = 600  # seconds — Qwen queries typically take 60-200s; 600s safety net
 
 # === STREAMLIT UI ===
 st.set_page_config(
