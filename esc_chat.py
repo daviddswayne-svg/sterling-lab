@@ -321,6 +321,8 @@ def main():
     if st.session_state.active_mode != mode:
         st.session_state.active_mode = mode
         st.session_state.messages = []
+        st.session_state.thinking = False
+        st.session_state.pop("pending_prompt", None)
         st.rerun()
 
     # Connection status
@@ -332,18 +334,19 @@ def main():
     else:
         st.sidebar.error("Mac Studio M3 Offline")
 
-    # Model status
-    model_info = fetch_model_status()
-    model_state = model_info.get("status", "unknown")
-    if model_state == "ready":
-        st.sidebar.success("qwen3:32b Ready")
-    elif model_state == "busy":
+    # Model status — use session flag while blocked so sidebar updates immediately
+    if st.session_state.get("thinking", False):
         st.sidebar.info("qwen3:32b Thinking...")
-    elif model_state == "idle":
-        st.sidebar.warning("qwen3:32b Not Loaded")
-        st.sidebar.caption("First query will take ~60s to load")
     else:
-        st.sidebar.caption("qwen3 status unknown")
+        model_info = fetch_model_status()
+        model_state = model_info.get("status", "unknown")
+        if model_state == "ready":
+            st.sidebar.success("qwen3:32b Ready")
+        elif model_state == "idle":
+            st.sidebar.warning("qwen3:32b Not Loaded")
+            st.sidebar.caption("First query will take ~60s to load")
+        else:
+            st.sidebar.caption("qwen3 status unknown")
 
     # Database stats
     stats = fetch_stats()
@@ -450,37 +453,27 @@ Ask questions about the Swayne family database in plain English — I'll query 1
                         if trace.get("result_preview"):
                             st.markdown(trace["result_preview"][:300])
 
-    # Chat input placeholder varies by mode
-    input_placeholder = "Ask about a journal or trip..." if mode == "journals" else "Ask about the family history..."
-    if prompt := st.chat_input(input_placeholder):
-        # Add user message
-        st.session_state.messages.append({"role": "user", "content": prompt})
-        with st.chat_message("user"):
-            st.markdown(prompt)
-
-        # Generate response
+    # Handle pending prompt — runs after history renders so user msg is visible first
+    spinner_text = "Retrieving journal..." if mode == "journals" else "Querying the database..."
+    if st.session_state.get("pending_prompt"):
+        prompt = st.session_state.pop("pending_prompt")
         with st.chat_message("assistant"):
-            spinner_text = "Retrieving journal..." if mode == "journals" else "Querying the database..."
             with st.spinner(spinner_text):
-                # Build history for API (just role + content)
                 history = [
                     {"role": m["role"], "content": m["content"]}
                     for m in st.session_state.messages[:-1]
                     if m["role"] in ("user", "assistant")
                 ]
-
                 result = send_chat(prompt, history, mode=mode)
 
                 if result:
                     st.markdown(result["response"])
 
-                    # Photos mode: full lazy-loading browser
                     image_data = result.get("image_data", []) if mode == "photos" else []
                     new_msg_idx = len(st.session_state.messages)
                     if image_data:
                         render_photo_browser(image_data, new_msg_idx)
 
-                    # Show SQL/tool trace (collapsed by default)
                     sql_trace = result.get("sql_trace", [])
                     trace_label = "Journal Queries" if mode == "journals" else "SQL Queries"
                     if sql_trace:
@@ -502,13 +495,23 @@ Ask questions about the Swayne family database in plain English — I'll query 1
                         "role": "assistant",
                         "content": result["response"],
                         "sql_trace": sql_trace,
-                        "image_ids": image_ids if mode == "photos" else [],
+                        "image_ids": result.get("image_ids", []),
                         "image_data": image_data,
                     })
                 else:
                     error_msg = "Failed to get a response from the ESC API. Is the Mac Studio connected?"
                     st.error(error_msg)
                     st.session_state.messages.append({"role": "assistant", "content": error_msg})
+
+        st.session_state.thinking = False
+
+    # Chat input — set pending state and rerun so sidebar shows "Thinking..." immediately
+    input_placeholder = "Ask about a journal or trip..." if mode == "journals" else "Ask about the family history..."
+    if prompt := st.chat_input(input_placeholder):
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        st.session_state.thinking = True
+        st.session_state.pending_prompt = prompt
+        st.rerun()
 
 
 if __name__ == "__main__":
