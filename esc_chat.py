@@ -107,13 +107,20 @@ st.markdown("""
 
 
 def fetch_thumbnail(image_id: int) -> bytes | None:
-    """Fetch a thumbnail from the ESC image endpoint. Returns bytes or None."""
+    """Fetch a thumbnail (400px) from the ESC image endpoint."""
     try:
-        r = requests.get(
-            f"{ESC_API_URL}/image/{image_id}",
-            params={"size": "thumb"},
-            timeout=10,
-        )
+        r = requests.get(f"{ESC_API_URL}/image/{image_id}", params={"size": "thumb"}, timeout=10)
+        if r.status_code == 200:
+            return r.content
+    except Exception:
+        pass
+    return None
+
+
+def fetch_large_image(image_id: int) -> bytes | None:
+    """Fetch a large (1200px) version of an image for lightbox display."""
+    try:
+        r = requests.get(f"{ESC_API_URL}/image/{image_id}", params={"size": "large"}, timeout=20)
         if r.status_code == 200:
             return r.content
     except Exception:
@@ -152,6 +159,7 @@ def render_image_grid(image_ids: list[int]):
 
     # 3-column grid
     cols = st.columns(3)
+    mac_paths = []
     for i, (img_id, thumb_bytes, meta) in enumerate(items):
         with cols[i % 3]:
             # Build caption: filename + year
@@ -170,25 +178,26 @@ def render_image_grid(image_ids: list[int]):
                 if loc:
                     caption_parts.append(loc[0])
                 caption = "  ·  ".join(caption_parts)
+                if meta.get("mac_path"):
+                    mac_paths.append((name, meta["mac_path"]))
             else:
                 caption = f"Image {img_id}"
 
-            # Expand to full size in a popover
-            with st.popover("", use_container_width=True):
-                full = fetch_thumbnail(img_id)  # reuse thumb for now — swap for full later
-                if full:
-                    st.image(full, caption=caption, use_container_width=True)
-                    if meta:
-                        if meta.get("trip"):
-                            st.caption(f"Trip: {meta['trip']}")
-                        if meta.get("people"):
-                            st.caption(f"People: {', '.join(meta['people'])}")
-                        if meta.get("locations"):
-                            st.caption(f"Location: {', '.join(meta['locations'])}")
+            # Click to view larger image
+            with st.popover("🔍", use_container_width=True):
+                large = fetch_large_image(img_id)
+                if large:
+                    st.image(large, caption=caption, use_container_width=True)
 
             st.image(thumb_bytes, caption=caption[:60], use_container_width=True)
 
     st.caption(f"Showing {len(items)} of {len(image_ids)} photo{'s' if len(image_ids) != 1 else ''} found")
+
+    # Mac path expander
+    if mac_paths:
+        with st.expander(f"📁 File paths ({len(mac_paths)})", expanded=False):
+            for name, path in mac_paths:
+                st.code(path, language=None)
 
 
 def fetch_stats():
