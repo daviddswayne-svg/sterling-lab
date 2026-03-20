@@ -438,10 +438,6 @@ Ask questions about the Swayne family database in plain English — I'll query 1
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
-            # Image grid (top 12)
-            if message.get("image_ids"):
-                render_image_grid(message["image_ids"])
-
             # Photo browser (all images, lazy-loaded)
             if message.get("image_data"):
                 render_photo_browser(message["image_data"], msg_idx)
@@ -477,11 +473,6 @@ Ask questions about the Swayne family database in plain English — I'll query 1
 
                 if result:
                     st.markdown(result["response"])
-
-                    # Photos mode: top 12 grid
-                    image_ids = result.get("image_ids", [])
-                    if image_ids and mode == "photos":
-                        render_image_grid(image_ids)
 
                     # Photos mode: full lazy-loading browser
                     image_data = result.get("image_data", []) if mode == "photos" else []
