@@ -564,8 +564,8 @@ def main():
 
     # === MAIN CONTENT ===
     if mode == "journals":
-        st.title("📖 Family History Journals")
-        st.caption("1,805 trip journals spanning the 1930s–2020s — mountaineering, fishing, family travels, and wildlife surveys")
+        st.title("📖 Mike's Journal Magazine")
+        st.caption("1,805 trip journals spanning the 1930s–2020s · Each journal opens as a photo magazine with day-by-day narrative and inline photos")
     else:
         st.title("Family History Explorer")
         st.caption("144K photos · 3K people · 6.9K trips · 140+ years of Swayne family history")
@@ -576,16 +576,16 @@ def main():
 
     if not st.session_state.messages:
         if mode == "journals":
-            welcome = """### Welcome to the Journal Explorer
+            welcome = """### Welcome to Mike's Journal Magazine
 
-Browse narrative trip journals written by Mike Swayne — 1,805 entries from the 1930s through 2020s. Journals are returned in full with the actual day-by-day narrative text.
+Mike Swayne kept detailed trip journals from the 1930s through the 2020s — mountaineering, fishing, road trips, wildlife surveys, and family travels. When you open a specific journal, it renders as a **photo magazine**: day-by-day narrative with photos matched to each day inline, and a full trip photo gallery at the bottom.
 
-**How to ask:**
+**How to use it:**
 
 📅 **Browse by topic or place** — returns a list of matching journals with excerpts:
 > "Find fishing trip journals from the 1960s" · "Show me journals from Mount Rainier trips"
 
-📖 **Read a specific trip** — returns the full journal:
+📖 **Open a specific journal** — renders the full photo magazine:
 > "Tell me about the 1971 Alaska road trip" · "What happened on the 1996 Aconcagua climb?"
 
 🔍 **Search by keyword** — searches both trip names and journal text:
@@ -624,6 +624,8 @@ Ask questions about the Swayne family database in plain English — I'll query 1
                 st.markdown(message["content"])
                 if message.get("image_data"):
                     render_photo_browser(message["image_data"], msg_idx)
+                if mode == "journals" and not message.get("is_magazine") and "(TripID:" in message.get("content", ""):
+                    st.info("💡 To open a journal as a photo magazine, ask about a specific trip — e.g. *\"Tell me about the [trip name]\"*")
 
             # Show SQL trace if present
             if message.get("sql_trace"):
@@ -660,6 +662,10 @@ Ask questions about the Swayne family database in plain English — I'll query 1
                         st.markdown(result["response"])
                         if image_data:
                             render_photo_browser(image_data, new_msg_idx)
+                        # In journals mode, if the response is a search list (not a full journal),
+                        # prompt the user to ask about a specific trip to open the photo magazine
+                        if mode == "journals" and not is_magazine and "(TripID:" in result.get("response", ""):
+                            st.info("💡 To open a journal as a photo magazine, ask about a specific trip — e.g. *\"Tell me about the [trip name]\"*")
 
                     sql_trace = result.get("sql_trace", [])
                     trace_label = "Journal Queries" if mode == "journals" else "SQL Queries"
