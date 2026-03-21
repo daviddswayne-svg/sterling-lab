@@ -302,9 +302,16 @@ _MONTHS_CLIENT = {
 }
 
 _DAY_HDR = re.compile(
-    r'^(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)'
+    r'^(?:'
+    # Format A: weekday prefix — "Monday, March 4, 2012 Location"
+    r'(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)'
     r'(?:/(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday))?'
     r'[,\s]+'
+    r'|'
+    # Format B: month-first with dash — "July 15 – Location" or "July 15 - Location"
+    r'(?=(?:January|February|March|April|May|June|July|August|'
+    r'September|October|November|December)\s+\d{1,2}\s*[\u2013\u2014\-])'
+    r')'
     r'(January|February|March|April|May|June|July|August|September|October|November|December)'
     r'\s+(\d{1,2})(?:/\d{1,2})?'
     r'(?:[,\s]+(\d{4}))?',
@@ -375,7 +382,9 @@ def render_journal_magazine(response: str, day_photos: list[dict],
                 yr = int(year_str) % 100
                 cur_date = f"{month}/{day:02d}/{yr:02d}"
             else:
-                cur_date = None
+                # No year in header — find matching key from backend day_photos by MM/DD
+                md_prefix = f"{month}/{day:02d}/"
+                cur_date = next((k for k in photos_by_date if k.startswith(md_prefix)), None)
             cur_lines = []
         else:
             cur_lines.append(line)
