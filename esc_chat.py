@@ -7,6 +7,7 @@ import streamlit as st
 import requests
 import json
 import os
+import re
 from io import BytesIO
 from pathlib import Path
 
@@ -245,7 +246,8 @@ def _photo_popover_content(large_bytes: bytes | None, meta: dict | None):
             st.markdown("  \n".join(parts))
 
 
-def render_photo_browser(image_data: list[dict], msg_idx: int):
+def render_photo_browser(image_data: list[dict], msg_idx: int,
+                         label: str = None, expanded: bool = True):
     """Lazy-loading photo gallery: 4-column thumbnail grid, 25 at a time. Skips off-disk images."""
     if not image_data:
         return
@@ -256,9 +258,10 @@ def render_photo_browser(image_data: list[dict], msg_idx: int):
 
     total = len(image_data)
     shown = min(st.session_state[count_key], total)
+    expander_label = label or f"📷 Photos — {total} found"
 
     COLS = 4
-    with st.expander(f"📷 Photos — {total} found", expanded=True):
+    with st.expander(expander_label, expanded=expanded):
         rendered = 0
         grid_cols = None
         for item in image_data[:shown]:
@@ -288,6 +291,120 @@ def render_photo_browser(image_data: list[dict], msg_idx: int):
             if st.button(f"Load 25 more ({remaining} remaining)", key=f"load_more_{msg_idx}"):
                 st.session_state[count_key] = shown + 25
                 st.rerun()
+
+
+# ── Mike's Journal Magazine ──────────────────────────────────────────────────
+
+_MONTHS_CLIENT = {
+    'january': '01', 'february': '02', 'march': '03', 'april': '04',
+    'may': '05', 'june': '06', 'july': '07', 'august': '08',
+    'september': '09', 'october': '10', 'november': '11', 'december': '12',
+}
+
+_DAY_HDR = re.compile(
+    r'^(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)'
+    r'(?:/(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday))?'
+    r'[,\s]+'
+    r'(January|February|March|April|May|June|July|August|September|October|November|December)'
+    r'\s+(\d{1,2})(?:/\d{1,2})?'
+    r'(?:[,\s]+(\d{4}))?',
+    re.IGNORECASE,
+)
+
+
+def _render_inline_photos(ids: list[int]):
+    """Render 1-3 photos centered inline between journal paragraphs."""
+    available = []
+    for img_id in ids:
+        thumb = fetch_thumbnail(img_id)
+        if thumb:
+            available.append((img_id, thumb))
+        if len(available) == 3:
+            break
+    if not available:
+        return
+    n = len(available)
+    if n == 1:
+        cols = st.columns([2, 3, 2])
+        photo_cols = [cols[1]]
+    elif n == 2:
+        cols = st.columns([1, 3, 3, 1])
+        photo_cols = [cols[1], cols[2]]
+    else:
+        cols = st.columns([1, 2, 2, 2, 1])
+        photo_cols = [cols[1], cols[2], cols[3]]
+    for (img_id, thumb), col in zip(available, photo_cols):
+        with col:
+            meta = fetch_image_meta(img_id)
+            st.image(thumb, use_container_width=True)
+            with st.popover("🔍", use_container_width=True):
+                large = fetch_large_image(img_id)
+                _photo_popover_content(large, meta)
+            st.caption(_photo_caption(meta, img_id))
+
+
+def render_journal_magazine(response: str, day_photos: list[dict],
+                             all_image_data: list[dict], msg_idx: int):
+    """Render a journal as Mike's Journal Magazine — day sections with inline photos."""
+    photos_by_date = {d["date"]: d["ids"] for d in day_photos}
+
+    # Split header block (# title + metadata) from journal body at the --- divider
+    if "\n---\n\n" in response:
+        header_part, body = response.split("\n---\n\n", 1)
+        st.markdown(header_part + "\n\n---")
+    else:
+        body = response
+
+    # Split body into per-day sections
+    lines = body.split('\n')
+    sections: list[tuple] = []  # (header_line | None, date_key | None, body_text)
+    cur_header: str | None = None
+    cur_date: str | None = None
+    cur_lines: list[str] = []
+
+    for line in lines:
+        m = _DAY_HDR.match(line.strip())
+        if m and line.strip():
+            # Save previous section
+            sections.append((cur_header, cur_date, '\n'.join(cur_lines).strip()))
+            cur_header = line.strip()
+            month_name, day_str, year_str = m.group(1), m.group(2), m.group(3)
+            month = _MONTHS_CLIENT[month_name.lower()]
+            day = int(day_str)
+            if year_str:
+                yr = int(year_str) % 100
+                cur_date = f"{month}/{day:02d}/{yr:02d}"
+            else:
+                cur_date = None
+            cur_lines = []
+        else:
+            cur_lines.append(line)
+    sections.append((cur_header, cur_date, '\n'.join(cur_lines).strip()))
+
+    # Render each day section
+    has_sections = any(hdr for hdr, _, _ in sections)
+    if not has_sections:
+        # No parseable day headers — just show body text
+        st.markdown(body)
+    else:
+        for header, date_key, text in sections:
+            if header:
+                st.markdown(f"**{header}**")
+            if text:
+                st.markdown(text)
+            if date_key and date_key in photos_by_date:
+                _render_inline_photos(photos_by_date[date_key])
+            if header:
+                st.markdown("---")
+
+    # All trip photos expander at bottom (collapsed — journal text is primary)
+    if all_image_data:
+        total = len(all_image_data)
+        render_photo_browser(
+            all_image_data, msg_idx,
+            label=f"📷 All Trip Photos — {total} on record",
+            expanded=False,
+        )
 
 
 def fetch_stats():
@@ -479,11 +596,17 @@ Ask questions about the Swayne family database in plain English — I'll query 1
     # Display chat history
     for msg_idx, message in enumerate(st.session_state.messages):
         with st.chat_message(message["role"]):
-            st.markdown(message["content"])
-
-            # Photo browser (all images, lazy-loaded)
-            if message.get("image_data"):
-                render_photo_browser(message["image_data"], msg_idx)
+            if message.get("is_magazine"):
+                render_journal_magazine(
+                    message["content"],
+                    message.get("day_photos", []),
+                    message.get("image_data", []),
+                    msg_idx,
+                )
+            else:
+                st.markdown(message["content"])
+                if message.get("image_data"):
+                    render_photo_browser(message["image_data"], msg_idx)
 
             # Show SQL trace if present
             if message.get("sql_trace"):
@@ -507,12 +630,19 @@ Ask questions about the Swayne family database in plain English — I'll query 1
                 result = send_chat(prompt, history, mode=mode)
 
                 if result:
-                    st.markdown(result["response"])
-
-                    image_data = result.get("image_data", []) if mode == "photos" else []
+                    image_data = result.get("image_data", [])
+                    day_photos = result.get("day_photos", []) if mode == "journals" else []
                     new_msg_idx = len(st.session_state.messages)
-                    if image_data:
-                        render_photo_browser(image_data, new_msg_idx)
+                    is_magazine = mode == "journals" and bool(image_data or day_photos)
+
+                    if is_magazine:
+                        render_journal_magazine(
+                            result["response"], day_photos, image_data, new_msg_idx
+                        )
+                    else:
+                        st.markdown(result["response"])
+                        if image_data:
+                            render_photo_browser(image_data, new_msg_idx)
 
                     sql_trace = result.get("sql_trace", [])
                     trace_label = "Journal Queries" if mode == "journals" else "SQL Queries"
@@ -537,6 +667,8 @@ Ask questions about the Swayne family database in plain English — I'll query 1
                         "sql_trace": sql_trace,
                         "image_ids": result.get("image_ids", []),
                         "image_data": image_data,
+                        "day_photos": day_photos,
+                        "is_magazine": is_magazine,
                     })
                 else:
                     error_msg = "Failed to get a response from the ESC API. Is the Mac Studio connected?"
