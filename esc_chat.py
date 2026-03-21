@@ -387,13 +387,21 @@ def render_journal_magazine(response: str, day_photos: list[dict],
         # No parseable day headers — just show body text
         st.markdown(body)
     else:
+        rendered_dates: set[str] = set()
         for header, date_key, text in sections:
+            # Skip location-log entries: header with no body text.
+            # Some journals have per-location lines (e.g. "Sunday, March 4 Wanganella Cove")
+            # with no prose — these would otherwise create 100+ duplicate photo blocks.
+            if header and not text:
+                continue
             if header:
                 st.markdown(f"**{header}**")
             if text:
                 st.markdown(text)
-            if date_key and date_key in photos_by_date:
+            # Only show photos once per date (backend may have multiple headers/same date)
+            if date_key and date_key in photos_by_date and date_key not in rendered_dates:
                 _render_inline_photos(photos_by_date[date_key])
+                rendered_dates.add(date_key)
             if header:
                 st.markdown("---")
 
