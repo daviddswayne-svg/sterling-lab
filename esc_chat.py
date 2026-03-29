@@ -13,6 +13,10 @@ from pathlib import Path
 
 # === CONFIGURATION ===
 ESC_API_URL = os.getenv("ESC_API_URL", "http://localhost:8002")
+# ESC_MAP_URL: browser-accessible base URL for the map endpoint.
+# Locally this equals ESC_API_URL. When deployed, set this env var to the
+# public-facing URL where /map/{id} is reachable from the user's browser.
+ESC_MAP_URL = os.getenv("ESC_MAP_URL", ESC_API_URL)
 REQUEST_TIMEOUT = 600  # seconds — Qwen queries typically take 60-200s; 600s safety net
 
 # === STREAMLIT UI ===
@@ -424,6 +428,19 @@ def render_journal_magazine(response: str, day_photos: list[dict],
         )
 
 
+def _render_map_link(trip_id: int):
+    """Render a prominent 'Open Trip Map' button that opens the Leaflet map in a new tab."""
+    map_url = f"{ESC_MAP_URL}/map/{trip_id}"
+    st.markdown(
+        f'<a href="{map_url}" target="_blank" rel="noopener" style="'
+        'display:inline-block;margin-top:10px;padding:10px 22px;'
+        'background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.5);'
+        'border-radius:8px;color:#93c5fd;text-decoration:none;font-weight:600;font-size:15px;'
+        '">🗺️ Open Trip Map</a>',
+        unsafe_allow_html=True,
+    )
+
+
 def fetch_stats():
     """Fetch database stats from ESC API."""
     try:
@@ -484,11 +501,16 @@ def main():
     st.sidebar.markdown("---")
     mode_choice = st.sidebar.radio(
         "Mode",
-        options=["📷 Photos", "📖 Journals"],
+        options=["📷 Photos", "📖 Journals", "🗺️ Trip Map"],
         index=0,
-        help="Photos: search and display images\nJournals: read trip narrative entries"
+        help="Photos: search and display images\nJournals: read trip narrative entries\nTrip Map: view an interactive route map for any trip"
     )
-    mode = "journals" if mode_choice == "📖 Journals" else "photos"
+    if mode_choice == "📖 Journals":
+        mode = "journals"
+    elif mode_choice == "🗺️ Trip Map":
+        mode = "map"
+    else:
+        mode = "photos"
 
     # Clear chat when mode changes
     if "active_mode" not in st.session_state:
@@ -566,6 +588,9 @@ def main():
     if mode == "journals":
         st.title("📖 Mike's Journal Magazine")
         st.caption("1,805 trip journals spanning the 1930s–2020s · Each journal opens as a photo magazine with day-by-day narrative and inline photos")
+    elif mode == "map":
+        st.title("🗺️ Trip Map")
+        st.caption("Interactive route maps with GPS tracks, waypoints, and clickable photo locations")
     else:
         st.title("Family History Explorer")
         st.caption("144K photos · 3K people · 6.9K trips · 140+ years of Swayne family history")
@@ -575,7 +600,28 @@ def main():
         st.session_state.messages = []
 
     if not st.session_state.messages:
-        if mode == "journals":
+        if mode == "map":
+            welcome = """### Welcome to Trip Map
+
+View interactive route maps for any trip in the database. Maps show GPS route segments (when available), ordered waypoints with elevation, and clickable 📷 camera icons that open photos from that location.
+
+**How to use it:**
+
+🗺️ **Name a specific trip:**
+> "Show me the map for the 1959 Big Snow Mountain trip"
+> "Map the 2011 Cascade Pass to Stehekin backpack"
+
+🔍 **If multiple trips match**, I'll list them so you can pick the right one:
+> "Show a map for a Nepal trip" → lists matching trips → "Map trip 5969"
+
+🆔 **Use a trip ID directly:**
+> "Map trip 640" · "Show map for trip 5859"
+
+**Map features:**
+- 🔴 GPS route line (CalTopo) when available, or dashed line connecting waypoints
+- 🔵 DB waypoints with name and elevation
+- 📷 Camera icons — click any to see a photo from that location"""
+        elif mode == "journals":
             welcome = """### Welcome to Mike's Journal Magazine
 
 Mike Swayne kept detailed trip journals from the 1930s through the 2020s — mountaineering, fishing, road trips, wildlife surveys, and family travels. When you open a specific journal, it renders as a **photo magazine**: day-by-day narrative with photos matched to each day inline, and a full trip photo gallery at the bottom.
@@ -624,6 +670,8 @@ Ask questions about the Swayne family database in plain English — I'll query 1
                 st.markdown(message["content"])
                 if message.get("image_data"):
                     render_photo_browser(message["image_data"], msg_idx)
+                if message.get("map_trip_id"):
+                    _render_map_link(message["map_trip_id"])
                 if mode == "journals" and not message.get("is_magazine") and "(TripID:" in message.get("content", ""):
                     st.info("💡 To open a journal as a photo magazine, ask about a specific trip — e.g. *\"Tell me about the [trip name]\"*")
 
@@ -636,7 +684,12 @@ Ask questions about the Swayne family database in plain English — I'll query 1
                             st.markdown(trace["result_preview"][:300])
 
     # Handle pending prompt — runs after history renders so user msg is visible first
-    spinner_text = "Retrieving journal..." if mode == "journals" else "Querying the database..."
+    if mode == "journals":
+        spinner_text = "Retrieving journal..."
+    elif mode == "map":
+        spinner_text = "Searching trips..."
+    else:
+        spinner_text = "Querying the database..."
     if st.session_state.get("pending_prompt"):
         prompt = st.session_state.pop("pending_prompt")
         with st.chat_message("assistant"):
@@ -654,6 +707,8 @@ Ask questions about the Swayne family database in plain English — I'll query 1
                     new_msg_idx = len(st.session_state.messages)
                     is_magazine = mode == "journals" and bool(image_data or day_photos)
 
+                    map_trip_id = result.get("map_trip_id")
+
                     if is_magazine:
                         render_journal_magazine(
                             result["response"], day_photos, image_data, new_msg_idx
@@ -662,6 +717,8 @@ Ask questions about the Swayne family database in plain English — I'll query 1
                         st.markdown(result["response"])
                         if image_data:
                             render_photo_browser(image_data, new_msg_idx)
+                        if map_trip_id:
+                            _render_map_link(map_trip_id)
                         # In journals mode, if the response is a search list (not a full journal),
                         # prompt the user to ask about a specific trip to open the photo magazine
                         if mode == "journals" and not is_magazine and "(TripID:" in result.get("response", ""):
@@ -692,6 +749,7 @@ Ask questions about the Swayne family database in plain English — I'll query 1
                         "image_data": image_data,
                         "day_photos": day_photos,
                         "is_magazine": is_magazine,
+                        "map_trip_id": map_trip_id,
                     })
                 else:
                     error_msg = "Failed to get a response from the ESC API. Is the Mac Studio connected?"
@@ -701,7 +759,12 @@ Ask questions about the Swayne family database in plain English — I'll query 1
         st.session_state.thinking = False
 
     # Chat input — set pending state and rerun so sidebar shows "Thinking..." immediately
-    input_placeholder = "Ask about a journal or trip..." if mode == "journals" else "Ask about the family history..."
+    if mode == "map":
+        input_placeholder = "Name a trip to map, or say 'map trip 640'..."
+    elif mode == "journals":
+        input_placeholder = "Ask about a journal or trip..."
+    else:
+        input_placeholder = "Ask about the family history..."
     if prompt := st.chat_input(input_placeholder):
         st.session_state.messages.append({"role": "user", "content": prompt})
         st.session_state.thinking = True
