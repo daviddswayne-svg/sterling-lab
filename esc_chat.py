@@ -585,6 +585,74 @@ def main():
             st.session_state.pop(key, None)
         st.rerun()
 
+    # Change password
+    with st.sidebar.expander("🔑 Change Password"):
+        cp_current = st.text_input("Current password", type="password", key="cp_current")
+        cp_new = st.text_input("New password (6+ chars)", type="password", key="cp_new")
+        cp_confirm = st.text_input("Confirm new password", type="password", key="cp_confirm")
+        if st.button("Update Password", key="cp_btn"):
+            if not all([cp_current, cp_new, cp_confirm]):
+                st.error("Please fill in all fields.")
+            elif cp_new != cp_confirm:
+                st.error("New passwords do not match.")
+            elif len(cp_new) < 6:
+                st.error("Password must be at least 6 characters.")
+            else:
+                try:
+                    r = requests.post(
+                        f"{ESC_API_URL}/auth/change_password",
+                        json={"user_id": user["id"], "current_password": cp_current, "new_password": cp_new},
+                        timeout=10,
+                    )
+                    if r.status_code == 200:
+                        st.success("Password updated.")
+                    else:
+                        st.error(r.json().get("detail", "Failed to update password."))
+                except Exception as e:
+                    st.error(f"Connection error: {e}")
+
+    # Activity log
+    with st.sidebar.expander("📊 My Activity"):
+        if st.button("Load Activity", key="activity_load_btn"):
+            try:
+                r = requests.get(f"{ESC_API_URL}/auth/activity", params={"user_id": user["id"]}, timeout=10)
+                if r.status_code == 200:
+                    st.session_state.activity_data = r.json()
+            except Exception as e:
+                st.error(f"Connection error: {e}")
+
+        activity = st.session_state.get("activity_data")
+        if activity:
+            sessions = activity.get("sessions", [])
+            queries = activity.get("queries", [])
+
+            st.markdown("**Login History**")
+            if sessions:
+                for s in sessions[:10]:
+                    login = s["login_at"][:16].replace("T", " ")
+                    logout = s["logout_at"][:16].replace("T", " ") if s["logout_at"] else "active"
+                    st.caption(f"In: {login} · Out: {logout}")
+            else:
+                st.caption("No sessions recorded.")
+
+            st.markdown("**Query History**")
+            if queries:
+                for q in queries[:20]:
+                    when = q["at"][:16].replace("T", " ")
+                    st.caption(f"{when} — {q['query'][:60]}")
+            else:
+                st.caption("No queries recorded.")
+
+            if queries and st.button("Clear Query History", key="clear_queries_btn"):
+                try:
+                    r = requests.delete(f"{ESC_API_URL}/auth/activity", params={"user_id": user["id"]}, timeout=10)
+                    if r.status_code == 200:
+                        st.session_state.activity_data["queries"] = []
+                        st.success("Query history cleared.")
+                        st.rerun()
+                except Exception as e:
+                    st.error(f"Connection error: {e}")
+
     # Mode selector
     st.sidebar.markdown("---")
     mode_choice = st.sidebar.radio(
