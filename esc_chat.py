@@ -492,10 +492,98 @@ def send_chat(message: str, history: list, mode: str = "photos") -> dict | None:
     return None
 
 
+def show_auth_page():
+    """Login / Register page shown to unauthenticated users."""
+    st.title("Family History Explorer")
+    st.caption("Swayne Systems · Private access for Swayne family members")
+
+    tab_login, tab_register = st.tabs(["Login", "Register"])
+
+    with tab_login:
+        username = st.text_input("Username", key="login_username")
+        password = st.text_input("Password", type="password", key="login_password")
+        if st.button("Login", key="login_btn", use_container_width=True):
+            if not username or not password:
+                st.warning("Please enter your username and password.")
+            else:
+                try:
+                    r = requests.post(
+                        f"{ESC_API_URL}/auth/login",
+                        json={"username": username, "password": password},
+                        timeout=10,
+                    )
+                    if r.status_code == 200:
+                        user = r.json()
+                        st.session_state.user = user
+                        st.session_state.session_id = user["session_id"]
+                        st.rerun()
+                    else:
+                        st.error(r.json().get("detail", "Login failed."))
+                except Exception as e:
+                    st.error(f"Connection error: {e}")
+
+    with tab_register:
+        st.caption("Register using your RDX ID from the family database. Ask David if you don't know yours.")
+        rdx_id = st.number_input("Your RDX ID", min_value=1, step=1, key="reg_rdx")
+        first_name = st.text_input("Your first name (as it appears in the database)", key="reg_fname")
+        new_username = st.text_input("Choose a username", key="reg_username")
+        new_password = st.text_input("Choose a password (6+ characters)", type="password", key="reg_password")
+        confirm_password = st.text_input("Confirm password", type="password", key="reg_confirm")
+        if st.button("Register", key="register_btn", use_container_width=True):
+            if not all([rdx_id, first_name, new_username, new_password, confirm_password]):
+                st.warning("Please fill in all fields.")
+            elif new_password != confirm_password:
+                st.error("Passwords do not match.")
+            elif len(new_password) < 6:
+                st.error("Password must be at least 6 characters.")
+            else:
+                try:
+                    r = requests.post(
+                        f"{ESC_API_URL}/auth/register",
+                        json={
+                            "rdx_id": int(rdx_id),
+                            "first_name": first_name,
+                            "username": new_username,
+                            "password": new_password,
+                        },
+                        timeout=10,
+                    )
+                    if r.status_code == 200:
+                        user = r.json()
+                        st.session_state.user = user
+                        st.session_state.session_id = user["session_id"]
+                        st.rerun()
+                    else:
+                        st.error(r.json().get("detail", "Registration failed."))
+                except Exception as e:
+                    st.error(f"Connection error: {e}")
+
+
 def main():
+    # Auth gate — show login/register if not authenticated
+    if not st.session_state.get("user"):
+        show_auth_page()
+        return
+
     # === SIDEBAR ===
     st.sidebar.title("📷 Family History DB")
     st.sidebar.caption("Natural Language SQL Explorer")
+
+    # Logged-in user + logout
+    user = st.session_state.get("user", {})
+    st.sidebar.markdown(f"**{user.get('display_name', 'User')}**")
+    if st.sidebar.button("Logout", key="logout_btn"):
+        try:
+            requests.post(
+                f"{ESC_API_URL}/auth/logout",
+                params={"session_id": st.session_state.get("session_id")},
+                timeout=5,
+            )
+        except Exception:
+            pass
+        for key in ["user", "session_id", "messages", "thinking", "active_mode", "pending_prompt"]:
+            st.session_state.pop(key, None)
+        st.rerun()
 
     # Mode selector
     st.sidebar.markdown("---")
@@ -769,6 +857,21 @@ Ask questions about the Swayne family database in plain English — I'll query 1
         st.session_state.messages.append({"role": "user", "content": prompt})
         st.session_state.thinking = True
         st.session_state.pending_prompt = prompt
+        # Log the query (fire-and-forget, never block the UI)
+        _user = st.session_state.get("user", {})
+        if _user:
+            try:
+                requests.post(
+                    f"{ESC_API_URL}/auth/log_query",
+                    params={
+                        "user_id": _user["id"],
+                        "session_id": st.session_state.get("session_id"),
+                        "query": prompt,
+                    },
+                    timeout=3,
+                )
+            except Exception:
+                pass
         st.rerun()
 
 
