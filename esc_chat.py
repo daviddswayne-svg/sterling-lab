@@ -429,14 +429,22 @@ def render_journal_magazine(response: str, day_photos: list[dict],
 
 
 def _render_map_link(trip_id: int):
-    """Render a prominent 'Open Trip Map' button that opens the Leaflet map in a new tab."""
-    map_url = f"{ESC_MAP_URL}/map/{trip_id}"
+    """Render map buttons: 2D Leaflet map + 3D terrain viewer."""
+    map_url   = f"{ESC_MAP_URL}/map/{trip_id}"
+    map3d_url = f"{ESC_MAP_URL}/map3d/{trip_id}"
     st.markdown(
+        f'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">'
         f'<a href="{map_url}" target="_blank" rel="noopener" style="'
-        'display:inline-block;margin-top:10px;padding:10px 22px;'
+        'display:inline-block;padding:10px 22px;'
         'background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.5);'
         'border-radius:8px;color:#93c5fd;text-decoration:none;font-weight:600;font-size:15px;'
-        '">🗺️ Open Trip Map</a>',
+        '">🗺️ Open Trip Map</a>'
+        f'<a href="{map3d_url}" target="_blank" rel="noopener" style="'
+        'display:inline-block;padding:10px 22px;'
+        'background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.5);'
+        'border-radius:8px;color:#c4b5fd;text-decoration:none;font-weight:600;font-size:15px;'
+        '">🏔️ 3D Terrain</a>'
+        '</div>',
         unsafe_allow_html=True,
     )
 
