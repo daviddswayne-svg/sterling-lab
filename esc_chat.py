@@ -753,59 +753,17 @@ def main():
 
     # === FAMILY TREE MODE (no chat — standalone UI) ===
     if mode == "family_tree":
-        st.title("🌳 Family Tree")
-        st.caption("Pedigree ancestry chart · 4 generations · click any person to navigate")
-
-        col_s, col_b = st.columns([3, 1])
-        with col_s:
-            name_q = st.text_input(
-                "Search by name", placeholder="e.g. Swayne, or Elizabeth Browne",
-                label_visibility="collapsed", key="ft_search"
-            )
-
-        people_matches = []
-        if name_q and len(name_q) >= 2:
-            try:
-                r = requests.get(f"{ESC_API_URL}/people", params={"q": name_q, "limit": 20}, timeout=5)
-                if r.status_code == 200:
-                    people_matches = r.json()
-            except Exception:
-                pass
-
-        if people_matches:
-            opts = [
-                f"{p['name']}" + (f"  (b. {p['birth_year']}" if p.get("birth_year") else "") +
-                (f", {p['loc']}" if p.get("loc") else "") + (")" if p.get("birth_year") else "")
-                for p in people_matches
-            ]
-            sel_idx = st.selectbox(
-                "Select person", range(len(opts)), format_func=lambda i: opts[i], key="ft_select"
-            )
-            sel = people_matches[sel_idx]
-            st.session_state["ft_person_id"] = sel["id"]
-        elif name_q and len(name_q) >= 2:
-            st.caption("No matches found.")
-
-        person_id = st.session_state.get("ft_person_id")
-
-        if person_id:
-            tree_url = f"{ESC_MAP_URL}/family/{person_id}?embed=1"
-            full_url = f"{ESC_MAP_URL}/family/{person_id}"
-            st.markdown(
-                f'<a href="{full_url}" target="_blank" style="'
-                'display:inline-block;padding:8px 18px;margin-bottom:12px;'
-                'background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.4);'
-                'border-radius:7px;color:#93c5fd;text-decoration:none;font-weight:600;font-size:14px;'
-                '">🌳 Open Full Screen</a>',
-                unsafe_allow_html=True,
-            )
-            import streamlit.components.v1 as components
-            components.iframe(tree_url, height=720, scrolling=False)
-        else:
-            st.markdown(
-                "Search for a family member above to view their ancestor tree.\n\n"
-                "**Try:** *Swayne*, *Morse*, *Elizabeth*, *Michael*"
-            )
+        import streamlit.components.v1 as components
+        full_url = f"{ESC_MAP_URL}/family/17"
+        st.markdown(
+            f'<a href="{full_url}" target="_blank" style="'
+            'display:inline-block;padding:8px 18px;margin-bottom:10px;'
+            'background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.4);'
+            'border-radius:7px;color:#93c5fd;text-decoration:none;font-weight:600;font-size:14px;'
+            '">🌳 Open Full Screen</a>',
+            unsafe_allow_html=True,
+        )
+        components.iframe(f"{ESC_MAP_URL}/family/17", height=780, scrolling=False)
         return  # Skip chat UI entirely
 
     # === MAIN CONTENT ===
