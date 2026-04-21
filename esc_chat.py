@@ -755,15 +755,43 @@ def main():
     if mode == "family_tree":
         import streamlit.components.v1 as components
         full_url = f"{ESC_MAP_URL}/family/17"
-        st.markdown(
-            f'<a href="{full_url}" target="_blank" style="'
-            'display:inline-block;padding:8px 18px;margin-bottom:10px;'
-            'background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.4);'
-            'border-radius:7px;color:#93c5fd;text-decoration:none;font-weight:600;font-size:14px;'
-            '">🌳 Open Full Screen</a>',
-            unsafe_allow_html=True,
-        )
-        components.iframe(f"{ESC_MAP_URL}/family/17", height=780, scrolling=False)
+        # Embed the "Open Full Screen" link + iframe together in one component so
+        # the iframe can use JS to report its own natural height and fill the viewport.
+        components.html(f"""
+<style>
+  html, body {{ margin: 0; padding: 0; background: #0f1419; overflow: hidden; }}
+  #top-bar {{
+    display: flex; align-items: center; padding: 6px 0 8px 0;
+  }}
+  #open-btn {{
+    display: inline-block; padding: 6px 16px;
+    background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.4);
+    border-radius: 7px; color: #93c5fd; text-decoration: none;
+    font-weight: 600; font-size: 13px; font-family: system-ui, sans-serif;
+  }}
+  #open-btn:hover {{ background: rgba(59,130,246,0.3); }}
+  #tree-frame {{
+    display: block; width: 100%; border: none;
+    border-radius: 8px; overflow: hidden;
+  }}
+</style>
+<div id="top-bar">
+  <a id="open-btn" href="{full_url}" target="_blank">🌳 Open Full Screen</a>
+</div>
+<iframe id="tree-frame" src="{full_url}" frameborder="0" scrolling="no"></iframe>
+<script>
+  function setHeight() {{
+    const BAR_H = document.getElementById('top-bar').offsetHeight + 8;
+    const available = window.innerHeight - BAR_H;
+    const frame = document.getElementById('tree-frame');
+    frame.style.height = available + 'px';
+    // Tell Streamlit the total height so it expands the component slot
+    window.parent.postMessage({{type: 'streamlit:setFrameHeight', height: window.innerHeight}}, '*');
+  }}
+  setHeight();
+  window.addEventListener('resize', setHeight);
+</script>
+""", height=900, scrolling=False)
         return  # Skip chat UI entirely
 
     # === MAIN CONTENT ===
