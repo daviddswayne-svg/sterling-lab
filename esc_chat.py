@@ -755,14 +755,21 @@ def main():
     if mode == "family_tree":
         import streamlit.components.v1 as components
         full_url = f"{ESC_MAP_URL}/family/17"
-        # Embed the "Open Full Screen" link + iframe together in one component so
-        # the iframe can use JS to report its own natural height and fill the viewport.
+        # CSS injected into the Streamlit page (not inside the component) so that
+        # calc(100vh) refers to the real browser viewport, not the component iframe.
+        # Streamlit's header is ~60px; the rest goes to the tree.
+        st.markdown("""
+<style>
+[data-testid="stCustomComponentV1"] iframe {
+    height: calc(100vh - 60px) !important;
+    min-height: 400px;
+}
+</style>
+""", unsafe_allow_html=True)
         components.html(f"""
 <style>
   html, body {{ margin: 0; padding: 0; background: #0f1419; overflow: hidden; }}
-  #top-bar {{
-    display: flex; align-items: center; padding: 6px 0 8px 0;
-  }}
+  #top-bar {{ display: flex; align-items: center; padding: 6px 0 8px 0; }}
   #open-btn {{
     display: inline-block; padding: 6px 16px;
     background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.4);
@@ -770,10 +777,7 @@ def main():
     font-weight: 600; font-size: 13px; font-family: system-ui, sans-serif;
   }}
   #open-btn:hover {{ background: rgba(59,130,246,0.3); }}
-  #tree-frame {{
-    display: block; width: 100%; border: none;
-    border-radius: 8px; overflow: hidden;
-  }}
+  #tree-frame {{ display: block; width: 100%; border: none; border-radius: 8px; }}
 </style>
 <div id="top-bar">
   <a id="open-btn" href="{full_url}" target="_blank">🌳 Open Full Screen</a>
@@ -782,11 +786,7 @@ def main():
 <script>
   function setHeight() {{
     const BAR_H = document.getElementById('top-bar').offsetHeight + 8;
-    const available = window.innerHeight - BAR_H;
-    const frame = document.getElementById('tree-frame');
-    frame.style.height = available + 'px';
-    // Tell Streamlit the total height so it expands the component slot
-    window.parent.postMessage({{type: 'streamlit:setFrameHeight', height: window.innerHeight}}, '*');
+    document.getElementById('tree-frame').style.height = (window.innerHeight - BAR_H) + 'px';
   }}
   setHeight();
   window.addEventListener('resize', setHeight);
