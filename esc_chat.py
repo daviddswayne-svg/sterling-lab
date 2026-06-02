@@ -473,7 +473,7 @@ def check_health():
 
 
 def fetch_model_status() -> dict:
-    """Check if qwen3:32b is loaded and ready."""
+    """Check if gemma4:26b is loaded and ready."""
     try:
         r = requests.get(f"{ESC_API_URL}/model_status", timeout=4)
         if r.status_code == 200:
@@ -700,17 +700,17 @@ def main():
 
     # Model status — use session flag while blocked so sidebar updates immediately
     if st.session_state.get("thinking", False):
-        st.sidebar.info("qwen3:32b Thinking...")
+        st.sidebar.info("gemma4:26b Thinking...")
     else:
         model_info = fetch_model_status()
         model_state = model_info.get("status", "unknown")
         if model_state == "ready":
-            st.sidebar.success("qwen3:32b Ready")
+            st.sidebar.success("gemma4:26b Ready")
         elif model_state == "idle":
-            st.sidebar.warning("qwen3:32b Not Loaded")
+            st.sidebar.warning("gemma4:26b Not Loaded")
             st.sidebar.caption("First query will take ~60s to load")
         else:
-            st.sidebar.caption("qwen3 status unknown")
+            st.sidebar.caption("gemma4 status unknown")
 
 
     # Database schema diagram
