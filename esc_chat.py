@@ -149,21 +149,31 @@ def fetch_image_meta(image_id: int) -> dict | None:
     return None
 
 
-def _prefetch_images(ids: list[int], larges: bool = True):
+def _prefetch_images(ids: list[int], thumbs: bool = True, metas: bool = True,
+                     larges: bool = False):
     """Warm the image caches in PARALLEL before a gallery renders.
 
     The render loops call fetch_thumbnail / fetch_image_meta / fetch_large_image
-    one image at a time — and st.popover renders eagerly, so every photo's LARGE
-    (1200px) version is fetched during render too. Serially that's dozens of
-    sequential round-trips through the SSH tunnel per page. Fetching them
-    concurrently here makes the first render ~10x faster; st.cache_data then
-    serves the render-loop calls instantly."""
+    one image at a time — dozens of sequential round-trips through the SSH
+    tunnel per page. Fetching concurrently makes renders ~10x faster;
+    st.cache_data then serves the render-loop calls instantly.
+
+    NOTE: larges default OFF for the blocking pre-render path — 25+ full-size
+    images before first paint made the gallery feel hung. Popover full-size
+    images are deferred: rendered into st.empty placeholders AFTER the gallery
+    paints (see _fill_large_placeholders)."""
     ids = [i for i in ids if i is not None]
     if not ids:
         return
-    tasks = [(fetch_thumbnail, i) for i in ids] + [(fetch_image_meta, i) for i in ids]
+    tasks = []
+    if thumbs:
+        tasks += [(fetch_thumbnail, i) for i in ids]
+    if metas:
+        tasks += [(fetch_image_meta, i) for i in ids]
     if larges:
         tasks += [(fetch_large_image, i) for i in ids]
+    if not tasks:
+        return
     try:
         # Propagate Streamlit's script-run context into worker threads so the
         # cached fetchers run cleanly (avoids missing-ScriptRunContext warnings).
@@ -174,6 +184,25 @@ def _prefetch_images(ids: list[int], larges: bool = True):
         init = None
     with ThreadPoolExecutor(max_workers=12, initializer=init) as ex:
         list(ex.map(lambda t: t[0](t[1]), tasks))
+
+
+def _fill_large_placeholders(pending: list[tuple]):
+    """Fill popover st.empty placeholders with full-size images AFTER the gallery
+    has painted. pending = [(img_id, placeholder, caption_or_None), ...].
+    The thumbnails/captions are already on screen when this runs — these arrive
+    a moment later, invisibly (popovers are closed until clicked)."""
+    if not pending:
+        return
+    _prefetch_images([p[0] for p in pending], thumbs=False, metas=False, larges=True)
+    for img_id, ph, caption in pending:
+        large = fetch_large_image(img_id)
+        if large is not None:
+            if caption:
+                ph.image(large, caption=caption, use_container_width=True)
+            else:
+                ph.image(large, use_container_width=True)
+        else:
+            ph.caption("Full-size image unavailable")
 
 
 def render_image_grid(image_ids: list[int]):
@@ -198,6 +227,7 @@ def render_image_grid(image_ids: list[int]):
     # 3-column grid
     cols = st.columns(3)
     mac_paths = []
+    pending_larges = []   # (img_id, placeholder, caption) — filled after the grid paints
     for i, (img_id, thumb_bytes, meta) in enumerate(items):
         with cols[i % 3]:
             # Build caption: filename + year
@@ -221,11 +251,9 @@ def render_image_grid(image_ids: list[int]):
             else:
                 caption = f"Image {img_id}"
 
-            # Click to view larger image
+            # Click to view larger image (full-size fetched AFTER the grid paints)
             with st.popover("🔍", use_container_width=True):
-                large = fetch_large_image(img_id)
-                if large:
-                    st.image(large, caption=caption, use_container_width=True)
+                pending_larges.append((img_id, st.empty(), caption))
 
             st.image(thumb_bytes, caption=caption[:60], use_container_width=True)
 
@@ -239,11 +267,12 @@ def render_image_grid(image_ids: list[int]):
                 with col1:
                     st.image(thumb_bytes, width=70)
                     with st.popover("🔍"):
-                        large = fetch_large_image(img_id)
-                        if large:
-                            st.image(large, caption=name, use_container_width=True)
+                        pending_larges.append((img_id, st.empty(), name))
                 with col2:
                     st.code(path, language=None)
+
+    # Grid is on screen — now stream the popover full-size images in
+    _fill_large_placeholders(pending_larges)
 
 
 def _photo_caption(meta: dict | None, img_id: int) -> str:
@@ -259,24 +288,30 @@ def _photo_caption(meta: dict | None, img_id: int) -> str:
     return f"{name}{year}"
 
 
+def _photo_meta_markdown(meta: dict | None):
+    """Render photo metadata lines inside a popover."""
+    if not meta:
+        return
+    parts = []
+    if meta.get("trip"):
+        parts.append(f"**Trip:** {meta['trip']}")
+    people = meta.get("people", [])
+    if people:
+        parts.append(f"**People:** {', '.join(people)}")
+    locs = meta.get("locations", [])
+    if locs:
+        parts.append(f"**Location:** {', '.join(locs[:2])}")
+    if meta.get("quality"):
+        parts.append(f"**Quality:** {meta['quality']}")
+    if parts:
+        st.markdown("  \n".join(parts))
+
+
 def _photo_popover_content(large_bytes: bytes | None, meta: dict | None):
-    """Render large image + metadata inside a popover."""
+    """Render large image + metadata inside a popover (eager version)."""
     if large_bytes:
         st.image(large_bytes, use_container_width=True)
-    if meta:
-        parts = []
-        if meta.get("trip"):
-            parts.append(f"**Trip:** {meta['trip']}")
-        people = meta.get("people", [])
-        if people:
-            parts.append(f"**People:** {', '.join(people)}")
-        locs = meta.get("locations", [])
-        if locs:
-            parts.append(f"**Location:** {', '.join(locs[:2])}")
-        if meta.get("quality"):
-            parts.append(f"**Quality:** {meta['quality']}")
-        if parts:
-            st.markdown("  \n".join(parts))
+    _photo_meta_markdown(meta)
 
 
 def render_photo_browser(image_data: list[dict], msg_idx: int,
@@ -295,9 +330,10 @@ def render_photo_browser(image_data: list[dict], msg_idx: int,
 
     COLS = 4
     with st.expander(expander_label, expanded=expanded):
-        _prefetch_images([item["id"] for item in image_data[:shown]])
+        _prefetch_images([item["id"] for item in image_data[:shown]])   # thumbs + meta only
         rendered = 0
         grid_cols = None
+        pending_larges = []   # (img_id, placeholder, None) — filled after the page paints
         for item in image_data[:shown]:
             img_id = item["id"]
             thumb = fetch_thumbnail(img_id)
@@ -310,8 +346,8 @@ def render_photo_browser(image_data: list[dict], msg_idx: int,
                 st.image(thumb, use_container_width=True)
                 caption = _photo_caption(meta, img_id)
                 with st.popover("🔍", use_container_width=True):
-                    large = fetch_large_image(img_id)
-                    _photo_popover_content(large, meta)
+                    pending_larges.append((img_id, st.empty(), None))
+                    _photo_meta_markdown(meta)
                 st.caption(caption)
             rendered += 1
 
@@ -325,6 +361,10 @@ def render_photo_browser(image_data: list[dict], msg_idx: int,
             if st.button(f"Load 25 more ({remaining} remaining)", key=f"load_more_{msg_idx}"):
                 st.session_state[count_key] = shown + 25
                 st.rerun()
+
+        # Page is fully painted (incl. the Load More button) — now stream in the
+        # popover full-size images. Invisible until a 🔍 is clicked.
+        _fill_large_placeholders(pending_larges)
 
 
 # ── Mike's Journal Magazine ──────────────────────────────────────────────────
@@ -355,7 +395,7 @@ _DAY_HDR = re.compile(
 
 def _render_inline_photos(ids: list[int]):
     """Render 1-3 photos centered inline between journal paragraphs."""
-    _prefetch_images(ids)
+    _prefetch_images(ids, larges=True)   # ≤3 photos — eager larges are cheap here
     available = []
     for img_id in ids:
         thumb = fetch_thumbnail(img_id)
