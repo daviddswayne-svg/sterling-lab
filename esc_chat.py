@@ -295,10 +295,11 @@ def _photo_meta_markdown(meta: dict | None):
     parts = []
     if meta.get("trip"):
         parts.append(f"**Trip:** {meta['trip']}")
-    people = meta.get("people", [])
+    # Defensive: DB rows with NULL names used to yield None entries (join() crash)
+    people = [p for p in (meta.get("people") or []) if p]
     if people:
         parts.append(f"**People:** {', '.join(people)}")
-    locs = meta.get("locations", [])
+    locs = [l for l in (meta.get("locations") or []) if l]
     if locs:
         parts.append(f"**Location:** {', '.join(locs[:2])}")
     if meta.get("quality"):
