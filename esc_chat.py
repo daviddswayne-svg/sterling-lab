@@ -8,6 +8,7 @@ import requests
 import json
 import os
 import re
+from concurrent.futures import ThreadPoolExecutor
 from io import BytesIO
 from pathlib import Path
 
@@ -148,6 +149,33 @@ def fetch_image_meta(image_id: int) -> dict | None:
     return None
 
 
+def _prefetch_images(ids: list[int], larges: bool = True):
+    """Warm the image caches in PARALLEL before a gallery renders.
+
+    The render loops call fetch_thumbnail / fetch_image_meta / fetch_large_image
+    one image at a time — and st.popover renders eagerly, so every photo's LARGE
+    (1200px) version is fetched during render too. Serially that's dozens of
+    sequential round-trips through the SSH tunnel per page. Fetching them
+    concurrently here makes the first render ~10x faster; st.cache_data then
+    serves the render-loop calls instantly."""
+    ids = [i for i in ids if i is not None]
+    if not ids:
+        return
+    tasks = [(fetch_thumbnail, i) for i in ids] + [(fetch_image_meta, i) for i in ids]
+    if larges:
+        tasks += [(fetch_large_image, i) for i in ids]
+    try:
+        # Propagate Streamlit's script-run context into worker threads so the
+        # cached fetchers run cleanly (avoids missing-ScriptRunContext warnings).
+        from streamlit.runtime.scriptrunner import add_script_run_ctx, get_script_run_ctx
+        ctx = get_script_run_ctx()
+        init = (lambda: add_script_run_ctx(ctx=ctx)) if ctx else None
+    except Exception:
+        init = None
+    with ThreadPoolExecutor(max_workers=12, initializer=init) as ex:
+        list(ex.map(lambda t: t[0](t[1]), tasks))
+
+
 def render_image_grid(image_ids: list[int]):
     """Display a thumbnail grid for a list of image IDs."""
     if not image_ids:
@@ -155,7 +183,8 @@ def render_image_grid(image_ids: list[int]):
 
     st.markdown('<div class="image-grid-label">📷 Photos from this query</div>', unsafe_allow_html=True)
 
-    # Fetch thumbnails + metadata (cap at 12)
+    # Fetch thumbnails + metadata (cap at 12) — warmed in parallel first
+    _prefetch_images(image_ids[:12])
     items = []
     for img_id in image_ids[:12]:
         thumb = fetch_thumbnail(img_id)
@@ -266,6 +295,7 @@ def render_photo_browser(image_data: list[dict], msg_idx: int,
 
     COLS = 4
     with st.expander(expander_label, expanded=expanded):
+        _prefetch_images([item["id"] for item in image_data[:shown]])
         rendered = 0
         grid_cols = None
         for item in image_data[:shown]:
@@ -325,6 +355,7 @@ _DAY_HDR = re.compile(
 
 def _render_inline_photos(ids: list[int]):
     """Render 1-3 photos centered inline between journal paragraphs."""
+    _prefetch_images(ids)
     available = []
     for img_id in ids:
         thumb = fetch_thumbnail(img_id)
