@@ -2,7 +2,17 @@
 // color and metal/rough/emissive come from two 256×1 palette textures, so
 // tuning a color or a shine is a texture update, never a rebake.
 import * as THREE from 'three';
-import { FLAG_FRESNEL_BLUE, FLAG_NO_JITTER, FLAG_GLASS } from '../voxel/Palette.js';
+import { FLAG_FRESNEL_BLUE, FLAG_NO_JITTER, FLAG_GLASS, FLAG_PANELS } from '../voxel/Palette.js';
+
+// Tunable shader parameters shared by every voxel material (see setShaderParam).
+// metalEnvBoost: scene.environmentIntensity is kept low (0.15) so diffuse surfaces
+// don't wash out, but metals live on reflections — boost their IBL radiance alone.
+export const SHADER_PARAMS = { jitterAmount: 0.08, aoStrength: 0.55, panelSize: 1.5, panelAmount: 0.07, fresnelAmount: 0.8, metalEnvBoost: 2.6 };
+const liveShaders = new Set();
+export function setShaderParam(name, value) {
+  SHADER_PARAMS[name] = value;
+  for (const s of liveShaders) if (s.uniforms[name]) s.uniforms[name].value = value;
+}
 
 export class PaletteTextures {
   constructor(palette) {
@@ -61,6 +71,10 @@ const fragHead = /* glsl */ `
   uniform float voxelSize;
   uniform float jitterAmount;
   uniform float aoStrength;
+  uniform float panelSize;
+  uniform float panelAmount;
+  uniform float fresnelAmount;
+  uniform float metalEnvBoost;
   varying float vPal;
   varying float vAo;
   varying vec3 vWorldPos;
@@ -85,6 +99,12 @@ const fragColor = /* glsl */ `
       float h = hash13(cell) - 0.5;
       diffuseColor.rgb *= 1.0 + h * jitterAmount;
     }
+    // panel-scale shingles: a coarser hash, skewed per axis so seams don't align with the grid
+    if ((flags & ${FLAG_PANELS}) != 0) {
+      vec3 pc = floor((vWorldPos + vec3(0.37, 0.11, 0.73) * vWorldPos.yzx) / panelSize);
+      float hp = hash13(pc + 19.0) - 0.5;
+      diffuseColor.rgb *= 1.0 + hp * panelAmount * 2.0;
+    }
     // baked ambient occlusion (0..3)
     float aoT = vAo / 3.0;
     diffuseColor.rgb *= mix(1.0 - aoStrength, 1.0, aoT * aoT * (3.0 - 2.0 * aoT));
@@ -99,7 +119,7 @@ const fragEmissive = /* glsl */ `
       vec3 viewDir = normalize(cameraPosition - vWorldPos);
       float fr = pow(1.0 - max(dot(normalize(vWorldNormal), viewDir), 0.0), 2.5);
       vec3 shifted = diffuseColor.rgb * vec3(1.35, 0.65, 1.25); // toward violet
-      diffuseColor.rgb = mix(diffuseColor.rgb, shifted, fr * 0.8);
+      diffuseColor.rgb = mix(diffuseColor.rgb, shifted, fr * fresnelAmount);
     }
     totalEmissiveRadiance = diffuseColor.rgb * palMat.b * 3.0;
   }
@@ -110,9 +130,9 @@ function patch(material, textures, voxelSize) {
     shader.uniforms.paletteTex = { value: textures.color };
     shader.uniforms.matTex = { value: textures.mat };
     shader.uniforms.voxelSize = { value: voxelSize };
-    shader.uniforms.jitterAmount = { value: 0.08 };
-    shader.uniforms.aoStrength = { value: 0.55 };
+    for (const [k, v] of Object.entries(SHADER_PARAMS)) shader.uniforms[k] = { value: v };
     material.userData.shader = shader;
+    liveShaders.add(shader);
 
     shader.vertexShader = shader.vertexShader
       .replace('#include <common>', '#include <common>\n' + vertexHead)
@@ -122,7 +142,8 @@ function patch(material, textures, voxelSize) {
       .replace('#include <color_fragment>', '#include <color_fragment>\n' + fragColor)
       .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\n' + fragRough)
       .replace('#include <metalnessmap_fragment>', '#include <metalnessmap_fragment>\n' + fragMetal)
-      .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n' + fragEmissive);
+      .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n' + fragEmissive)
+      .replace('#include <lights_fragment_maps>', '#include <lights_fragment_maps>\n  radiance *= mix(1.0, metalEnvBoost, metalnessFactor);');
   };
   // Distinct cache key so the patched program is not shared with plain materials.
   material.customProgramCacheKey = () => 'voxel-' + (material.transparent ? 'glass' : 'opaque');

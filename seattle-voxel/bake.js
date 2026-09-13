@@ -16,6 +16,7 @@ import { buildTrain } from '../dashboard/seattle/src/gen/monorail.js';
 import { buildBeam, carveCorridor } from '../dashboard/seattle/src/gen/beam.js';
 import { buildBlockout } from '../dashboard/seattle/src/gen/blockout.js';
 import { buildStation, buildWestlakeStub } from '../dashboard/seattle/src/gen/station.js';
+import { buildMoPOP, goldCollar } from '../dashboard/seattle/src/gen/mopop.js';
 import { TRAIN_LEN, VOXEL as HERO_V } from '../dashboard/seattle/src/gen/monorail.js';
 import { WORLD, byId, STATION, BEAM_TOP } from '../dashboard/seattle/src/site/layout.js';
 import { ROUTE } from '../dashboard/seattle/src/site/route.js';
@@ -85,6 +86,20 @@ if (NEEDLE_SOURCE === 'stl') {
   timed('needle', () => Object.values(buildNeedle(world, pal, 0, 0, 0)).reduce((a, b) => a + b, 0) + ' voxels');
 }
 
+// --- MoPOP: lobes anchored to the route line so the beams run along its east edge ---
+{
+  const zM = byId.mopop.z;                                   // env voxels
+  const sM = ROUTE.centre.nearest(byId.mopop.x, zM);
+  const routeX = ROUTE.centre.pointAt(sM).x;                 // env voxels
+  const centreHero = [Math.round((routeX - 16 / ENV) * 2), Math.round(zM * 2)]; // centre 16 m west of the beams → beams bore through the gold/blue lobes
+  timed('mopop', () => {
+    const s = buildMoPOP(detail, pal, centreHero);
+    return Object.entries(s).map(([k, v]) => `${k}:${v}`).join(' ');
+  });
+  const zRange = [zM - 130, zM + 130];
+  timed('mopop tunnel', () => carveCorridor(detail, ROUTE.centre, { scale: 2, halfWidth: 34, floor: -4, ceiling: 30, zRange }) + ' carved, '
+    + goldCollar(detail, pal, ROUTE.centre, { scale: 2, halfWidth: 34, floor: -4, ceiling: 30, zRange }) + ' collar');
+}
 // Trains are dynamic objects built at runtime (src/sim/Train.js) — nothing static here.
 
 // Optional hand-made models: site.json = [{ "file": "foo.vox", "at": [x, y, z], "layer": "detail" }]

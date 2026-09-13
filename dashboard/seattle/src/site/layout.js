@@ -24,7 +24,7 @@ export const WORLD = { x0: -900, x1: 520, z0: -760, z1: 640 };
 // kind: 'box' (gray block), 'ring' (fountain bowl), 'hero' (built elsewhere), 'stub'
 export const LANDMARKS = [
   { id: 'needle',     name: 'Space Needle',              lat: 47.62050, lon: -122.34930, kind: 'hero' },
-  { id: 'mopop',      name: 'MoPOP',                     lat: 47.62152, lon: -122.34810, kind: 'box', w: 65,  d: 110, h: 25, rot: 8,   corridor: true },
+  { id: 'mopop',      name: 'MoPOP',                     lat: 47.62152, lon: -122.34810, kind: 'hero', w: 75,  d: 95,  h: 25, corridor: true }, // built by gen/mopop.js
   { id: 'station',    name: 'Seattle Center Station',    lat: 47.62215, lon: -122.34815, kind: 'stationSlot', w: 20, d: 70 },
   { id: 'psc',        name: 'Pacific Science Center',    lat: 47.61930, lon: -122.35120, kind: 'box', w: 150, d: 120, h: 10, rot: 0 },
   { id: 'arena',      name: 'Climate Pledge Arena',      lat: 47.62210, lon: -122.35400, kind: 'box', w: 150, d: 130, h: 26, rot: 0 },

@@ -7,6 +7,19 @@ const len3 = (x, y, z) => Math.sqrt(x * x + y * y + z * z);
 
 export const sphere = (cx, cy, cz, r) => (x, y, z) => len3(x - cx, y - cy, z - cz) - r;
 
+// Ellipsoid (approximate SDF: exact sign, distance scaled by the smallest radius).
+export const ellipsoid = (cx, cy, cz, rx, ry, rz) => (x, y, z) => {
+  const kx = (x - cx) / rx, ky = (y - cy) / ry, kz = (z - cz) / rz;
+  const k = Math.sqrt(kx * kx + ky * ky + kz * kz);
+  return (k - 1) * Math.min(rx, ry, rz);
+};
+
+// Box with rounded edges (radius r).
+export const roundedBox = (cx, cy, cz, hx, hy, hz, r) => {
+  const b = box(cx, cy, cz, hx - r, hy - r, hz - r);
+  return (x, y, z) => b(x, y, z) - r;
+};
+
 // Axis-aligned box from center and half extents.
 export const box = (cx, cy, cz, hx, hy, hz) => (x, y, z) => {
   const dx = Math.abs(x - cx) - hx, dy = Math.abs(y - cy) - hy, dz = Math.abs(z - cz) - hz;
@@ -73,6 +86,12 @@ export const rotateY = (f, deg) => {
 };
 // N-fold rotational copies of a shape around the y axis at the origin.
 export const radial = (f, n, offsetDeg = 0) => union(...Array.from({ length: n }, (_, i) => rotateY(f, offsetDeg + (i * 360) / n)));
+
+// Low-frequency surface folds: displaces the surface by ±amp (voxels) with wavelength `wl`.
+export const ripple = (f, amp, wl, phase = 0) => (x, y, z) => {
+  const k = (Math.PI * 2) / wl;
+  return f(x, y, z) + amp * Math.sin(x * k + phase) * Math.cos(z * k * 0.7 + y * k * 0.35);
+};
 
 // Only keep the part of `f` inside a vertical y range (cheap clip).
 export const clipY = (f, y0, y1) => (x, y, z) => Math.max(f(x, y, z), Math.max(y0 - y, y - y1));

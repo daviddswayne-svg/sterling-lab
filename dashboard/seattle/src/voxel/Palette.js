@@ -5,6 +5,7 @@
 export const FLAG_GLASS = 1;        // transparent pass
 export const FLAG_FRESNEL_BLUE = 2; // pearlescent hue shift at grazing angles (MoPOP blue)
 export const FLAG_NO_JITTER = 4;    // skip per-voxel color variation (signs, screens)
+export const FLAG_PANELS = 8;       // panel-scale shade variation (MoPOP's 21,000 shingles)
 
 export const BYTES_PER_ENTRY = 8;
 
@@ -102,12 +103,16 @@ export function defaultPalette() {
   p.add('needle_glass', '#9fc6e6', { metal: 0.1, rough: 0.05, flags: FLAG_GLASS });
   p.add('deck_floor', '#2a2a2e', { rough: 0.7 });
   p.add('beacon_red', '#ff2a2a', { emissive: 1, flags: FLAG_NO_JITTER });
-  // MoPOP material classes (tuned later, hooks live now)
-  p.add('mopop_gold', '#c9a24a', { metal: 0.95, rough: 0.15 });
-  p.add('mopop_blue', '#2b3fd6', { metal: 0.8, rough: 0.3, flags: FLAG_FRESNEL_BLUE });
-  p.add('mopop_silver', '#b7bcc4', { metal: 0.9, rough: 0.5 });
-  p.add('mopop_red', '#b1252b', { metal: 0.3, rough: 0.55 });
-  p.add('mopop_purple', '#5a2d8a', { metal: 0.8, rough: 0.35, flags: FLAG_FRESNEL_BLUE });
+  // MoPOP finishes (from the reference photos): bead-blasted gold stainless,
+  // brushed silver stainless, mirrored purple stainless, painted pale-blue and
+  // red aluminium, plus the silver-white billow and the Sky Church's dark roof.
+  p.add('mopop_gold', '#c3923c', { metal: 0.95, rough: 0.4, flags: FLAG_PANELS });
+  p.add('mopop_blue', '#7fa8cf', { metal: 0.75, rough: 0.32, flags: FLAG_PANELS | FLAG_FRESNEL_BLUE });
+  p.add('mopop_silver', '#a9aeb7', { metal: 0.92, rough: 0.5, flags: FLAG_PANELS });
+  p.add('mopop_red', '#a8262a', { metal: 0.45, rough: 0.5, flags: FLAG_PANELS });
+  p.add('mopop_purple', '#472468', { metal: 1.0, rough: 0.12, flags: FLAG_PANELS | FLAG_FRESNEL_BLUE });
+  p.add('mopop_white', '#c9ced5', { metal: 0.85, rough: 0.45, flags: FLAG_PANELS });
+  p.add('mopop_dark', '#2b2d31', { rough: 0.9 });
   // generic building / vehicle colors
   p.add('brick', '#8b4a3a', { rough: 0.95 });
   p.add('window_dark', '#1c2230', { metal: 0.2, rough: 0.2 });

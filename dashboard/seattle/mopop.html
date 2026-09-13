@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>MoPOP Materials</title>
+  <link rel="stylesheet" href="./style.css" />
+  <script type="importmap">
+  { "imports": { "three": "./vendor/three/three.module.js", "three/addons/": "./vendor/three/addons/" } }
+  </script>
+  <style>.panel { min-width: 300px; } .panel label span.v { min-width: 3.5em; text-align: right; opacity: .7; font-variant-numeric: tabular-nums; }</style>
+</head>
+<body>
+  <canvas id="c"></canvas>
+  <div id="hud"></div>
+  <div class="panel">
+    <div class="title">MoPOP finishes <span>materials test</span></div>
+    <label>Finish <select id="finish"></select></label>
+    <label>Metal <input id="metal" type="range" min="0" max="1" step="0.01" /><span class="v" id="metal_v"></span></label>
+    <label>Rough <input id="rough" type="range" min="0" max="1" step="0.01" /><span class="v" id="rough_v"></span></label>
+    <label>Color <input id="color" type="color" /></label>
+    <hr style="border:0;border-top:1px solid rgba(255,255,255,.15);margin:2px 0" />
+    <label>Panel size <input id="panelSize" type="range" min="0.5" max="4" step="0.1" value="1.5" /><span class="v" id="panelSize_v"></span></label>
+    <label>Panel amount <input id="panelAmount" type="range" min="0" max="0.3" step="0.01" value="0.07" /><span class="v" id="panelAmount_v"></span></label>
+    <label>Fresnel <input id="fresnelAmount" type="range" min="0" max="1.5" step="0.05" value="0.8" /><span class="v" id="fresnelAmount_v"></span></label>
+    <label>Sun <input id="sun" type="range" min="4" max="85" value="30" /></label>
+    <label>Azimuth <input id="azimuth" type="range" min="0" max="360" value="200" /></label>
+    <div class="row"><span id="status" class="status"></span><button id="dump">Copy palette JSON</button></div>
+  </div>
+  <script type="module">
+    import * as THREE from 'three';
+    import { createApp } from './src/render/App.js';
+    import { defaultPalette } from './src/voxel/Palette.js';
+    import { PaletteTextures, setShaderParam, SHADER_PARAMS } from './src/render/VoxelMaterial.js';
+    import { meshGrid } from './src/render/VoxelObject.js';
+    import { Grid } from './src/voxel/Grid.js';
+    import { ellipsoid, smoothUnion, rasterize, aabb, box } from './src/voxel/Shapes.js';
+
+    const app = await createApp({ canvas: document.getElementById('c'), hud: document.getElementById('hud'), worldUrls: [] });
+    window.seattle = app;
+    app.palette = defaultPalette();
+    app.textures = new PaletteTextures(app.palette);
+    await app.ready;
+    app.setSun(30, 200);
+
+    // Five Gehry-ish blobs (a squashed, folded ellipsoid pair each) on a concrete plinth, hero scale.
+    const FINISHES = ['mopop_gold', 'mopop_blue', 'mopop_silver', 'mopop_red', 'mopop_purple', 'mopop_white'];
+    const HERO = 0.25, M = 1 / HERO;
+    const g = new Grid();
+    rasterize(g, box(0, -0.5 * M, 0, 60 * M, 0.5 * M, 14 * M), aabb(-60 * M, -M, -14 * M, 60 * M, 0, 14 * M), app.palette.index('concrete'));
+    FINISHES.forEach((name, i) => {
+      const x = (i - (FINISHES.length - 1) / 2) * 18 * M;
+      const s = smoothUnion(3 * M, ellipsoid(x, 6 * M, 0, 7 * M, 6 * M, 5.5 * M), ellipsoid(x + 4 * M, 4 * M, 3 * M, 5 * M, 4 * M, 4 * M), ellipsoid(x - 5 * M, 9 * M, -2 * M, 3.5 * M, 4 * M, 3 * M));
+      rasterize(g, s, aabb(x - 12 * M, 0, -8 * M, x + 12 * M, 14 * M, 8 * M), app.palette.index(name));
+    });
+    const obj = meshGrid(g, app.palette.flagsArray(), HERO, app.materialsFor(HERO));
+    app.scene.add(obj);
+    app.camera.position.set(0, 22, 62);
+    app.controls.target.set(0, 5, 0);
+
+    // --- UI ---
+    const $ = (id) => document.getElementById(id);
+    const sel = $('finish');
+    FINISHES.forEach((n) => { const o = document.createElement('option'); o.value = n; o.textContent = n.replace('mopop_', ''); sel.appendChild(o); });
+    const hex = (e) => '#' + [e.r, e.g, e.b].map((v) => v.toString(16).padStart(2, '0')).join('');
+    const load = () => {
+      const e = app.palette.entries[app.palette.index(sel.value)];
+      $('metal').value = e.metal; $('rough').value = e.rough; $('color').value = hex(e);
+      $('metal_v').textContent = e.metal.toFixed(2); $('rough_v').textContent = e.rough.toFixed(2);
+    };
+    sel.addEventListener('change', load); load();
+    const applyEntry = () => {
+      app.textures.set(sel.value, $('color').value, { metal: +$('metal').value, rough: +$('rough').value });
+      $('metal_v').textContent = (+$('metal').value).toFixed(2); $('rough_v').textContent = (+$('rough').value).toFixed(2);
+    };
+    for (const id of ['metal', 'rough', 'color']) $(id).addEventListener('input', applyEntry);
+    for (const id of ['panelSize', 'panelAmount', 'fresnelAmount']) {
+      const show = () => ($(id + '_v').textContent = (+$(id).value).toFixed(2));
+      $(id).addEventListener('input', () => { setShaderParam(id, +$(id).value); show(); }); show();
+    }
+    const sunUI = () => app.setSun(+$('sun').value, +$('azimuth').value);
+    $('sun').addEventListener('input', sunUI); $('azimuth').addEventListener('input', sunUI);
+    $('dump').addEventListener('click', async () => {
+      const out = {};
+      for (const n of FINISHES) { const e = app.palette.entries[app.palette.index(n)]; out[n] = { hex: hex(e), metal: +e.metal.toFixed(2), rough: +e.rough.toFixed(2) }; }
+      out.shader = { ...SHADER_PARAMS };
+      const text = JSON.stringify(out, null, 2);
+      try { await navigator.clipboard.writeText(text); $('status').textContent = 'copied'; } catch { $('status').textContent = text; }
+      console.log(text);
+    });
+  </script>
+</body>
+</html>

@@ -29,15 +29,22 @@ export function buildBeam(grid, pal, spline, { pierEvery = 42, pierSkip = () => 
   return n;
 }
 
-/** Carve a corridor for the trains along a spline through whatever is there. */
-export function carveCorridor(grid, spline, { halfWidth = 18, floor = -2, ceiling = 34 } = {}) {
+/**
+ * Carve a corridor for the trains along a spline through whatever is there.
+ * `scale` converts the spline's env-voxel coordinates to the grid's voxels
+ * (2 for the hero layer); halfWidth/floor/ceiling are in the grid's voxels.
+ * `zRange` (env voxels) limits the carve to a stretch of the route.
+ */
+export function carveCorridor(grid, spline, { halfWidth = 18, floor = -2, ceiling = 34, scale = 1, zRange = null } = {}) {
   let n = 0;
-  for (let s = 0; s <= spline.length; s += 0.5) {
+  for (let s = 0; s <= spline.length; s += 0.5 / scale) {
     const p = spline.pointAt(s), t = spline.tangentAt(s);
+    if (zRange && (p.z < zRange[0] || p.z > zRange[1])) continue;
     const nx = t.z, nz = -t.x;
+    const px = p.x * scale, pz = p.z * scale, py = spline.y * scale;
     for (let o = -halfWidth; o <= halfWidth; o += 0.5)
-      for (let y = spline.y + floor; y <= spline.y + ceiling; y++) {
-        const x = Math.round(p.x + nx * o), z = Math.round(p.z + nz * o);
+      for (let y = py + floor; y <= py + ceiling; y++) {
+        const x = Math.round(px + nx * o), z = Math.round(pz + nz * o);
         if (grid.get(x, y, z)) { grid.set(x, y, z, 0); n++; }
       }
   }
