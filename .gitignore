@@ -16,3 +16,6 @@ voxsure/backend/uploads/*.stl
 voxsure/backend/uploads/*.obj
 voxsure/backend/uploads/*.ply
 
+
+# Seattle voxel tooling
+seattle-voxel/node_modules/

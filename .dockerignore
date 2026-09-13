@@ -28,3 +28,6 @@ tests/
 # Documentation
 *.md
 !README.md
+
+# Seattle voxel tooling
+seattle-voxel/node_modules/

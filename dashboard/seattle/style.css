@@ -1,0 +1,19 @@
+html, body { margin: 0; height: 100%; overflow: hidden; background: #9fbfdc; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; touch-action: none; user-select: none; }
+canvas#c { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+#hud { position: fixed; inset: 0; pointer-events: none; }
+.hud-info { position: absolute; top: 8px; left: 96px; color: #fff; font: 12px/1.4 ui-monospace, Menlo, monospace; text-shadow: 0 1px 2px rgba(0,0,0,.6); white-space: nowrap; }
+.hud-progress { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: min(60vw, 360px); height: 8px; background: rgba(0,0,0,.35); border-radius: 4px; overflow: hidden; }
+.hud-progress .bar { height: 100%; width: 0; background: #fff; transition: width .1s; }
+.hud-progress span { position: absolute; top: 14px; left: 0; right: 0; text-align: center; color: #fff; font: 12px ui-monospace, Menlo, monospace; text-shadow: 0 1px 2px rgba(0,0,0,.6); }
+.hud-progress.done { opacity: 0; transition: opacity .6s .3s; }
+.panel { position: fixed; left: 16px; bottom: 16px; display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; min-width: 240px; max-width: calc(100vw - 32px); background: rgba(18, 22, 30, .62); color: #eef2f7; border: 1px solid rgba(255,255,255,.14); border-radius: 12px; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); font-size: 13px; }
+.panel .title { font-weight: 700; font-size: 15px; letter-spacing: -0.01em; }
+.panel .title span { font-weight: 500; opacity: .6; font-size: 12px; margin-left: 6px; }
+.panel label { display: flex; align-items: center; gap: 10px; justify-content: space-between; }
+.panel input[type=range] { flex: 1; accent-color: #ffd27a; }
+.panel select, .panel button { font: inherit; padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,.2); background: rgba(255,255,255,.08); color: inherit; cursor: pointer; }
+.panel button.primary { background: #ffd27a; color: #1a1a1a; border-color: transparent; font-weight: 600; }
+.panel .row { display: flex; gap: 10px; align-items: center; justify-content: space-between; }
+.panel .hint { opacity: .55; font-size: 12px; }
+.panel .status { font-size: 12px; opacity: .8; min-height: 1.2em; }
+@media (max-width: 600px) { .panel { left: 12px; right: 12px; bottom: 12px; min-width: 0; } .hud-info { display: none; } }

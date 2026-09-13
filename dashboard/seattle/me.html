@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Seattle Center — Me</title>
+  <link rel="stylesheet" href="./style.css" />
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "./vendor/three/three.module.js",
+      "three/addons/": "./vendor/three/addons/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <canvas id="c"></canvas>
+  <div id="hud"></div>
+  <div class="panel">
+    <div class="title">Me <span>2D cutout prototype</span></div>
+    <div class="row">
+      <button id="start" class="primary">Start camera</button>
+      <select id="seat">
+        <option value="plaza">Plaza (needle base)</option>
+        <option value="deck">Observation deck</option>
+        <option value="lawn">Lawn, wide</option>
+      </select>
+    </div>
+    <label>Height <input id="height" type="range" min="1.2" max="5" step="0.05" value="2.6" /></label>
+    <label>Warmth <input id="warmth" type="range" min="0" max="1" step="0.02" value="0.25" /></label>
+    <label>Brightness <input id="brightness" type="range" min="0.5" max="1.6" step="0.02" value="1" /></label>
+    <label>Sun <input id="sun" type="range" min="4" max="85" value="30" /></label>
+    <div class="row"><label style="gap:6px"><input id="mirror" type="checkbox" checked /> mirror</label><span id="status" class="status">camera off</span></div>
+  </div>
+  <script type="module">
+    import * as THREE from 'three';
+    import { createApp } from './src/render/App.js';
+    import { createMeLayer } from './me.js';
+
+    const app = await createApp({ canvas: document.getElementById('c'), hud: document.getElementById('hud') });
+    window.seattle = app;
+    app.setSun(30, 200); // low sun from behind the camera → long shadow toward the needle
+
+    // Seats in world metres. Ground top = 0, deck floor top = 158.5.
+    const V = (x, y, z) => new THREE.Vector3(x, y, z);
+    const seats = [
+      { name: 'plaza', position: V(0, 0, 26), cameraOffset: V(3, 2.2, 9) },
+      { name: 'deck', position: V(0, 158.5, 22), cameraOffset: V(4, 2.0, 8) },
+      { name: 'lawn', position: V(30, 0, 90), cameraOffset: V(10, 6, 40) },
+    ];
+    const status = document.getElementById('status');
+    const me = createMeLayer(app, { seats, onStatus: (s) => (status.textContent = s) });
+    await app.ready;
+    me.setSeat('plaza');
+
+    document.getElementById('start').addEventListener('click', async (e) => {
+      e.target.disabled = true;
+      try { await me.start(); } catch (err) { status.textContent = 'camera failed: ' + err.message; e.target.disabled = false; }
+    });
+    document.getElementById('seat').addEventListener('change', (e) => me.setSeat(e.target.value));
+    for (const id of ['height', 'warmth', 'brightness']) {
+      document.getElementById(id).addEventListener('input', (e) => me.set({ [id === 'height' ? 'frameHeight' : id]: +e.target.value }));
+    }
+    document.getElementById('mirror').addEventListener('change', (e) => me.set({ mirror: e.target.checked }));
+    document.getElementById('sun').addEventListener('input', (e) => app.setSun(+e.target.value, app.sun.azimuth));
+  </script>
+</body>
+</html>

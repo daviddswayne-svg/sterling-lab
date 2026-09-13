@@ -1,0 +1,15 @@
+{
+  "name": "seattle-voxel",
+  "private": true,
+  "version": "5.0.0",
+  "type": "module",
+  "description": "Seattle Center voxel world v5 — tooling (bake + vendor). Served files live in ../dashboard/seattle/",
+  "scripts": {
+    "vendor": "node vendor.js",
+    "bake": "node bake.js",
+    "dev": "cd ../dashboard && python3 -m http.server 8080"
+  },
+  "devDependencies": {
+    "three": "0.186.0"
+  }
+}
