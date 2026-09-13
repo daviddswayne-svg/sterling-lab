@@ -1,6 +1,8 @@
 // Scene bootstrap shared by index.html and me.html: renderer, sky, sun with a
 // camera-following shadow frustum, controls, and streaming world load via a
-// worker pool (nearest chunks first).
+// worker pool (nearest chunks first). Loads any number of world files — the
+// 0.5 m environment layer and the 0.25 m hero layer — each with its own
+// material pair (same palette, different voxelSize).
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { Sky } from 'three/addons/objects/Sky.js';
@@ -10,11 +12,11 @@ import { CHUNK, unpackKey } from '../voxel/Grid.js';
 import { PaletteTextures, createVoxelMaterials } from './VoxelMaterial.js';
 import { buildChunkMeshes, mergeBuffers } from './ChunkMesh.js';
 
-// Static chunks are merged into REGION³-chunk regions (4 → 64 m cubes) so the
-// world is a few dozen draw calls instead of one per 32³ chunk.
-const REGION = 4;
+// Static chunks are merged into REGION³-chunk regions so the world is a few
+// dozen draw calls instead of one per 32³ chunk.
+const REGION = 12; // 384 voxels = 192 m at 0.5 m; keeps the site under ~30 regions
 
-export async function createApp({ canvas, hud, worldUrl = './world.bin' }) {
+export async function createApp({ canvas, hud, worldUrls = ['./world.bin', './detail.bin'] }) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -86,6 +88,8 @@ export async function createApp({ canvas, hud, worldUrl = './world.bin' }) {
   // Keep the shadow frustum tight around whatever the camera is looking at.
   const tmp = new THREE.Vector3();
   function updateShadowFrustum() {
+    // POV modes keep the orbit target under the camera so the shadow frustum follows.
+    if (!controls.enabled) controls.target.copy(camera.position).add(camera.getWorldDirection(tmp).multiplyScalar(40));
     const dist = camera.position.distanceTo(controls.target);
     const size = THREE.MathUtils.clamp(dist * 1.1, 40, 700);
     const cam = sun.shadow.camera;
@@ -110,54 +114,63 @@ export async function createApp({ canvas, hud, worldUrl = './world.bin' }) {
 
   const app = {
     renderer, scene, camera, controls, sun: null, sunLight: sun,
-    palette: null, textures: null, materials: null, voxelSize: 0.5,
+    palette: null, textures: null, materialsBySize: new Map(), worlds: [],
     chunks: new Map(), triangles: 0, worldBytes: 0,
     frameCallbacks: [],
     setSun,
     onFrame(cb) { this.frameCallbacks.push(cb); },
     setColor(name, hex, props) { this.textures.set(name, hex, props); },
+    // Materials for a voxel size — dynamic objects ask for theirs here.
+    materialsFor(voxelSize) {
+      let m = this.materialsBySize.get(voxelSize);
+      if (!m) { m = createVoxelMaterials(this.textures, voxelSize); this.materialsBySize.set(voxelSize, m); }
+      return m;
+    },
     ready: null,
   };
 
   // --- World load + streaming mesh ---
   app.ready = (async () => {
     const t0 = performance.now();
-    const res = await fetch(worldUrl, { cache: 'no-cache' });
-    const bytes = new Uint8Array(await res.arrayBuffer());
-    app.worldBytes = bytes.length;
-    const { grid, palette, voxelSize } = await decodeWorld(bytes);
-    app.palette = palette;
-    app.voxelSize = voxelSize;
-    app.grid = grid;
-    app.textures = new PaletteTextures(palette);
-    app.materials = createVoxelMaterials(app.textures, voxelSize);
-    const flags = palette.flagsArray();
-
-    const keys = [...grid.chunks.keys()];
-    const total = keys.length;
-    const center = (key) => {
-      const [cx, cy, cz] = unpackKey(key);
-      return new THREE.Vector3((cx + 0.5) * CHUNK * voxelSize, (cy + 0.5) * CHUNK * voxelSize, (cz + 0.5) * CHUNK * voxelSize);
-    };
-    keys.sort((a, b) => center(a).distanceTo(controls.target) - center(b).distanceTo(controls.target));
-
-    const nWorkers = Math.max(1, Math.min(8, (navigator.hardwareConcurrency || 4) - 1));
-    const workers = Array.from({ length: nWorkers }, () => new Worker(new URL('../voxel/mesh.worker.js', import.meta.url), { type: 'module' }));
-    let done = 0, next = 0;
-    const meshedAt = performance.now();
+    const jobs = []; // { fileIdx, key, grid, flags, voxelSize, center }
+    for (const url of worldUrls) {
+      const res = await fetch(url, { cache: 'no-cache' });
+      if (!res.ok) { console.warn('world file missing', url); continue; }
+      const bytes = new Uint8Array(await res.arrayBuffer());
+      app.worldBytes += bytes.length;
+      const { grid, palette, voxelSize } = await decodeWorld(bytes);
+      if (!app.palette) {
+        app.palette = palette;
+        app.textures = new PaletteTextures(palette);
+      }
+      const fileIdx = app.worlds.length;
+      app.worlds.push({ url, grid, voxelSize, flags: palette.flagsArray() });
+      for (const key of grid.chunks.keys()) {
+        const [cx, cy, cz] = unpackKey(key);
+        jobs.push({
+          fileIdx, key, voxelSize,
+          center: new THREE.Vector3((cx + 0.5) * CHUNK * voxelSize, (cy + 0.5) * CHUNK * voxelSize, (cz + 0.5) * CHUNK * voxelSize),
+        });
+      }
+    }
+    app.grid = app.worlds[0]?.grid;
+    app.voxelSize = app.worlds[0]?.voxelSize ?? 0.5;
+    const total = jobs.length;
+    jobs.sort((a, b) => a.center.distanceTo(controls.target) - b.center.distanceTo(controls.target));
 
     // region bookkeeping: how many chunks each region expects, and what has arrived
-    const regionOf = (key) => {
-      const [cx, cy, cz] = unpackKey(key);
-      return `${Math.floor(cx / REGION)},${Math.floor(cy / REGION)},${Math.floor(cz / REGION)}`;
+    const regionOf = (job) => {
+      const [cx, cy, cz] = unpackKey(job.key);
+      // +1 on y so the ground slab (chunk row -1) shares a region with what stands on it
+      return `${job.fileIdx}:${Math.floor(cx / REGION)},${Math.floor((cy + 1) / REGION)},${Math.floor(cz / REGION)}`;
     };
     const expected = new Map();
-    for (const k of keys) expected.set(regionOf(k), (expected.get(regionOf(k)) || 0) + 1);
+    for (const j of jobs) expected.set(regionOf(j), (expected.get(regionOf(j)) || 0) + 1);
     const arrived = new Map();
-    const flushRegion = (rk) => {
+    const flushRegion = (rk, voxelSize) => {
       const parts = arrived.get(rk);
       const merged = { opaque: mergeBuffers(parts.map((p) => p.opaque)), glass: mergeBuffers(parts.map((p) => p.glass)) };
-      const meshes = buildChunkMeshes(merged, app.materials);
+      const meshes = buildChunkMeshes(merged, app.materialsFor(voxelSize));
       if (meshes.opaque) scene.add(meshes.opaque);
       if (meshes.glass) scene.add(meshes.glass);
       app.chunks.set(rk, meshes);
@@ -165,20 +178,30 @@ export async function createApp({ canvas, hud, worldUrl = './world.bin' }) {
       arrived.delete(rk);
     };
 
+    const nWorkers = Math.max(1, Math.min(8, (navigator.hardwareConcurrency || 4) - 1));
+    const workers = Array.from({ length: nWorkers }, () => new Worker(new URL('../voxel/mesh.worker.js', import.meta.url), { type: 'module' }));
+    let done = 0, next = 0;
+    const meshedAt = performance.now();
+    const inflight = new Map(); // worker → job
+
     await new Promise((resolve) => {
+      if (!total) return resolve();
       const dispatch = (w) => {
         if (next >= total) return;
-        const key = keys[next++];
-        const [cx, cy, cz] = unpackKey(key);
-        const apron = grid.extractWithApron(cx, cy, cz);
-        w.postMessage({ id: key, apron, flags, origin: [cx * CHUNK, cy * CHUNK, cz * CHUNK], voxelSize }, [apron.buffer]);
+        const job = jobs[next++];
+        const world = app.worlds[job.fileIdx];
+        const [cx, cy, cz] = unpackKey(job.key);
+        const apron = world.grid.extractWithApron(cx, cy, cz);
+        inflight.set(w, job);
+        w.postMessage({ id: job.key, apron, flags: world.flags, origin: [cx * CHUNK, cy * CHUNK, cz * CHUNK], voxelSize: world.voxelSize }, [apron.buffer]);
       };
       workers.forEach((w) => {
         w.onmessage = (e) => {
-          const rk = regionOf(e.data.id);
+          const job = inflight.get(w);
+          const rk = regionOf(job);
           if (!arrived.has(rk)) arrived.set(rk, []);
           arrived.get(rk).push(e.data);
-          if (arrived.get(rk).length === expected.get(rk)) flushRegion(rk);
+          if (arrived.get(rk).length === expected.get(rk)) flushRegion(rk, job.voxelSize);
           done++;
           progress.querySelector('.bar').style.width = `${(100 * done) / total}%`;
           progress.querySelector('span').textContent = `meshing ${done}/${total}`;
@@ -203,7 +226,9 @@ export async function createApp({ canvas, hud, worldUrl = './world.bin' }) {
     requestAnimationFrame(frame);
     timer.update(ts);
     const dt = Math.min(timer.getDelta(), 0.1);
-    controls.update();
+    // OrbitControls.update() moves the camera even when input is disabled, so
+    // only run it in orbit-style modes; POV cameras own the camera outright.
+    if (controls.enabled) controls.update();
     updateShadowFrustum();
     for (const cb of app.frameCallbacks) cb(dt);
     renderer.render(scene, camera);
@@ -212,7 +237,8 @@ export async function createApp({ canvas, hud, worldUrl = './world.bin' }) {
       const r = renderer.info.render;
       info.textContent =
         `${r.calls} draw calls · ${(r.triangles / 1000).toFixed(0)}k tris · ${app.chunks.size} regions` +
-        (app.loadMs ? ` · world ${(app.worldBytes / 1024).toFixed(0)} KB · load ${app.loadMs.toFixed(0)} ms (mesh ${app.meshMs.toFixed(0)} ms)` : '');
+        (app.loadMs ? ` · world ${(app.worldBytes / 1024).toFixed(0)} KB · load ${app.loadMs.toFixed(0)} ms (mesh ${app.meshMs.toFixed(0)} ms)` : '') +
+        (app.status ? ` · ${app.status}` : '');
     }
   }
 

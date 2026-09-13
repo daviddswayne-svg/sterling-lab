@@ -18,10 +18,19 @@
   <canvas id="c"></canvas>
   <div id="hud"></div>
   <div class="panel">
-    <div class="title">Seattle Center <span>voxel v5 · milestone A</span></div>
+    <div class="title">Seattle Center <span>voxel v5 · milestone B</span></div>
     <label>Sun <input id="sun" type="range" min="4" max="85" value="38" /></label>
     <label>Azimuth <input id="azimuth" type="range" min="0" max="360" value="155" /></label>
-    <div class="row"><span id="mode">ORBIT (F)</span><span class="hint">drag · scroll · F to fly (WASD QE, shift)</span></div>
+    <div class="row cams">
+      <button data-cam="orbit" class="active">Orbit</button>
+      <button data-cam="red">Red POV</button>
+      <button data-cam="blue">Blue POV</button>
+      <button data-cam="chase">Chase</button>
+      <button data-cam="platform">Platform</button>
+      <button data-cam="elevator">Elevator</button>
+      <button data-cam="deck">Deck</button>
+    </div>
+    <div class="row"><span id="mode">ORBIT</span><span class="hint">1–7 cameras · F to fly (WASD QE, shift)</span></div>
   </div>
   <script type="module" src="./app.js"></script>
 </body>

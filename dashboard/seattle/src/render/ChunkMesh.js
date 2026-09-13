@@ -39,7 +39,9 @@ export function buildChunkMeshes(result, materials) {
   const og = buildGeometry(result.opaque);
   if (og) {
     out.opaque = new THREE.Mesh(og, materials.opaque);
-    out.opaque.castShadow = true;
+    // Flat ground regions receive shadows but have nothing to cast; skipping
+    // them halves the shadow pass draw calls.
+    out.opaque.castShadow = og.boundingBox.max.y - og.boundingBox.min.y > 1.0;
     out.opaque.receiveShadow = true;
     out.triangles += og.index.count / 3;
   }

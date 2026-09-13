@@ -14,6 +14,9 @@ canvas#c { position: fixed; inset: 0; width: 100%; height: 100%; display: block;
 .panel select, .panel button { font: inherit; padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,.2); background: rgba(255,255,255,.08); color: inherit; cursor: pointer; }
 .panel button.primary { background: #ffd27a; color: #1a1a1a; border-color: transparent; font-weight: 600; }
 .panel .row { display: flex; gap: 10px; align-items: center; justify-content: space-between; }
+.panel .cams { justify-content: flex-start; flex-wrap: wrap; gap: 6px; }
+.panel .cams button { padding: 5px 9px; font-size: 12px; }
+.panel .cams button.active { background: #ffd27a; color: #1a1a1a; border-color: transparent; font-weight: 600; }
 .panel .hint { opacity: .55; font-size: 12px; }
 .panel .status { font-size: 12px; opacity: .8; min-height: 1.2em; }
 @media (max-width: 600px) { .panel { left: 12px; right: 12px; bottom: 12px; min-width: 0; } .hud-info { display: none; } }

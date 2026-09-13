@@ -1,6 +1,7 @@
 // world.bin: voxels, not meshes. Tiny on disk, meshed in workers on load.
 //
-//   'SVX1'  u16 version  f32 voxelSize  u32 bodyLength  [palette 2048 bytes]
+//   'SVX1'  u16 version  f32 voxelSize  u32 bodyLength  u32 namesLength
+//   [palette 2048 bytes] [names: JSON array of 256 strings, UTF-8]
 //   deflate-raw( per chunk: i32 key, u32 runCount, runCount × (u8 idx, u16 run) )
 //
 // Uses the web CompressionStream API, available in browsers and Node 18+.
@@ -9,8 +10,8 @@ import { Grid, CHUNK_VOLUME } from './Grid.js';
 import { Palette, BYTES_PER_ENTRY } from './Palette.js';
 
 const MAGIC = 0x31585653; // 'SVX1' little-endian
-const VERSION = 1;
-const HEADER = 4 + 2 + 4 + 4;
+const VERSION = 2;
+const HEADER = 4 + 2 + 4 + 4 + 4;
 const PALETTE_BYTES = 256 * BYTES_PER_ENTRY;
 
 async function pipe(bytes, stream) {
@@ -47,14 +48,17 @@ export async function encodeWorld(grid, palette, voxelSize) {
   for (const p of parts) { body.set(p, o); o += p.length; }
   const packed = await pipe(body, new CompressionStream('deflate-raw'));
 
-  const out = new Uint8Array(HEADER + PALETTE_BYTES + packed.length);
+  const names = new TextEncoder().encode(JSON.stringify(palette.entries.map((e) => e.name)));
+  const out = new Uint8Array(HEADER + PALETTE_BYTES + names.length + packed.length);
   const dv = new DataView(out.buffer);
   dv.setUint32(0, MAGIC, true);
   dv.setUint16(4, VERSION, true);
   dv.setFloat32(6, voxelSize, true);
   dv.setUint32(10, packed.length, true);
+  dv.setUint32(14, names.length, true);
   out.set(palette.toBytes(), HEADER);
-  out.set(packed, HEADER + PALETTE_BYTES);
+  out.set(names, HEADER + PALETTE_BYTES);
+  out.set(packed, HEADER + PALETTE_BYTES + names.length);
   return out;
 }
 
@@ -65,8 +69,11 @@ export async function decodeWorld(bytes) {
   if (version !== VERSION) throw new Error(`unsupported world version ${version}`);
   const voxelSize = dv.getFloat32(6, true);
   const packedLen = dv.getUint32(10, true);
+  const namesLen = dv.getUint32(14, true);
   const palette = Palette.fromBytes(bytes.subarray(HEADER, HEADER + PALETTE_BYTES));
-  const packed = bytes.subarray(HEADER + PALETTE_BYTES, HEADER + PALETTE_BYTES + packedLen);
+  const names = JSON.parse(new TextDecoder().decode(bytes.subarray(HEADER + PALETTE_BYTES, HEADER + PALETTE_BYTES + namesLen)));
+  palette.setNames(names);
+  const packed = bytes.subarray(HEADER + PALETTE_BYTES + namesLen, HEADER + PALETTE_BYTES + namesLen + packedLen);
   const body = await pipe(packed, new DecompressionStream('deflate-raw'));
   const bdv = new DataView(body.buffer, body.byteOffset, body.byteLength);
 

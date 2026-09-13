@@ -60,6 +60,15 @@ export class Palette {
     return out;
   }
 
+  // Restore names (and the name → index map) after fromBytes.
+  setNames(names) {
+    this.byName.clear();
+    names.forEach((n, i) => {
+      this.entries[i].name = n || '';
+      if (n) { this.byName.set(n, i); this.next = Math.max(this.next, i + 1); }
+    });
+  }
+
   static fromBytes(bytes) {
     const p = new Palette();
     for (let i = 0; i < 256; i++) {
@@ -110,6 +119,7 @@ export function defaultPalette() {
   p.add('monorail_red', '#c8202f', { metal: 0.3, rough: 0.35 });
   p.add('monorail_skirt', '#3d3d40', { rough: 0.8 });
   p.add('monorail_roof', '#d6d6d2', { rough: 0.5 });
+  p.add('monorail_frame', '#4a4d55', { metal: 0.5, rough: 0.4 });
   p.add('chrome', '#e2e2e0', { metal: 0.95, rough: 0.12 });
   p.add('vent_dark', '#2a2a2c', { rough: 0.9 });
   p.add('headlight', '#fff6d5', { emissive: 1, flags: FLAG_NO_JITTER });
@@ -119,5 +129,21 @@ export function defaultPalette() {
   p.add('tree_trunk', '#5b4128', { rough: 1 });
   p.add('tree_leaf', '#3f7a2f', { rough: 1 });
   p.add('tree_leaf_light', '#5b9a3c', { rough: 1 });
+  // people
+  p.add('person_skin_1', '#e8b894', { rough: 0.9 });
+  p.add('person_skin_2', '#c68a5b', { rough: 0.9 });
+  p.add('person_skin_3', '#8a5a3c', { rough: 0.9 });
+  p.add('person_hair_dark', '#2b2118', { rough: 0.9 });
+  p.add('person_hair_light', '#c9a86a', { rough: 0.9 });
+  p.add('person_hair_red', '#8f4a2a', { rough: 0.9 });
+  p.add('person_shirt_red', '#c23a3a', { rough: 0.9 });
+  p.add('person_shirt_blue', '#2f62b8', { rough: 0.9 });
+  p.add('person_shirt_yellow', '#e0b33a', { rough: 0.9 });
+  p.add('person_shirt_green', '#3f8f4f', { rough: 0.9 });
+  p.add('person_shirt_white', '#eeeeea', { rough: 0.9 });
+  p.add('person_shirt_purple', '#6d3f9a', { rough: 0.9 });
+  p.add('person_pants_dark', '#2c2c34', { rough: 0.9 });
+  p.add('person_pants_blue', '#3b4d78', { rough: 0.9 });
+  p.add('person_pants_khaki', '#a8905c', { rough: 0.9 });
   return p;
 }
