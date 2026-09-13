@@ -35,9 +35,10 @@ export function buildBeam(grid, pal, spline, { pierEvery = 42, pierSkip = () => 
  * (2 for the hero layer); halfWidth/floor/ceiling are in the grid's voxels.
  * `zRange` (env voxels) limits the carve to a stretch of the route.
  */
-export function carveCorridor(grid, spline, { halfWidth = 18, floor = -2, ceiling = 34, scale = 1, zRange = null } = {}) {
+export function carveCorridor(grid, spline, { halfWidth = 18, floor = -2, ceiling = 34, scale = 1, zRange = null, sRange = null } = {}) {
   let n = 0;
-  for (let s = 0; s <= spline.length; s += 0.5 / scale) {
+  const [sA, sB] = sRange || [0, spline.length];
+  for (let s = sA; s <= sB; s += 0.5 / scale) {
     const p = spline.pointAt(s), t = spline.tangentAt(s);
     if (zRange && (p.z < zRange[0] || p.z > zRange[1])) continue;
     const nx = t.z, nz = -t.x;

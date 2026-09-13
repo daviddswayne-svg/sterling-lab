@@ -1,12 +1,17 @@
 // MoPOP (Experience Music Project), Frank Gehry, 2000 — as SDF lobes at hero
-// scale (0.25 m). Arrangement traced from David's reference aerials
-// (~/Desktop/Swayne Film Studio/emp/emp1.jpg from the north, emp3.jpg from
-// the Needle) and street shots. North up, east right; the monorail runs along
-// the building's east edge and pierces the gold "fist" at the NE.
+// scale (0.25 m). Arrangement from David's aerial reference (2026-09-12, with
+// Memorial Stadium and the Armory as anchors) plus the emp/ photo set:
+//   gold faces 5th Ave (EAST) and the monorail curves through it; red sits
+//   behind the gold to the north-east; the purple Sky Church box is central;
+//   the pale-BLUE billow on the SOUTH is the monorail station canopy — the
+//   platform faces the Needle from the south-west; the big brushed-SILVER
+//   billow is the west side; a small silver-white form at the north-west.
 //
 // The table is in METRES relative to the building centre; x east, z south.
 // Edit a line here to move a lobe. Lobes are rasterized in order, later ones
 // win where they overlap, so colour boundaries follow the surface intersections.
+// NOTE: yaw rotates about the BUILDING centre, so a yawed lobe lands away from
+// its nominal centre — check the top-down bake after moving one.
 import {
   ellipsoid, roundedBox, smoothUnion, rotateY, translate, clipY, capsule, ripple,
   rasterize, aabb,
@@ -16,19 +21,19 @@ export const HERO = 0.25;
 
 // Each lobe: parts (ellipsoids [cx, cy, cz, rx, ry, rz]), blend radius, yaw (deg), colour.
 export const LOBES = [
-  { id: 'skyChurch', color: 'mopop_purple', roofColor: 'mopop_dark', box: [2, 12.5, -2, 18, 12.5, 20, 5], yaw: 10 },
-  { id: 'red',    color: 'mopop_red',    yaw: -12, k: 6, fold: [0.7, 16], parts: [[-4, 8.5, -38, 26, 9, 14], [12, 7, -30, 12, 7, 10], [-20, 6, -30, 10, 6, 8]] },
-  { id: 'silver', color: 'mopop_silver', yaw: 20,  k: 6, fold: [1.4, 13], parts: [[-32, 10, -14, 15, 11, 20], [-38, 7, 6, 10, 7.5, 10], [-22, 13, -26, 9, 8, 9]] },
-  { id: 'white',  color: 'mopop_white',  yaw: -8,  k: 7, fold: [1.3, 15], parts: [[-26, 7.5, 22, 18, 8, 19], [-8, 6, 30, 12, 6, 10], [-34, 5, 30, 8, 5, 8]] },
-  { id: 'blue',   color: 'mopop_blue',   yaw: 4,   k: 7, fold: [1.2, 18], parts: [[20, 8.5, 12, 14, 9.5, 28], [27, 6.5, 34, 9, 7, 13], [13, 9.5, -6, 11, 9, 11]] },
-  { id: 'gold',   color: 'mopop_gold',   yaw: -18, k: 5, fold: [0.8, 11], parts: [[22, 10, -28, 18, 12, 17], [33, 8, -18, 10, 9, 10], [12, 14, -36, 9, 7, 9]] },
+  { id: 'skyChurch', color: 'mopop_purple', roofColor: 'mopop_dark', box: [-2, 12.5, -8, 17, 12.5, 17, 5], yaw: 6 },
+  { id: 'red',    color: 'mopop_red',    yaw: 0,   k: 6, fold: [0.7, 16], parts: [[18, 8.5, -22, 15, 9, 15], [6, 6.5, -34, 12, 6.5, 9], [26, 7, -36, 9, 7, 8]] },
+  { id: 'silver', color: 'mopop_silver', yaw: 0,   k: 6, fold: [1.4, 13], parts: [[-30, 11, -6, 17, 12, 24], [-38, 8, 14, 10, 8, 10], [-20, 14, -26, 11, 8, 10]] },
+  { id: 'white',  color: 'mopop_white',  yaw: 0,   k: 7, fold: [1.3, 15], parts: [[-12, 8, -32, 14, 8, 11], [-26, 6, -40, 9, 6, 8]] },
+  { id: 'blue',   color: 'mopop_blue',   yaw: 0,   k: 7, fold: [1.2, 18], parts: [[4, 8, 24, 34, 8.5, 13], [-24, 6, 28, 12, 6.5, 9], [30, 7, 26, 10, 7, 9]] },
+  { id: 'gold',   color: 'mopop_gold',   yaw: 0,   k: 5, fold: [0.8, 11], parts: [[30, 10, 4, 14, 12, 20], [38, 7, -12, 9, 8, 10], [26, 13, 18, 9, 7, 9]] },
 ];
 
 // Roof "fret" trusses across the red lobe (metres, relative to centre): [x0,y0,z0, x1,y1,z1]
 const FRETS = [
-  [-26, 15.5, -44, 12, 16.5, -30],
-  [-22, 16.0, -49, 16, 17.0, -36],
-  [-18, 15.0, -38, 6, 15.5, -22],
+  [2, 15.5, -36, 32, 16.5, -20],
+  [6, 16.0, -42, 34, 17.0, -28],
+  [0, 15.0, -30, 26, 15.5, -14],
 ];
 
 /**
@@ -87,34 +92,32 @@ export function buildMoPOP(grid, pal, centre) {
 }
 
 /**
- * Line the monorail tunnel with gold where it passes through the building:
- * for every cross-section, cells just inside the carved boundary that have
- * solid building beyond them become gold "collar" skin.
+ * Line the monorail tunnel where it passes through the building: for every
+ * cross-section, cells just inside the carved boundary that have solid
+ * building beyond them get the skin colour of that building material, so the
+ * gold form wraps the track in gold and the blue canopy in blue.
  */
-export function goldCollar(grid, pal, spline, { scale = 2, halfWidth = 34, floor = -4, ceiling = 30, zRange = null } = {}) {
-  const gold = pal.index('mopop_gold');
+export function lineTunnel(grid, spline, { scale = 2, halfWidth = 34, floor = -4, ceiling = 30, sRange = null } = {}) {
   let n = 0;
-  for (let s = 0; s <= spline.length; s += 0.5) {
+  const [sA, sB] = sRange || [0, spline.length];
+  for (let s = sA; s <= sB; s += 0.5) {
     const p = spline.pointAt(s), t = spline.tangentAt(s);
-    if (zRange && (p.z < zRange[0] || p.z > zRange[1])) continue;
     const nx = t.z, nz = -t.x;
     const px = p.x * scale, pz = p.z * scale, py = spline.y * scale;
-    // side walls
     for (const sign of [-1, 1]) {
       for (let y = py + floor; y <= py + ceiling; y++) {
-        const ox = px + nx * sign * (halfWidth + 1), oz = pz + nz * sign * (halfWidth + 1);
-        if (!grid.get(Math.round(ox), y, Math.round(oz))) continue;
+        const outside = grid.get(Math.round(px + nx * sign * (halfWidth + 1)), y, Math.round(pz + nz * sign * (halfWidth + 1)));
+        if (!outside) continue;
         for (let d = 0; d <= 1; d++) {
-          const ix = px + nx * sign * (halfWidth - d), iz = pz + nz * sign * (halfWidth - d);
-          grid.set(Math.round(ix), y, Math.round(iz), gold); n++;
+          grid.set(Math.round(px + nx * sign * (halfWidth - d)), y, Math.round(pz + nz * sign * (halfWidth - d)), outside); n++;
         }
       }
     }
-    // ceiling
     for (let o = -halfWidth; o <= halfWidth; o += 0.5) {
       const x = Math.round(px + nx * o), z = Math.round(pz + nz * o);
-      if (!grid.get(x, py + ceiling + 1, z)) continue;
-      for (let d = 0; d <= 1; d++) { grid.set(x, py + ceiling - d, z, gold); n++; }
+      const above = grid.get(x, py + ceiling + 1, z);
+      if (!above) continue;
+      for (let d = 0; d <= 1; d++) { grid.set(x, py + ceiling - d, z, above); n++; }
     }
   }
   return n;

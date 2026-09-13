@@ -40,20 +40,25 @@ export const LANDMARKS = [
 
 export const byId = Object.fromEntries(LANDMARKS.map((l) => [l.id, { ...l, ...toVoxel(l.lat, l.lon) }]));
 
-// Monorail route waypoints (env voxels), Seattle Center station → south to the
-// Westlake stub, following 5th Ave N (x ≈ 225) then drifting SE downtown.
+// Monorail route waypoints (env voxels), s = 0 at the Seattle Center bumper.
+// The real alignment (aerial reference 2026-09-12): the platform faces the
+// Space Needle from MoPOP's south-west side, the track runs EAST under the
+// pale-blue station form, curves ~90° SOUTH inside the gold form onto
+// 5th Ave N (x ≈ 225), then runs south to the Westlake stub.
 export const ROUTE_POINTS = [
-  [172, -470], // north bumper, just past the station
-  [172, -400], // platform (station centre ≈ z -400, clear of MoPOP's north face at -336)
-  [176, -270], // entering MoPOP's corridor
-  [186, -200], // leaving MoPOP
-  [212, -100], // curve onto 5th Ave N
+  [60, -192],  // bumper, west end of the platform (30 m from the Needle axis)
+  [120, -194], // platform
+  [170, -192], // platform east end, under the blue canopy
+  [200, -182], // curve begins, inside the gold form
+  [216, -152],
+  [223, -100], // now southbound on 5th Ave N
   [225, 0],
   [228, 200],
   [236, 400],
   [252, 560],
-  [262, 630], // Westlake stub / world edge
+  [262, 630],  // Westlake stub / world edge
 ];
 export const BEAM_TOP = 18;        // 9 m above ground, env voxels
 export const BEAM_SEPARATION = 16; // centre-to-centre, env voxels (8 m)
-export const STATION = { zStart: -445, zEnd: -355 }; // platform extent along the route (env voxels)
+export const STATION = { s0: 0, s1: 132 }; // platform extent as arc length from the bumper (env voxels)
+export const FIFTH_AVE_X = 225;    // env voxels; MoPOP's east face sits ~7 m west of the beams

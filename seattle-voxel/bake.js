@@ -16,9 +16,9 @@ import { buildTrain } from '../dashboard/seattle/src/gen/monorail.js';
 import { buildBeam, carveCorridor } from '../dashboard/seattle/src/gen/beam.js';
 import { buildBlockout } from '../dashboard/seattle/src/gen/blockout.js';
 import { buildStation, buildWestlakeStub } from '../dashboard/seattle/src/gen/station.js';
-import { buildMoPOP, goldCollar } from '../dashboard/seattle/src/gen/mopop.js';
+import { buildMoPOP, lineTunnel } from '../dashboard/seattle/src/gen/mopop.js';
 import { TRAIN_LEN, VOXEL as HERO_V } from '../dashboard/seattle/src/gen/monorail.js';
-import { WORLD, byId, STATION, BEAM_TOP } from '../dashboard/seattle/src/site/layout.js';
+import { WORLD, byId, STATION, BEAM_TOP, FIFTH_AVE_X } from '../dashboard/seattle/src/site/layout.js';
 import { ROUTE } from '../dashboard/seattle/src/site/route.js';
 import { cylinderY, rasterize, aabbAround } from '../dashboard/seattle/src/voxel/Shapes.js';
 
@@ -57,10 +57,9 @@ timed('blockout', () => {
   return Object.entries(s).map(([k, v]) => `${k}:${v}`).join(' ');
 });
 
-// Monorail: carve the corridor through MoPOP's block, then sweep both beams.
-timed('corridor', () => carveCorridor(world, ROUTE.centre, { halfWidth: 16, floor: -2, ceiling: 20 }) + ' voxels carved');
+// Monorail beams (the station carries its own columns over its stretch)
 timed('beams', () => {
-  const skip = (p) => p.z > STATION.zStart && p.z < STATION.zEnd; // station has its own structure
+  const skip = (p) => ROUTE.centre.nearest(p.x, p.z) < STATION.s1;
   return buildBeam(world, pal, ROUTE.red, { pierSkip: skip }) + buildBeam(world, pal, ROUTE.blue, { pierSkip: skip }) + ' voxels';
 });
 timed('station', () => buildStation(world, pal, ROUTE.centre) + buildWestlakeStub(world, pal, ROUTE.centre, (TRAIN_LEN / 2) * HERO_V / ENV) + ' voxels');
@@ -86,19 +85,22 @@ if (NEEDLE_SOURCE === 'stl') {
   timed('needle', () => Object.values(buildNeedle(world, pal, 0, 0, 0)).reduce((a, b) => a + b, 0) + ' voxels');
 }
 
-// --- MoPOP: lobes anchored to the route line so the beams run along its east edge ---
+// --- MoPOP: east face 7 m west of the 5th Ave beams; the track curves through
+// the gold form and ends under the blue canopy on the south side ---
 {
-  const zM = byId.mopop.z;                                   // env voxels
-  const sM = ROUTE.centre.nearest(byId.mopop.x, zM);
-  const routeX = ROUTE.centre.pointAt(sM).x;                 // env voxels
-  const centreHero = [Math.round((routeX - 16 / ENV) * 2), Math.round(zM * 2)]; // centre 16 m west of the beams → beams bore through the gold/blue lobes
+  const zM = byId.mopop.z;                                              // env voxels
+  const centreHero = [Math.round((FIFTH_AVE_X - 44 / ENV) * 2), Math.round(zM * 2)];
   timed('mopop', () => {
     const s = buildMoPOP(detail, pal, centreHero);
     return Object.entries(s).map(([k, v]) => `${k}:${v}`).join(' ');
   });
-  const zRange = [zM - 130, zM + 130];
-  timed('mopop tunnel', () => carveCorridor(detail, ROUTE.centre, { scale: 2, halfWidth: 34, floor: -4, ceiling: 30, zRange }) + ' carved, '
-    + goldCollar(detail, pal, ROUTE.centre, { scale: 2, halfWidth: 34, floor: -4, ceiling: 30, zRange }) + ' collar');
+  // Bore: wide through the station (both beams + platform), narrower round the curve.
+  const sStation = [0, STATION.s1 + 6], sCurve = [STATION.s1 + 6, 260];
+  timed('mopop tunnel', () =>
+    carveCorridor(detail, ROUTE.centre, { scale: 2, halfWidth: 48, floor: -6, ceiling: 32, sRange: sStation }) +
+    carveCorridor(detail, ROUTE.centre, { scale: 2, halfWidth: 36, floor: -6, ceiling: 30, sRange: sCurve }) + ' carved, ' +
+    lineTunnel(detail, ROUTE.centre, { scale: 2, halfWidth: 48, floor: -6, ceiling: 32, sRange: sStation }) +
+    lineTunnel(detail, ROUTE.centre, { scale: 2, halfWidth: 36, floor: -6, ceiling: 30, sRange: sCurve }) + ' lined');
 }
 // Trains are dynamic objects built at runtime (src/sim/Train.js) — nothing static here.
 

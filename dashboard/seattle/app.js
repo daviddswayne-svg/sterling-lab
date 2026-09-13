@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { createApp } from './src/render/App.js';
 import { ROUTE } from './src/site/route.js';
-import { STATION, byId, ENV_VOXEL as ENV, BEAM_TOP, BEAM_SEPARATION } from './src/site/layout.js';
+import { ENV_VOXEL as ENV, BEAM_TOP, BEAM_SEPARATION } from './src/site/layout.js';
 import { TRAIN_LEN, VOXEL as HERO } from './src/gen/monorail.js';
 import { Train } from './src/sim/Train.js';
 import { People } from './src/sim/People.js';
@@ -23,7 +23,7 @@ await app.ready;
 
 // --- Monorail shuttle: stops at the Seattle Center platform and the Westlake stub ---
 const halfTrain = (TRAIN_LEN / 2) * HERO / ENV; // env voxels
-const stationS = (spline) => spline.nearest(byId.station.x, (STATION.zStart + STATION.zEnd) / 2);
+const stationS = () => halfTrain + 4; // train centre when its nose is 2 m short of the bumper
 const stopsFor = (spline) => [stationS(spline), spline.length - halfTrain - 6];
 const red = new Train(app, ROUTE.red, { color: 'monorail_red', name: 'Red', stops: stopsFor(ROUTE.red), direction: 1 });
 const blue = new Train(app, ROUTE.blue, { color: 'monorail_blue', name: 'Blue', stops: stopsFor(ROUTE.blue), direction: -1 });
@@ -35,9 +35,9 @@ const pc = ROUTE.centre.pointAt(stationS(ROUTE.centre)), pt = ROUTE.centre.tange
 const platformY = (BEAM_TOP + 2) * ENV + 0.5; // slab top surface
 const along = new THREE.Vector3(pt.x, 0, pt.z);
 const platformCenter = new THREE.Vector3(pc.x * ENV, platformY, pc.z * ENV);
-const stairs = platformCenter.clone().addScaledVector(along, 20).add(new THREE.Vector3(-3, 0, 0));
+const stairs = platformCenter.clone().addScaledVector(along, -(stationS() * ENV) - 3); // bumper end, toward the Needle
 const people = new People(app, {
-  platform: { center: platformCenter, along, halfLen: 20, halfWidth: (BEAM_SEPARATION / 2 - 4) * ENV, y: platformY },
+  platform: { center: platformCenter, along, halfLen: 24, halfWidth: (BEAM_SEPARATION / 2 - 4) * ENV, y: platformY },
   plaza: { center: new THREE.Vector3(0, 0.5, 0), rMin: 14, rMax: 28 },
   stairs,
 });
@@ -62,9 +62,9 @@ const modes = {
   chase: { update() { follow(red.chasePose()); } },
   platform: {
     enter() {
-      // south end of the platform, eye height, looking north along it toward the kiosk
-      app.camera.position.copy(platformCenter).addScaledVector(along, 22).add(new THREE.Vector3(0, 1.7, 0));
-      app.controls.target.copy(platformCenter).addScaledVector(along, -10).add(new THREE.Vector3(0, 1.4, 0));
+      // inner end of the platform, eye height, looking out along it toward the bumper and the Needle
+      app.camera.position.copy(platformCenter).addScaledVector(along, 24).add(new THREE.Vector3(0, 1.7, 0));
+      app.controls.target.copy(platformCenter).addScaledVector(along, -12).add(new THREE.Vector3(0, 1.4, 0));
       app.controls.enabled = true;
     },
   },
