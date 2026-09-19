@@ -118,6 +118,10 @@ body {
     transition: all 0.3s ease;
 }
 
+.status-indicator[hidden] {
+    display: none;
+}
+
 .status-indicator.operational {
     background: rgba(16, 185, 129, 0.1);
     border-color: rgba(16, 185, 129, 0.3);

@@ -30,7 +30,7 @@
                     <p class="subtitle">AI Infrastructure Platform</p>
                 </div>
             </div>
-            <div class="status-indicator" id="systemStatus">
+            <div class="status-indicator" id="systemStatus" hidden>
                 <span class="status-dot"></span>
                 <span class="status-text">Checking Systems...</span>
             </div>
@@ -153,7 +153,6 @@
                     </div>
                     <div class="cta-row">
                         <a href="/lab/" class="cta-button">Open Console</a>
-                        <a href="/bedrock/" class="cta-button secondary-cta">View Demos</a>
                     </div>
                 </div>
             </div>
@@ -205,7 +204,7 @@
 
         <!-- Footer -->
         <footer class="footer">
-            <p>© 2025 Swayne Systems • Authorized Personnel Only</p>
+            <p>© 2026 David Swayne</p>
         </footer>
     </div>
 
@@ -327,15 +326,15 @@
                     if (data.status === 'operational') {
                         indicator.className = 'status-indicator operational';
                         text.textContent = data.message;
+                        indicator.hidden = false;
                     } else {
-                        indicator.className = 'status-indicator degraded';
-                        text.textContent = data.message;
+                        // only advertise status when everything is up
+                        indicator.hidden = true;
                     }
                 })
                 .catch(() => {
                     const indicator = document.getElementById('systemStatus');
-                    indicator.className = 'status-indicator offline';
-                    indicator.querySelector('.status-text').textContent = 'Status Unknown';
+                    indicator.hidden = true;
                 });
         }
         checkSystemStatus();
