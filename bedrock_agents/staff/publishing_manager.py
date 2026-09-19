@@ -55,6 +55,33 @@ class PublishingManager:
                     print("   ⚠️ #hero-image not found in HTML.")
                 continue
 
+            if key == "market_table":
+                body = soup.find(id="market-table-body")
+                asof = soup.find(id="market-table-asof")
+                if body is None:
+                    print("   ⚠️ #market-table-body not found in HTML.")
+                    continue
+                body.clear()
+                for row in new_text["rows"]:
+                    tr = soup.new_tag("tr")
+                    th = soup.new_tag("td", attrs={"class": "mt-name"})
+                    th.string = row["name"]
+                    sym = soup.new_tag("span", attrs={"class": "mt-sym"})
+                    sym.string = " " + row["symbol"]
+                    th.append(sym)
+                    tr.append(th)
+                    for text, cls in ((row["level"], "mt-num"), (row["day"], f"mt-num {row['day_dir']}"),
+                                      (row["month"], f"mt-num {row['month_dir']}")):
+                        td = soup.new_tag("td", attrs={"class": cls})
+                        td.string = text
+                        tr.append(td)
+                    body.append(tr)
+                if asof is not None and new_text.get("as_of"):
+                    asof.string = f"As of {new_text['as_of']}"
+                print(f"   ✅ Updated market table ({len(new_text['rows'])} rows)")
+                changes += 1
+                continue
+
             target_id = ID_MAP.get(key)
             if not target_id:
                 print(f"   ⚠️ Key '{key}' ignored (no ID mapping).")

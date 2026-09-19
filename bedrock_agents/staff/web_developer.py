@@ -17,8 +17,10 @@ class WebDeveloper:
 
     def _finalize(self, updates, brief, image_path):
         """Overlay computed market tiles, constrain the model's two labels, attach the hero image."""
-        from ..market_stats import compute_market_stats, MISSING
+        from ..market_stats import compute_market_stats, compute_market_table, MISSING
         updates.update(compute_market_stats(brief.get("raw_market_data"), brief.get("macro")))
+        if brief.get("raw_market_data"):  # no data this run: keep the previous table (its "as of" date stays honest)
+            updates["market_table"] = compute_market_table(brief["raw_market_data"])
         risk = updates.get("market_risk", "").strip().upper()
         outlook = updates.get("market_outlook", "").strip().upper()
         updates["market_risk"] = risk if risk in self.RISK_WORDS else MISSING

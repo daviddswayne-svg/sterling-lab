@@ -39,6 +39,7 @@ class MarketIntelligence:
                     "change_pct": round((current - prev) / prev * 100, 2),
                     "return_1m_pct": round((current - float(close.iloc[0])) / float(close.iloc[0]) * 100, 2),
                     "volatility_30d": round(float(close.pct_change().dropna().std() * 100), 2),
+                    "as_of": close.index[-1].strftime("%Y-%m-%d"),
                 }
             except Exception as e:
                 print(f"⚠️ No data for {ticker}: {e}")
