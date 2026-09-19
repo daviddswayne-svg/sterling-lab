@@ -96,12 +96,16 @@ def main():
 
     status = "failed"
     try:
-        from bedrock_agents.config import DATA_DIR, PROJECT_ROOT
-        from bedrock_agents.orchestrator import run_meeting_generator
-
-        if not args.dry_run and not sync_clone(PROJECT_ROOT):
+        # Sync the clone BEFORE importing bedrock_agents: Python loads modules once, so importing first would
+        # run the previous deploy's code (a pushed change took effect one meeting late). run_meeting.py itself
+        # is already loaded, so keep this file small and stable.
+        repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        if not args.dry_run and not sync_clone(repo_root):
             events.append({"agent": "error", "message": "Could not sync the repository; meeting cancelled.", "t": 0})
             return 1
+
+        from bedrock_agents.config import DATA_DIR
+        from bedrock_agents.orchestrator import run_meeting_generator
 
         if args.fresh:
             cache = os.path.join(DATA_DIR, "daily_briefing.json")
