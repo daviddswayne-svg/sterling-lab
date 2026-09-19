@@ -1,0 +1,38 @@
+{
+  "_comment": "The Swiss Re publications the Bedrock Director reads. Verified 2026-09-19. kind=pdf: Swiss Re's OPEN PDF is downloaded and the model only CHOOSES verbatim sentences. kind=excerpt: the public abstract, read in a normal browser session and stored verbatim with attribution (the page itself sits behind Cloudflare, which scripts must not bypass; the full report is in Swiss Re's login-only sigma explorer, which we do not use). watch=flagship|us-pc: the weekly check of Swiss Re's public listing page flags a newer edition; sources are only changed by editing this file.",
+  "sources": [
+    {
+      "id": "sigma-2026-02", "kind": "pdf", "watch": "flagship", "n": 8, "first_page": 2,
+      "short": "Swiss Re sigma 2/2026",
+      "label": "Swiss Re Institute sigma No 2/2026",
+      "title": "World insurance in 2026: shock absorbers in a fragmenting world",
+      "published": "July 2026",
+      "page_url": "https://www.swissre.com/institute/research/sigma-research/sigma-2026-07-world-insurance.html",
+      "pdf_url": "https://www.swissre.com/dam/jcr:409c0f6b-ae4a-4de3-aec1-9864abb3fa62/2026-07-sri-world-insurance-sigma.pdf"
+    },
+    {
+      "id": "swissre-h1-2026-natcat", "kind": "pdf", "n": 5, "first_page": 1,
+      "short": "Swiss Re H1 2026 cat-loss report",
+      "label": "Swiss Re Institute first-half 2026 insured catastrophe losses",
+      "title": "First-half 2026 insured catastrophe losses: below trend, rising risks",
+      "published": "August 2026",
+      "page_url": "https://www.swissre.com/institute/research/topics-and-risk-dialogues/climate-and-natural-catastrophe-risk/first-half-2026-insured-catastrophe-losses.html",
+      "pdf_url": "https://www.swissre.com/dam/jcr:fd2ef247-e3dd-4203-ad80-3b7f5b11eedc/sri-14-2026-first-half-2026-insured-natural-catastrophe-losses.2026-08-11-13-13-52.pdf"
+    },
+    {
+      "id": "swissre-us-pc-2026-07", "kind": "excerpt", "watch": "us-pc",
+      "short": "Swiss Re US P&C Outlook (Jul 2026)",
+      "label": "Swiss Re Institute US Property & Casualty Outlook",
+      "title": "US Property & Casualty outlook: growth stalls as peak profitability fades",
+      "published": "July 2026",
+      "page_url": "https://www.swissre.com/institute/research/sigma-research/Insurance-Monitoring/us-property-casualty-outlook-july-2026.html",
+      "captured": "2026-09-19, from the public abstract on the page (published 20 Jul 2026)",
+      "findings": [
+        "The US P&C industry is entering a more competitive phase.",
+        "Underwriting margins are gradually compressing as rates decline across several lines.",
+        "Personal auto premiums fell year-on-year for the first time in decades outside a recession, while total P&C premium growth slowed to below 3% in 1Q26.",
+        "Headline profitability nevertheless remains exceptionally strong: lower catastrophe losses than a year earlier and stronger reserve releases contributed to the lowest first-quarter combined ratio since 2006."
+      ]
+    }
+  ]
+}

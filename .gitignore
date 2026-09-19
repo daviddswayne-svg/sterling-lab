@@ -21,6 +21,6 @@ voxsure/backend/uploads/*.ply
 seattle-voxel/node_modules/
 
 # Downloaded/derived at runtime by bedrock_agents/sigma_report.py (Swiss Re PDF is their copyrighted file)
-bedrock_agents/data/sigma_current.pdf
+bedrock_agents/data/sigma_*.pdf
 bedrock_agents/data/sigma_cache.json
 bedrock_agents/data/daily_briefing.json

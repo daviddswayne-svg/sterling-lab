@@ -75,11 +75,12 @@ class ContentDirector:
             context_data = intel.get_full_briefing_context()
             
             from ..market_stats import _vix_label
-            from ..sigma_report import format_for_prompt
+            from ..sigma_report import cite_names, format_for_prompt
             sigma = context_data.get('sigma') or {}
             sigma_block = format_for_prompt(sigma)
-            cite_rule = (f'Explicitly cite "{sigma["label"]}" ({sigma["published"]}) for the long-term outlook, using only its findings listed above.'
-                         if sigma.get('ok') else 'Do NOT cite Swiss Re or any report; the report was unavailable this run.')
+            names = cite_names(sigma)
+            cite_rule = (f'Explicitly cite at least one of these by name for the outlook: {"; ".join(names)}. Use only the quoted findings listed above.'
+                         if names else 'Do NOT cite Swiss Re or any report; none could be read this run.')
             market_str = "\n".join([
                 f"- {t}: {d['price']} ({d['change_pct']:+}% today, {d['return_1m_pct']:+}% over 1 month)"
                 + (f" -> market volatility is {_vix_label(d['price'])}" if t == "^VIX" else "")
@@ -100,7 +101,7 @@ class ContentDirector:
             LATEST NEWS WIRES:
             {news_str}
             
-            DEEP INSIGHT (the current Swiss Re Institute report, read in full by this system):
+            DEEP INSIGHT (current Swiss Re Institute publications, read by this system):
             {sigma_block}
             
             === INSTRUCTION ===
@@ -139,9 +140,10 @@ class ContentDirector:
             # Attach Raw Data for downstream agents (Web Developer)
             briefing['raw_market_data'] = context_data['market_data']
             briefing['macro'] = macro
-            briefing['sigma'] = ({k: sigma.get(k) for k in ('short', 'label', 'title', 'published', 'url')} if sigma.get('ok') else None)
+            good = [s for s in (sigma.get('sources') or []) if s['ok']]
+            briefing['sigma'] = [{k: s.get(k) for k in ('short', 'label', 'title', 'published', 'url')} for s in good] or None
             briefing['source'] = ' • '.join(filter(None, [
-                sigma.get('short') if sigma.get('ok') else None,
+                *[s['short'] for s in good],
                 'Yahoo Finance' if context_data['market_data'] else None,
                 'FRED' if macro.get('cpi_yoy') is not None else None,
                 'Insurance Journal, CNBC' if context_data['news_headlines'] else None]))

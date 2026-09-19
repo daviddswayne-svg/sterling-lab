@@ -98,7 +98,7 @@ class MarketIntelligence:
             return []
 
     def read_sigma(self):
-        """Reads the current Swiss Re sigma report (see sigma_report.py). Returns the full context dict."""
+        """Reads the current Swiss Re publications (see sigma_report.py). Returns the full context dict."""
         from .sigma_report import get_sigma_context
         return get_sigma_context()
 

@@ -47,12 +47,14 @@ def run_meeting_generator(publish=None):
     # 1a. Read the current Swiss Re Institute report (cached after the first read)
     from .sigma_report import get_sigma_context
     sigma = get_sigma_context()
-    if sigma["ok"]:
-        yield ev("director", f"Read {sigma['label']} ({sigma['published']}): {len(sigma['findings'])} key findings.")
-        if sigma.get("newer"):
-            yield ev("director", "Swiss Re has published a newer sigma report; the pinned source needs updating.")
-    else:
-        yield ev("director", f"Swiss Re report unavailable ({sigma['note'] or 'unknown'}); not citing it today.")
+    for s in sigma["sources"]:
+        if s["ok"]:
+            verb = "Read" if s["kind"] == "pdf" else "Loaded the public abstract of"
+            yield ev("director", f"{verb} {s['label']} ({s['published']}): {len(s['findings'])} key findings.")
+        else:
+            yield ev("director", f"{s['short']} unavailable ({s['note'] or 'unknown'}); not citing it today.")
+    for n in sigma.get("newer") or []:
+        yield ev("director", f"Swiss Re has published a newer {n['what']} than {n['pinned']}; the source list needs updating.")
 
     # 1b. Content Director plans (real market data + news -> brief)
     director = ContentDirector()

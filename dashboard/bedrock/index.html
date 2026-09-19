@@ -70,9 +70,10 @@
                             srcEl.append('Source: ');
                             data.source.split(' • ').forEach((part, i) => {
                                 if (i) srcEl.append(' • ');
-                                if (data.sigma && data.sigma.url && part === data.sigma.short) {
+                                const ref = (Array.isArray(data.sigma) ? data.sigma : []).find(x => x.short === part);
+                                if (ref && ref.url) {
                                     const a = document.createElement('a');
-                                    a.href = data.sigma.url; a.target = '_blank'; a.rel = 'noopener';
+                                    a.href = ref.url; a.target = '_blank'; a.rel = 'noopener';
                                     a.textContent = part; a.style.color = 'inherit'; a.style.textDecoration = 'underline';
                                     srcEl.append(a);
                                 } else {
