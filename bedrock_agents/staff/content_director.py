@@ -42,7 +42,7 @@ class ContentDirector:
             import random
             return random.choice(["Cyber-Physical Security", "Climate-Resilient Living", "Asset-Tokenization"])
 
-    def create_daily_brief(self):
+    def create_daily_brief(self, use_cache=True):
         """Generates a professional market briefing using Real-Time Intelligence with Daily Caching."""
         
         # 1. Check for Cached Briefing (Speed Optimization)
@@ -50,7 +50,7 @@ class ContentDirector:
         cache_path = os.path.join(DATA_DIR, "daily_briefing.json")
         today_str = datetime.now().strftime("%Y-%m-%d")
         
-        if os.path.exists(cache_path):
+        if use_cache and os.path.exists(cache_path):
             try:
                 with open(cache_path, 'r') as f:
                     cached = json.load(f)

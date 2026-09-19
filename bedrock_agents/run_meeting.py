@@ -2,7 +2,7 @@
 
     python -m bedrock_agents.run_meeting              # real run: edit page, commit, push, hot-swap
     python -m bedrock_agents.run_meeting --dry-run    # edit the working copy only; nothing pushed, no cooldown used
-    python -m bedrock_agents.run_meeting --fresh      # ignore today's cached brief
+    python -m bedrock_agents.run_meeting --fresh      # (no-op now: every meeting builds a fresh brief)
 
 Started three ways, all of which share one lock so only a single meeting runs at a time:
   * launchd, daily 06:00       (com.swaynesystems.bedrock-meeting)
@@ -56,7 +56,7 @@ def sync_clone(repo_dir):
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--dry-run", action="store_true", help="do not commit, push or hot-swap; leaves the cooldown alone")
-    parser.add_argument("--fresh", action="store_true", help="delete today's cached daily briefing first")
+    parser.add_argument("--fresh", action="store_true", help="deprecated: every meeting already builds a fresh brief")
     args = parser.parse_args()
 
     if args.dry_run:

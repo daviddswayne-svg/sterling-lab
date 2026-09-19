@@ -60,7 +60,8 @@ def run_meeting_generator(publish=None):
     director = ContentDirector()
     try:
         yield ev("director", "Analyzing market trends & drafting brief...")
-        brief = director.create_daily_brief()
+        # Every meeting is fresh: the per-day cache would reuse that morning's brief AND its prices.
+        brief = director.create_daily_brief(use_cache=False)
         theme = brief.get("theme", brief.get("headline", "Global Market Risk"))
         yield ev("director", f"Theme selected: {theme}")
     except Exception as e:
