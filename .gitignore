@@ -24,3 +24,6 @@ seattle-voxel/node_modules/
 bedrock_agents/data/sigma_*.pdf
 bedrock_agents/data/sigma_cache.json
 bedrock_agents/data/daily_briefing.json
+
+# Runtime log written by the SSH tunnel; never track
+tunnel.log
