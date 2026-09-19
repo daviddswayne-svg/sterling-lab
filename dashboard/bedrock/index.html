@@ -539,28 +539,106 @@
             return div.id;
         }
 
-        // Staff Meeting: replays the most recent real meeting (saved by the daily M3 run as
-        // /bedrock/meeting_latest.json). Nothing here triggers any server-side work.
+        // Staff Meeting. The button asks the M3 to hold a REAL meeting (max one per hour, enforced on the M3).
+        //   started/running -> follow the real events live, then reload with the new page
+        //   cooldown/disabled/offline -> say why, then replay the last recorded meeting
         let replayTimer = null;
+        let pollTimer = null;
 
-        async function startMeeting() {
-            const modal = document.getElementById('staffModal');
-            modal.classList.add('active');
+        function fmtTime(epochSeconds) {
+            return new Date(epochSeconds * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+        }
+
+        function resetStaffUI() {
             stopReplay();
-            const log = document.getElementById('meetingLog');
-            log.innerHTML = '';
+            stopPolling();
+            document.getElementById('meetingLog').innerHTML = '';
             document.querySelectorAll('.staff-member').forEach(el => {
                 el.classList.remove('active');
                 el.querySelector('.staff-status').textContent = 'Waiting...';
             });
+        }
 
+        async function startMeeting() {
+            document.getElementById('staffModal').classList.add('active');
+            resetStaffUI();
+            addLog('SYSTEM', 'Calling the staff together...');
+
+            let res;
+            try {
+                const r = await fetch('/api/meeting', { method: 'POST' });
+                res = await r.json();
+            } catch (err) {
+                res = { status: 'offline' };
+            }
+
+            if (res.status === 'started' || res.status === 'running') {
+                addLog('SYSTEM', res.status === 'started'
+                    ? 'The meeting is in session. Watching it live...'
+                    : 'A meeting is already in session. Joining it live...');
+                return followLiveMeeting();
+            }
+            if (res.status === 'cooldown') {
+                const mins = Math.max(1, Math.ceil((res.retry_after_s || 0) / 60));
+                addLog('SYSTEM', `The staff last met at ${fmtTime(res.last_started)}. `
+                    + `A new meeting can be called at ${fmtTime(res.next_allowed_at)} (in about ${mins} min).`);
+            } else if (res.status === 'disabled') {
+                addLog('SYSTEM', 'Meetings are paused right now.');
+            } else {
+                addLog('SYSTEM', 'The staff are away from the office right now.');
+            }
+            addLog('SYSTEM', 'Replaying the most recent meeting instead...');
+            return replayLatest();
+        }
+
+        function followLiveMeeting() {
+            let shown = 0;
+            let failures = 0;
+            const deadline = Date.now() + 20 * 60 * 1000;
+            const tick = async () => {
+                try {
+                    const st = await (await fetch('/api/meeting/status?ts=' + Date.now())).json();
+                    failures = 0;
+                    const events = st.events || [];
+                    while (shown < events.length) {
+                        const e = events[shown++];
+                        updateActiveAgent(e.agent, e.message);
+                        addLog(e.agent.toUpperCase(), e.message);
+                    }
+                    if (!st.running && st.status !== 'none' && shown > 0) {
+                        stopPolling();
+                        updateActiveAgent(null);
+                        if (st.status === 'ok') {
+                            addLog('SYSTEM', 'NEW PAGE READY. REFRESHING...');
+                            const dot = document.querySelector('.status-dot');
+                            if (dot) dot.style.background = '#34d399';
+                            setTimeout(() => location.reload(), 2500);
+                        } else {
+                            addLog('SYSTEM', 'The meeting ended with a problem. The page was left unchanged.');
+                        }
+                        return;
+                    }
+                } catch (err) {
+                    if (++failures >= 5) {
+                        stopPolling();
+                        addLog('SYSTEM', 'Lost contact with the staff.');
+                        return;
+                    }
+                }
+                if (Date.now() > deadline) { stopPolling(); return; }
+                pollTimer = setTimeout(tick, 2000);
+            };
+            tick();
+        }
+
+        async function replayLatest() {
             let data;
             try {
                 const r = await fetch('/bedrock/meeting_latest.json?ts=' + Date.now());
                 if (!r.ok) throw new Error(r.status);
                 data = await r.json();
             } catch (err) {
-                addLog('SYSTEM', 'No meeting recording is available yet. The staff meet daily.');
+                addLog('SYSTEM', 'No meeting recording is available yet.');
                 return;
             }
 
@@ -586,12 +664,17 @@
             step();
         }
 
+        function stopPolling() {
+            if (pollTimer) { clearTimeout(pollTimer); pollTimer = null; }
+        }
+
         function stopReplay() {
             if (replayTimer) { clearTimeout(replayTimer); replayTimer = null; }
         }
 
         function closeMeeting() {
             stopReplay();
+            stopPolling();
             document.getElementById('staffModal').classList.remove('active');
         }
 

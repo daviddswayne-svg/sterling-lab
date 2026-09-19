@@ -6,6 +6,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 
 from .config import COMFYUI_HOST, DASHBOARD_DIR
+from .validate import check_image, valid_hero_path, validate_updates
 from .staff.content_director import ContentDirector
 from .staff.web_developer import WebDeveloper
 from .staff.publishing_manager import PublishingManager
@@ -82,14 +83,28 @@ def run_meeting_generator(publish=None):
                 except Exception as e:
                     image_path = None
                     print(f"Designer error: {e}")
-                if image_path and image_path.startswith("/assets/bedrock_"):
-                    yield ev("designer", f"Image rendered: {os.path.basename(image_path)}")
+                if valid_hero_path(image_path):
+                    ok, why = check_image(os.path.join(DASHBOARD_DIR, image_path.lstrip("/")))
+                    if ok:
+                        yield ev("designer", f"Image rendered: {os.path.basename(image_path)}")
+                    else:
+                        print(f"Rejected image {image_path}: {why}")
+                        image_path = None
+                        yield ev("designer", f"Render REJECTED ({why}): keeping the previous image.")
                 else:
                     image_path = None
                     yield ev("designer", "Render FAILED: keeping the previous image.")
 
     if updates is None:
         yield ev("error", "No page copy produced; nothing to publish.")
+        return
+    updates, problems = validate_updates(updates)
+    for p in problems:
+        print(f"Validation: {p}")
+    if problems:
+        yield ev("publisher", f"Dropped {len(problems)} invalid field(s); keeping previous text for them.")
+    if not updates and not image_path:
+        yield ev("error", "Nothing valid to publish.")
         return
     if image_path:
         updates["hero_image"] = image_path

@@ -100,7 +100,8 @@ class PublishingManager:
             print("📝 Committed.")
 
             # Someone else may have pushed while the meeting ran; rebase our one commit on top.
-            pull = git("pull", "--rebase", "origin", GIT_BRANCH, check=False)
+            # `live` (the deploy source) is the source of truth, not `origin` (GitHub backup).
+            pull = git("pull", "--rebase", GIT_REMOTE, GIT_BRANCH, check=False)
             if pull.returncode != 0:
                 git("rebase", "--abort", check=False)
                 print(f"❌ Rebase failed, leaving the commit local for a human to resolve:\n{pull.stderr[-400:]}")

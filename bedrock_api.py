@@ -109,8 +109,31 @@ def chat():
         print(f"❌ Error in chat endpoint: {e}")
         return jsonify({"error": str(e)}), 500
 
-# NOTE: the staff meeting no longer runs in this container. It runs daily on the M3
-# (bedrock_agents/run_meeting.py); the Bedrock page replays its saved log (meeting_latest.json).
+# --- Staff meeting: the meeting runs on the M3, never in this container --------------------------
+# These two routes only PROXY to the M3's trigger service (bedrock_agents/trigger_server.py), reached
+# through the SSH reverse tunnel. All rules (one per hour, one at a time, kill switch) are enforced
+# there, so the website cannot bypass them. If the M3 is unreachable the page replays the last meeting.
+BEDROCK_TRIGGER_URL = os.getenv("BEDROCK_TRIGGER_URL", "http://10.0.0.1:9101")
+
+
+@app.route('/api/meeting', methods=['POST'])
+def meeting_start():
+    try:
+        r = requests.post(f"{BEDROCK_TRIGGER_URL}/run", timeout=8)
+        return jsonify(r.json())
+    except Exception as e:
+        print(f"⚠️ Meeting trigger unreachable: {e}")
+        return jsonify({"status": "offline"})
+
+
+@app.route('/api/meeting/status', methods=['GET'])
+def meeting_status():
+    try:
+        r = requests.get(f"{BEDROCK_TRIGGER_URL}/status", timeout=5)
+        return jsonify(r.json())
+    except Exception as e:
+        return jsonify({"status": "offline", "running": False, "events": []})
+
 
 @app.route('/api/tts', methods=['POST'])
 def tts_proxy():
