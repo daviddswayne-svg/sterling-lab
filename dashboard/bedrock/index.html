@@ -37,8 +37,7 @@
 <div>
 <h3 style="color: #4a90e2; margin:0; font-size: 0.9rem; letter-spacing: 1px; text-transform: uppercase;">
                                 📡 Live Market Intelligence</h3>
-<p style="margin:0; font-size: 0.75rem; color: rgba(255,255,255,0.4);">Source: Swiss Re
-                                Sigma '25 • NYSE • Global Wires</p>
+<p id="briefing-source" style="margin:0; font-size: 0.75rem; color: rgba(255,255,255,0.4);"></p>
 </div>
 <span id="sentiment-badge" style="background: rgba(255,255,255,0.1); padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.5px; border: 1px solid rgba(255,255,255,0.1);">INITIALIZING...</span>
 </div>
@@ -63,6 +62,24 @@
                         if (data.error) throw new Error(data.error);
 
                         document.getElementById('briefing-headline').textContent = data.headline;
+
+                        // Attribution comes from the sources the meeting actually used (the Swiss Re part links to the report)
+                        const srcEl = document.getElementById('briefing-source');
+                        srcEl.textContent = '';
+                        if (data.source) {
+                            srcEl.append('Source: ');
+                            data.source.split(' • ').forEach((part, i) => {
+                                if (i) srcEl.append(' • ');
+                                if (data.sigma && data.sigma.url && part === data.sigma.short) {
+                                    const a = document.createElement('a');
+                                    a.href = data.sigma.url; a.target = '_blank'; a.rel = 'noopener';
+                                    a.textContent = part; a.style.color = 'inherit'; a.style.textDecoration = 'underline';
+                                    srcEl.append(a);
+                                } else {
+                                    srcEl.append(part);
+                                }
+                            });
+                        }
                         // Use innerHTML to render bold tags from the LLM
                         const body = document.getElementById('briefing-body');
                         body.innerHTML = data.briefing_body;

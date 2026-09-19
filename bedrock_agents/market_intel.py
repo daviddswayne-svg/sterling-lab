@@ -97,10 +97,13 @@ class MarketIntelligence:
             print(f"⚠️ News Fetch Failed: {e}. No headlines this run (not inventing any).")
             return []
 
-    def query_sigma_rag(self, query="risks opportunities 2025"):
-        """RAG disabled - returning curated market context instead."""
-        print(f"📊 RAG disabled, using live market data for: '{query}'")
-        # Return general market context (RAG replaced with MCP tools)
+    def read_sigma(self):
+        """Reads the current Swiss Re sigma report (see sigma_report.py). Returns the full context dict."""
+        from .sigma_report import get_sigma_context
+        return get_sigma_context()
+
+    def _legacy_sigma_stub(self):
+        """OLD hardcoded sentence that was passed off as the Swiss Re report. Kept only for reference; unused."""
         return "Market analysis powered by real-time data feeds. Global reinsurance markets continue to adjust to elevated catastrophe losses and persistent inflation. Property catastrophe rates remain firm heading into 2025 renewals."
 
     def get_full_briefing_context(self):
@@ -108,13 +111,13 @@ class MarketIntelligence:
         market_data = self.fetch_market_data()
         macro = self.fetch_macro()
         news = self.fetch_news_headlines()
-        sigma_context = self.query_sigma_rag("economic outlook inflation interest rates insurance growth")
+        sigma = self.read_sigma()
         
         return {
             "market_data": market_data,
             "macro": macro,
             "news_headlines": news,
-            "sigma_report_context": sigma_context,
+            "sigma": sigma,
             "timestamp": datetime.now().isoformat()
         }
 

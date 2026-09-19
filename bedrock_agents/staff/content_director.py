@@ -75,6 +75,11 @@ class ContentDirector:
             context_data = intel.get_full_briefing_context()
             
             from ..market_stats import _vix_label
+            from ..sigma_report import format_for_prompt
+            sigma = context_data.get('sigma') or {}
+            sigma_block = format_for_prompt(sigma)
+            cite_rule = (f'Explicitly cite "{sigma["label"]}" ({sigma["published"]}) for the long-term outlook, using only its findings listed above.'
+                         if sigma.get('ok') else 'Do NOT cite Swiss Re or any report; the report was unavailable this run.')
             market_str = "\n".join([
                 f"- {t}: {d['price']} ({d['change_pct']:+}% today, {d['return_1m_pct']:+}% over 1 month)"
                 + (f" -> market volatility is {_vix_label(d['price'])}" if t == "^VIX" else "")
@@ -95,8 +100,8 @@ class ContentDirector:
             LATEST NEWS WIRES:
             {news_str}
             
-            DEEP INSIGHT (Swiss Re Sigma Report 2025 Outlook):
-            "{context_data['sigma_report_context']}"
+            DEEP INSIGHT (the current Swiss Re Institute report, read in full by this system):
+            {sigma_block}
             
             === INSTRUCTION ===
             You are the Chief Market Analyst for Bedrock Insurance.
@@ -104,7 +109,7 @@ class ContentDirector:
             
             GUIDELINES:
             1. Synthesize the Hard Data and News into a cohesive narrative.
-            2. CRITICAL: Explicitly cite the "Swiss Re Sigma Report" for the long-term outlook.
+            2. CRITICAL: {cite_rule}
             3. Tone: Bloomberg Terminal meets Architectural Digest. Sophisticated, urgent, yet reassuring.
             4. Focus on "Risk Landscape" and "Asset Resilience".
             5. Use ONLY the numbers listed above. Never invent a figure, price or statistic; if a number is not listed, describe the trend in words instead.
@@ -133,6 +138,12 @@ class ContentDirector:
             # Attach Raw Data for downstream agents (Web Developer)
             briefing['raw_market_data'] = context_data['market_data']
             briefing['macro'] = macro
+            briefing['sigma'] = ({k: sigma.get(k) for k in ('short', 'label', 'title', 'published', 'url')} if sigma.get('ok') else None)
+            briefing['source'] = ' • '.join(filter(None, [
+                sigma.get('short') if sigma.get('ok') else None,
+                'Yahoo Finance' if context_data['market_data'] else None,
+                'FRED' if macro.get('cpi_yoy') is not None else None,
+                'Insurance Journal, CNBC' if context_data['news_headlines'] else None]))
             
             # 3. Save to Cache
             try:

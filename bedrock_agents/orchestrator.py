@@ -44,7 +44,17 @@ def run_meeting_generator(publish=None):
     render_ok = comfyui_reachable()
     yield ev("system", "Visual cortex online." if render_ok else "Visual cortex OFFLINE: no new image this run.")
 
-    # 1. Content Director plans (real market data + news -> brief)
+    # 1a. Read the current Swiss Re Institute report (cached after the first read)
+    from .sigma_report import get_sigma_context
+    sigma = get_sigma_context()
+    if sigma["ok"]:
+        yield ev("director", f"Read {sigma['label']} ({sigma['published']}): {len(sigma['findings'])} key findings.")
+        if sigma.get("newer"):
+            yield ev("director", "Swiss Re has published a newer sigma report; the pinned source needs updating.")
+    else:
+        yield ev("director", f"Swiss Re report unavailable ({sigma['note'] or 'unknown'}); not citing it today.")
+
+    # 1b. Content Director plans (real market data + news -> brief)
     director = ContentDirector()
     try:
         yield ev("director", "Analyzing market trends & drafting brief...")
@@ -127,7 +137,7 @@ def run_meeting_generator(publish=None):
                 "theme": theme,
                 "duration_s": round(time.time() - t0, 1),
                 "image": image_path,
-                "brief": {k: brief.get(k) for k in ("headline", "market_sentiment", "briefing_body", "date")},
+                "brief": {k: brief.get(k) for k in ("headline", "market_sentiment", "briefing_body", "date", "source", "sigma")},
                 "events": events,
             }, f, indent=2)
     except Exception as e:
