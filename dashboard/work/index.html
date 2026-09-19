@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Case Studies | David Swayne</title>
+    <meta name="description"
+        content="Applied AI systems designed and built by David Swayne: an LLM marketing simulator, a natural-language database agent, an autonomous publishing team and a generative film pipeline.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css?v=3">
+    <link rel="stylesheet" href="work.css">
+</head>
+
+<body>
+    <div class="gradient-bg"></div>
+
+    <div class="container work-container">
+        <header class="work-header">
+            <a class="work-back" href="/">← Swayne Systems</a>
+            <h1>Case Studies</h1>
+            <p class="work-intro">
+                Applied AI systems I designed and built, each from problem to working system. These are write-ups with
+                static images, not live demos.
+            </p>
+        </header>
+
+        <main>
+
+            <!-- 1. Agent Marketing Simulator -->
+            <article class="case" id="simulator">
+                <p class="case-kicker">LLM decision support · Enterprise</p>
+                <h2>Agent Marketing Simulator</h2>
+                <p class="case-hook">
+                    An LLM tool that evaluates emails, portal pages and designs before launch and returns a forecast, a
+                    named A/B winner, element-level fixes and risk flags. Built at Liberty Mutual; described here at the
+                    level of architecture and method only.
+                </p>
+
+                <div class="case-media">
+                    <div class="flow" role="img"
+                        aria-label="Diagram: an asset feeds a deterministic forecast layer and a qualitative panel, which combine into a report that is graded against live A/B tests.">
+                        <div class="flow-step plain">
+                            <strong>Asset to evaluate</strong>
+                            <span>Email, portal page or design</span>
+                        </div>
+                        <div class="flow-arrow" aria-hidden="true">→</div>
+                        <div class="flow-split">
+                            <div class="flow-step">
+                                <strong>Deterministic forecast layer</strong>
+                                <span>One calibration file is the only source of any number</span>
+                            </div>
+                            <div class="flow-step alt">
+                                <strong>Qualitative panel</strong>
+                                <span>12 seats drawn from 300 synthetic personas; fixed rosters reproduce on rerun</span>
+                            </div>
+                        </div>
+                        <div class="flow-arrow" aria-hidden="true">→</div>
+                        <div class="flow-step plain">
+                            <strong>Report</strong>
+                            <span>Forecast, named winner, fixes, risk flags, one falsifiable prediction</span>
+                        </div>
+                    </div>
+                    <figcaption>Architecture, simplified.</figcaption>
+                </div>
+
+                <dl class="case-points">
+                    <div>
+                        <dt>Problem</dt>
+                        <dd>Pre-launch marketing reviews mixed opinion with numbers, and there was no record of whether
+                            a past prediction had been right. A model that sounds confident is not the same as one
+                            that has been checked.</dd>
+                    </div>
+                    <div>
+                        <dt>What I built</dt>
+                        <dd>Numbers and judgement are kept separate by design: a deterministic forecast layer produces
+                            every figure, and a stratified persona panel (built with Anthropic's Claude models) supplies
+                            the qualitative read. Governance rules: eight disconnected dashboard exports consolidated
+                            into one calibration baseline, a four-level sourcing hierarchy for every printed number,
+                            confidence caps, and a rule against naming a winner inside statistical noise.</dd>
+                    </div>
+                    <div>
+                        <dt>Result</dt>
+                        <dd>Validated against six live production A/B tests, with every miss logged permanently.
+                            Grading exposed two systematic model biases and one wrong segment assumption, all
+                            corrected. Post-fix results are deliberately excluded from the record because they were fit
+                            to the same tests.</dd>
+                    </div>
+                </dl>
+                <ul class="tags">
+                    <li>Claude</li>
+                    <li>Multi-agent personas</li>
+                    <li>Evaluation &amp; calibration</li>
+                    <li>Data governance</li>
+                </ul>
+            </article>
+
+            <!-- 2. ESC Family History Explorer -->
+            <article class="case" id="esc">
+                <p class="case-kicker">Natural language to SQL · Local LLM</p>
+                <h2>ESC Family History Explorer</h2>
+                <p class="case-hook">
+                    Three legacy Microsoft Access databases turned into one SQLite database that anyone can question in
+                    plain English.
+                </p>
+
+                <figure class="case-media">
+                    <img src="img/esc-schema.jpg" width="1600" height="873" loading="lazy"
+                        alt="Entity-relationship diagram of the Swayne Family History Database showing Trips, People, Images, Geography and Species tables and their relationships.">
+                    <figcaption>Schema of the converted database: 121 tables, with images at the centre linking to
+                        trips, people, places and species.</figcaption>
+                </figure>
+
+                <dl class="case-points">
+                    <div>
+                        <dt>Problem</dt>
+                        <dd>A family's expedition archive (photos, journals, people, GPS trips) lived in three legacy
+                            Access databases that were hard to search, and standard export tools could not decode
+                            some of the data.</dd>
+                    </div>
+                    <div>
+                        <dt>What I built</dt>
+                        <dd>Converted the databases to SQLite (about 144K images, 3K people, 6.9K trips) and built a
+                            FastAPI service with a local LLM that turns plain-English questions into SQL. Guardrails:
+                            read-only SQL validation, query timeouts, result caps, and schema metadata that steers the
+                            model away from known mistakes. On top of that: a photo browser, journal magazine, D3 family
+                            tree, Leaflet trip maps and a Three.js 3D terrain viewer built on USGS elevation data.</dd>
+                    </div>
+                    <div>
+                        <dt>Result</dt>
+                        <dd>Benchmarked four models; the chosen one passed the full 10-question internal test set.
+                            Recovered 2,262 historic dates that standard export tools could not decode. The system runs
+                            behind a login with identity verification, so there is no public demo.</dd>
+                    </div>
+                </dl>
+                <ul class="tags">
+                    <li>SQLite</li>
+                    <li>FastAPI</li>
+                    <li>Ollama</li>
+                    <li>D3</li>
+                    <li>Leaflet</li>
+                    <li>Three.js</li>
+                </ul>
+            </article>
+
+            <!-- 3. Bedrock -->
+            <article class="case" id="bedrock">
+                <p class="case-kicker">Multi-agent automation</p>
+                <h2>Bedrock: an insurer run by AI agents</h2>
+                <p class="case-hook">
+                    A demo insurance company whose website is planned, illustrated, coded and published each day by a
+                    team of autonomous agents.
+                </p>
+
+                <div class="case-media">
+                    <div class="flow" role="img"
+                        aria-label="Diagram: market and news data feeds the Content Director, then the Photo Designer, Web Developer and Publishing Manager in sequence.">
+                        <div class="flow-step plain">
+                            <strong>Market &amp; news data</strong>
+                            <span>Ingested each cycle</span>
+                        </div>
+                        <div class="flow-arrow" aria-hidden="true">→</div>
+                        <div class="flow-step">
+                            <strong>Content Director</strong>
+                            <span>Drafts the daily brief and picks the theme</span>
+                        </div>
+                        <div class="flow-arrow" aria-hidden="true">→</div>
+                        <div class="flow-step">
+                            <strong>Photo Designer</strong>
+                            <span>Generates imagery through ComfyUI</span>
+                        </div>
+                        <div class="flow-arrow" aria-hidden="true">→</div>
+                        <div class="flow-step">
+                            <strong>Web Developer</strong>
+                            <span>Builds the responsive page</span>
+                        </div>
+                        <div class="flow-arrow" aria-hidden="true">→</div>
+                        <div class="flow-step alt">
+                            <strong>Publishing Manager</strong>
+                            <span>Deploys to production</span>
+                        </div>
+                    </div>
+                    <figcaption>The daily "meeting": each agent hands its output to the next.</figcaption>
+                </div>
+
+                <dl class="case-points">
+                    <div>
+                        <dt>Problem</dt>
+                        <dd>Explore how far a small set of specialised agents can run a content operation end to end,
+                            and where they need guardrails.</dd>
+                    </div>
+                    <div>
+                        <dt>What I built</dt>
+                        <dd>Four role-specific agents and an orchestrator that runs them in sequence. The agents work
+                            from market and news data, fall back to stock imagery if rendering fails, and stop the
+                            cycle with a clear error if planning or coding fails, so a bad run never publishes.</dd>
+                    </div>
+                    <div>
+                        <dt>Result</dt>
+                        <dd>A working daily cycle with no human in the loop, running on a local multi-machine inference
+                            setup. It was a testbed: it taught me most about failure handling and about where model
+                            output needs checking before it goes public.</dd>
+                    </div>
+                </dl>
+                <ul class="tags">
+                    <li>Multi-agent orchestration</li>
+                    <li>Local LLMs</li>
+                    <li>ComfyUI</li>
+                    <li>Python</li>
+                </ul>
+            </article>
+
+            <!-- 4. Film / LoRA pipeline -->
+            <article class="case" id="film">
+                <p class="case-kicker">Generative media</p>
+                <h2>Generative film restyling pipeline</h2>
+                <p class="case-hook">
+                    Public-domain films repainted frame by frame in the style of a chosen artist, with a review workflow
+                    to keep characters consistent.
+                </p>
+
+                <div class="case-media pair">
+                    <figure>
+                        <img src="img/btd-original.jpg" width="800" height="600" loading="lazy"
+                            alt="Black-and-white film frame of three men in hats and coats talking closely.">
+                        <figcaption>Original frame</figcaption>
+                    </figure>
+                    <figure>
+                        <img src="img/btd-frazetta.jpg" width="800" height="600" loading="lazy"
+                            alt="The same frame repainted as a warm, illustrated oil painting.">
+                        <figcaption>Repainted, Frazetta-style</figcaption>
+                    </figure>
+                </div>
+                <p class="case-hook" style="margin-top:-0.75rem; font-size:0.8rem; opacity:0.8;">
+                    Frame from <em>Beat the Devil</em> (1953, public domain).
+                </p>
+
+                <dl class="case-points">
+                    <div>
+                        <dt>Problem</dt>
+                        <dd>Off-the-shelf video models drift: faces change and details hallucinate from frame to
+                            frame. Restyling a whole film needs consistency, not just one good image.</dd>
+                    </div>
+                    <div>
+                        <dt>What I built</dt>
+                        <dd>A pipeline that replaces each frame with a repainted equivalent using Stable Diffusion 1.5
+                            and SDXL, ControlNet lineart to hold the composition, and custom-trained LoRAs (including a
+                            Reginald Marsh SDXL LoRA trained on 74 images). A frame-review workflow catches character
+                            drift and hallucination, flagged frames are re-rendered at tuned settings, and optical-flow
+                            smoothing evens out the motion.</dd>
+                    </div>
+                    <div>
+                        <dt>Result</dt>
+                        <dd>Several public-domain films restyled end to end in different artist styles. Generative
+                            video is a separate strand of the same work: the reel on the home page was made with Gemini,
+                            Google Veo 3.1 and ElevenLabs.</dd>
+                    </div>
+                </dl>
+                <ul class="tags">
+                    <li>Stable Diffusion</li>
+                    <li>ControlNet</li>
+                    <li>LoRA training</li>
+                    <li>ComfyUI</li>
+                    <li>ffmpeg</li>
+                </ul>
+            </article>
+
+        </main>
+
+        <footer class="work-footer">
+            <p>
+                Also on the <a href="/">home page</a>: an interactive voxel model of Seattle Center and a
+                bacteriophage micro-simulation, both built with Three.js.
+            </p>
+            <p>David Swayne · <a href="mailto:daviddswayne@gmail.com">daviddswayne@gmail.com</a> · © 2026</p>
+        </footer>
+    </div>
+</body>
+
+</html>

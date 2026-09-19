@@ -1,0 +1,248 @@
+/* Case Studies page — static, no JS. Inherits tokens from /style.css */
+
+.work-container {
+    max-width: 980px;
+}
+
+.work-header {
+    padding: 1rem 0 0;
+    margin-bottom: 1.5rem;
+}
+
+.work-back {
+    display: inline-block;
+    margin-bottom: 1.25rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+}
+
+.work-back:hover {
+    color: var(--text-primary);
+}
+
+.work-header h1 {
+    font-size: 2.25rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin: 0 0 0.75rem;
+}
+
+.work-intro {
+    max-width: 640px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin: 0;
+}
+
+.case {
+    margin: 2rem 0;
+    padding: 2rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+}
+
+.case-kicker {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--secondary);
+    margin: 0 0 0.5rem;
+}
+
+.case h2 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem;
+}
+
+.case-hook {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin: 0 0 1.5rem;
+}
+
+.case-media {
+    margin: 0 0 1.5rem;
+}
+
+.case-media img,
+.case-media svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: rgba(15, 23, 42, 0.6);
+}
+
+.case-media figcaption {
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    opacity: 0.8;
+}
+
+.case-media.pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+}
+
+.case-media.pair figure {
+    margin: 0;
+}
+
+.case-media.pair figcaption {
+    text-align: center;
+}
+
+.case-points {
+    display: grid;
+    gap: 1rem;
+    margin: 0 0 1.5rem;
+}
+
+.case-points > div {
+    display: grid;
+    grid-template-columns: 8.5rem 1fr;
+    gap: 1rem;
+}
+
+.case-points dt {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-primary);
+    padding-top: 0.15rem;
+}
+
+.case-points dd {
+    margin: 0;
+    color: var(--text-secondary);
+    line-height: 1.65;
+}
+
+.tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.tags li {
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0.3rem 0.75rem;
+    border-radius: 999px;
+    background: rgba(99, 102, 241, 0.12);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    color: var(--text-primary);
+}
+
+/* HTML flow diagrams (wrap cleanly on phones) */
+.flow {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: rgba(15, 23, 42, 0.6);
+}
+
+.flow-step {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 0.75rem;
+    border-radius: 8px;
+    background: rgba(99, 102, 241, 0.14);
+    border: 1px solid rgba(99, 102, 241, 0.45);
+}
+
+.flow-step.alt {
+    background: rgba(16, 185, 129, 0.12);
+    border-color: rgba(16, 185, 129, 0.45);
+}
+
+.flow-step.plain {
+    background: rgba(148, 163, 184, 0.08);
+    border-color: rgba(148, 163, 184, 0.35);
+}
+
+.flow-step strong {
+    display: block;
+    font-size: 0.85rem;
+    margin-bottom: 0.25rem;
+}
+
+.flow-step span {
+    display: block;
+    font-size: 0.75rem;
+    line-height: 1.45;
+    color: var(--text-secondary);
+}
+
+.flow-arrow {
+    align-self: center;
+    flex: 0 0 auto;
+    color: var(--text-secondary);
+}
+
+.flow-split {
+    flex: 1 1 0;
+    display: grid;
+    gap: 0.5rem;
+}
+
+.flow-split .flow-step {
+    flex: none;
+}
+
+@media (max-width: 700px) {
+    .flow {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .flow-arrow {
+        transform: rotate(90deg);
+    }
+}
+
+.work-footer {
+    margin: 3rem 0 1rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.7;
+}
+
+.work-footer a {
+    color: var(--text-primary);
+}
+
+@media (max-width: 700px) {
+    .work-header h1 {
+        font-size: 1.75rem;
+    }
+
+    .case {
+        padding: 1.25rem;
+    }
+
+    .case-points > div {
+        grid-template-columns: 1fr;
+        gap: 0.25rem;
+    }
+
+    .case-media.pair {
+        grid-template-columns: 1fr;
+    }
+}
