@@ -1,13 +1,15 @@
 import feedparser
 import random
 from datetime import datetime
-from ollama import Client
 import os
+import threading
+import time
+from . import llm
 
 # Configuration
 OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://host.docker.internal:11434")
-# Using a fast, smart model for summarization
-MODEL = "qwen2.5-coder:32b" 
+# Brief is regenerated at most this often; page views in between are served from memory.
+CACHE_TTL_SECONDS = 30 * 60
 
 RSS_FEEDS = [
     "https://openai.com/blog/rss.xml",
@@ -18,7 +20,7 @@ RSS_FEEDS = [
 
 class NewsIntelligence:
     def __init__(self):
-        self.client = Client(host=OLLAMA_HOST)
+        pass
 
     def fetch_latest_news(self):
         """Fetches and aggregates the latest AI news headlines."""
@@ -43,7 +45,23 @@ class NewsIntelligence:
         random.shuffle(articles)
         return articles[:5] # Return top 5 diverse stories
 
+    _cache = {"ts": 0.0, "data": None}
+    _lock = threading.Lock()
+
     def generate_brief(self):
+        """Cached wrapper: one generation per CACHE_TTL_SECONDS, shared by all visitors."""
+        cls = type(self)
+        with cls._lock:
+            fresh = cls._cache["data"] is not None and time.time() - cls._cache["ts"] < CACHE_TTL_SECONDS
+            if fresh:
+                return cls._cache["data"]
+            data = self._generate_brief()
+            # never cache the operational fallback, so the next visitor retries
+            if data.get("headline") != "Intelligence Systems Active":
+                cls._cache.update(ts=time.time(), data=data)
+            return data
+
+    def _generate_brief(self):
         """Generates a cohesive 'Welcome Brief' connecting news to Swayne Systems."""
         try:
             articles = self.fetch_latest_news()
@@ -88,7 +106,7 @@ Output JSON format:
         
         try:
             print("🧠 Neural Engine Digesting Information...")
-            response = self.client.chat(model=MODEL, messages=[{'role': 'user', 'content': prompt}], format='json')
+            response = llm.chat(messages=[{'role': 'user', 'content': prompt}], format='json')
             content = response['message']['content']
             
             import json

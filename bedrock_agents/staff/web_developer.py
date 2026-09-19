@@ -1,12 +1,11 @@
-import ollama
+from .. import llm
 import json
 import os
-from ..config import OLLAMA_HOST, MODELS, PROMPTS_PATH
+from ..config import MODELS, PROMPTS_PATH
 from ..config import DATA_DIR # Keep if used elsewhere, but prompts uses specific path now
 
 class WebDeveloper:
     def __init__(self):
-        self.client = ollama.Client(host=OLLAMA_HOST)
         self.model = MODELS["writer"]
         
         # Load external prompts
@@ -83,7 +82,7 @@ class WebDeveloper:
         ===END===
         """
         
-        response = self.client.chat(model=self.model, messages=[
+        response = llm.chat(model=self.model, messages=[
             {'role': 'user', 'content': prompt}
         ])
         

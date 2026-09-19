@@ -12,12 +12,14 @@ OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://10.0.1.1:11434")
 COMFYUI_HOST = os.getenv("COMFYUI_HOST", "http://10.0.1.1:8188") 
 
 # Models (Aligned with Swayne Systems standards)
+# One warm model for all text stages (pinned in Ollama via ~/.local/bin/keep_qwen_warm.sh).
+TEXT_MODEL = "gemma4:26b"
 MODELS = {
-    "director": "llama3.3",       # Strategic planning
-    "writer": "qwen2.5-coder:32b",  # Technical writing/HTML
-    "marketing": "dolphin-llama3", # Promotional copy
-    "reviewer": "verify-llm",     # Compliance (Placeholder)
-    "designer": "llama3.3"        # Image Prompting
+    "director": TEXT_MODEL,   # Strategic planning
+    "writer": TEXT_MODEL,     # Page copy
+    "marketing": TEXT_MODEL,  # Promotional copy
+    "reviewer": TEXT_MODEL,   # Compliance (Placeholder)
+    "designer": TEXT_MODEL,   # Image prompting
 }
 
 # Paths

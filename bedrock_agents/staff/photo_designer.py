@@ -5,12 +5,11 @@ import requests
 import http.client
 import shutil
 import random
-import ollama
-from ..config import OLLAMA_HOST, COMFYUI_HOST, MODELS, ASSETS_DIR, DATA_DIR, PROMPTS_PATH
+from .. import llm
+from ..config import COMFYUI_HOST, MODELS, ASSETS_DIR, DATA_DIR, PROMPTS_PATH
 
 class PhotoDesigner:
     def __init__(self):
-        self.client = ollama.Client(host=OLLAMA_HOST)
         self.model = MODELS["designer"]
         
         # Load prompts
@@ -66,7 +65,7 @@ class PhotoDesigner:
         """
         
         try:
-            response = self.client.chat(model=self.model, messages=[
+            response = llm.chat(model=self.model, messages=[
                 {'role': 'user', 'content': prompt_instruction}
             ])
             content = response['message']['content'].strip()

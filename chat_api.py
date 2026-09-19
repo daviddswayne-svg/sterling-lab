@@ -104,7 +104,8 @@ Customer question: {message}"""
     
     try:
         response = ollama_client.chat(
-            model='qwen',  # Fast 2.3GB model for quick chat responses
+            model='gemma4:26b',  # one warm model site-wide (was 'qwen', which no longer exists on this Ollama)
+            think=False,
             messages=[
                 {'role': 'system', 'content': 'You are a professional insurance advisor at Bedrock Insurance.'},
                 {'role': 'user', 'content': system_prompt}

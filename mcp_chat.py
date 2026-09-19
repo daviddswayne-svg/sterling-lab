@@ -25,8 +25,18 @@ OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://host.docker.internal:11434")
 M1_OLLAMA = os.getenv("M1_OLLAMA", "http://host.docker.internal:12434")
 
 # Models
-TOOL_MODEL = "qwen2.5:14b"  # Fast model for tool-calling decisions
-SYNTH_MODEL = "gemma2:27b"  # Fast model for synthesizing responses
+# One warm model for both steps (pinned in Ollama; no cold loads). Thinking is off: tool decisions
+# drop from seconds to <1s. Benchmarked 2026-09-19: same tool choices as qwen2.5:14b, and faster.
+TOOL_MODEL = "gemma4:26b"   # tool-calling decisions
+SYNTH_MODEL = "gemma4:26b"  # synthesizing responses
+
+# Without this hint the model skipped github_repos for "Show me my GitHub repositories".
+SYSTEM_PROMPT = (
+    "You are a research assistant with tools. The user's GitHub username is daviddswayne-svg. "
+    "Use github_repos for questions about their repositories, github_commits for commit history, "
+    "and search_web for current information from the web. Call a tool whenever one applies; "
+    "answer directly only for greetings or simple questions."
+)
 
 # User Info
 GITHUB_USERNAME = "daviddswayne-svg"
@@ -326,8 +336,7 @@ def main():
         st.sidebar.markdown("❌ **GitHub** - Token missing")
 
     st.sidebar.markdown("---")
-    st.sidebar.caption(f"🧠 Decisions: {TOOL_MODEL}")
-    st.sidebar.caption(f"⚡ Synthesis: {SYNTH_MODEL}")
+    st.sidebar.caption(f"🧠 Model: {TOOL_MODEL}")
 
     # Dashboard link
     st.sidebar.markdown("---")
@@ -335,7 +344,7 @@ def main():
 
     # === MAIN CONTENT ===
     st.title("🧪 MCP Agent Lab")
-    st.caption(f"Powered by {TOOL_MODEL} (decisions) + {SYNTH_MODEL} (fast synthesis) • Grounded responses via MCP")
+    st.caption(f"Powered by {TOOL_MODEL} • Grounded responses via MCP")
 
     # Initialize session state
     if "messages" not in st.session_state:
@@ -389,14 +398,15 @@ How can I help you today?"""
 
             with st.status("🤖 Agent thinking...", expanded=True) as status:
                 try:
-                    # Call Llama 3.3 with tools
-                    status.write("📤 Sending to Llama 3.3...")
+                    status.write(f"📤 Sending to {TOOL_MODEL}...")
 
                     client = Client(host=OLLAMA_HOST)
                     response = client.chat(
                         model=TOOL_MODEL,
-                        messages=[{"role": "user", "content": prompt}],
-                        tools=TOOLS
+                        messages=[{"role": "system", "content": SYSTEM_PROMPT},
+                                  {"role": "user", "content": prompt}],
+                        tools=TOOLS,
+                        think=False
                     )
 
                     msg = response.get("message", {})
@@ -452,7 +462,8 @@ Provide a clear, well-formatted response that directly answers the user's questi
                         stream = client.chat(
                             model=SYNTH_MODEL,
                             messages=[{"role": "user", "content": synthesis_prompt}],
-                            stream=True
+                            stream=True,
+                            think=False
                         )
 
                         for chunk in stream:

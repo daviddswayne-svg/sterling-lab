@@ -1,12 +1,11 @@
 import json
 import os
-import ollama
+from .. import llm
 from datetime import datetime
-from ..config import OLLAMA_HOST, MODELS, DATA_DIR, PROMPTS_PATH
+from ..config import MODELS, DATA_DIR, PROMPTS_PATH
 
 class ContentDirector:
     def __init__(self):
-        self.client = ollama.Client(host=OLLAMA_HOST)
         self.model = MODELS["director"]
         
         # Load external prompts
@@ -15,7 +14,7 @@ class ContentDirector:
 
     def _consult_trend_scout(self):
         """Uses a different, more 'wild' model to generate lateral thinking concepts."""
-        scout_model = "dolphin-llama3" # Using Dolphin for its creativity/unfiltered nature
+        scout_model = MODELS["director"]  # same warm model as every other stage; creativity comes from temperature
         
         prompt = """
         Generate ONE provocative, futuristic, or unexpected concept that relates to 'Protection', 'Assets', or 'Lifestyle'.
@@ -33,7 +32,7 @@ class ContentDirector:
         
         try:
             print(f"📡 Pinging Trend Scout ({scout_model}) for a wild idea...")
-            response = self.client.chat(model=scout_model, messages=[
+            response = llm.chat(model=scout_model, options={'temperature': 1.1}, messages=[
                 {'role': 'user', 'content': prompt}
             ])
             concept = response['message']['content'].strip()
@@ -113,7 +112,7 @@ class ContentDirector:
             
             print(f"   💡 Synthesizing brief with Real-Time Data...")
             
-            response = self.client.chat(model=self.model, format='json', messages=[
+            response = llm.chat(model=self.model, format='json', messages=[
                 {'role': 'user', 'content': prompt}
             ])
             

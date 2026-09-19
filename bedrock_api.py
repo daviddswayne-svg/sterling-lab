@@ -17,7 +17,7 @@ CORS(app)  # Enable CORS for all routes
 # Configuration
 OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://host.docker.internal:11434")
 COMFYUI_HOST = os.getenv("COMFYUI_HOST", "http://host.docker.internal:8188")
-MODEL = "dolphin-llama3"
+MODEL = "gemma4:26b"  # one warm model site-wide (pinned in Ollama)
 
 # Authentication Configuration
 AUTH_SECRET = os.getenv('AUTH_SECRET', 'default-secret-change-me-in-production')
@@ -99,7 +99,7 @@ def chat():
 
         # Call Ollama
         client = Client(host=OLLAMA_HOST)
-        response = client.chat(model=MODEL, messages=messages)
+        response = client.chat(model=MODEL, messages=messages, think=False)
         
         bot_reply = response['message']['content']
         
