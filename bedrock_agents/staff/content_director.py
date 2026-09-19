@@ -113,6 +113,7 @@ class ContentDirector:
             3. Tone: Bloomberg Terminal meets Architectural Digest. Sophisticated, urgent, yet reassuring.
             4. Focus on "Risk Landscape" and "Asset Resilience".
             5. Use ONLY the numbers listed above. Never invent a figure, price or statistic; if a number is not listed, describe the trend in words instead.
+            6. Name instruments in plain words (S&P 500, VIX, 10-year Treasury yield); never write ticker symbols such as ^VIX or ^TNX.
             
             Output a JSON object with this EXACT structure:
             {{
