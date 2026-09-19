@@ -112,6 +112,7 @@ def run_meeting_generator(publish=None):
                 "theme": theme,
                 "duration_s": round(time.time() - t0, 1),
                 "image": image_path,
+                "brief": {k: brief.get(k) for k in ("headline", "market_sentiment", "briefing_body", "date")},
                 "events": events,
             }, f, indent=2)
     except Exception as e:

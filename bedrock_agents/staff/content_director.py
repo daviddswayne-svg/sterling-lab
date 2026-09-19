@@ -74,7 +74,11 @@ class ContentDirector:
             # Gather all data
             context_data = intel.get_full_briefing_context()
             
-            market_str = "\n".join([f"- {t}: {d['price']} ({d['change_pct']:+}% today, {d['return_1m_pct']:+}% over 1 month)" for t, d in context_data['market_data'].items()]) or "- (market data unavailable this run)"
+            from ..market_stats import _vix_label
+            market_str = "\n".join([
+                f"- {t}: {d['price']} ({d['change_pct']:+}% today, {d['return_1m_pct']:+}% over 1 month)"
+                + (f" -> market volatility is {_vix_label(d['price'])}" if t == "^VIX" else "")
+                for t, d in context_data['market_data'].items()]) or "- (market data unavailable this run)"
             macro = context_data.get('macro') or {}
             if macro.get('cpi_yoy') is not None:
                 market_str += f"\n- US CPI inflation (year over year): {macro['cpi_yoy']}% (previous month: {macro.get('cpi_yoy_prev')}%)"

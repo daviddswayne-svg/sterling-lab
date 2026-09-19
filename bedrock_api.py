@@ -149,13 +149,17 @@ def tts_proxy():
 
 @app.route('/api/bedrock/market-analysis', methods=['GET'])
 def get_market_analysis():
-    """Generates the live market analysis using RAG and yfinance (Restored for Bedrock Page)."""
+    """Serves the market brief written by the daily staff meeting (no LLM work per visit).
+
+    The meeting runs on the M3, where market data is reachable, and saves the brief inside
+    dashboard/bedrock/meeting_latest.json.
+    """
     try:
-        from bedrock_agents.staff.content_director import ContentDirector
-        
-        director = ContentDirector()
-        briefing = director.create_daily_brief()
-        
+        log_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "dashboard", "bedrock", "meeting_latest.json")
+        with open(log_path) as f:
+            briefing = json.load(f)["brief"]
+        if not briefing or not briefing.get("headline"):
+            raise ValueError("saved meeting has no brief")
         return jsonify(briefing)
     except Exception as e:
         print(f"❌ Market Analysis Error: {e}")
