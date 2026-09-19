@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=4">
     <link rel="stylesheet" href="featured-portfolio.css">
     <script src="assets/antigravity.js" defer></script>
     <script src="assets/public-chat.js?v=2.0" defer></script>
@@ -30,7 +30,7 @@
                     <p class="subtitle">AI Infrastructure Platform</p>
                 </div>
             </div>
-            <div class="status-indicator" id="systemStatus" hidden>
+            <div class="status-indicator" id="systemStatus" hidden style="display:none">
                 <span class="status-dot"></span>
                 <span class="status-text">Checking Systems...</span>
             </div>
@@ -328,6 +328,7 @@
                         indicator.className = 'status-indicator operational';
                         text.textContent = data.message;
                         indicator.hidden = false;
+                        indicator.style.display = '';
                     } else {
                         // only advertise status when everything is up
                         indicator.hidden = true;
