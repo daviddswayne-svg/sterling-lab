@@ -74,8 +74,11 @@ class ContentDirector:
             # Gather all data
             context_data = intel.get_full_briefing_context()
             
-            market_str = "\n".join([f"- {t}: ${d['price']} ({d['change_pct']}%) [Vol: {d['volatility_30d']}%]" for t, d in context_data['market_data'].items()])
-            news_str = "\n".join([f"- {h}" for h in context_data['news_headlines']])
+            market_str = "\n".join([f"- {t}: {d['price']} ({d['change_pct']:+}% today, {d['return_1m_pct']:+}% over 1 month)" for t, d in context_data['market_data'].items()]) or "- (market data unavailable this run)"
+            macro = context_data.get('macro') or {}
+            if macro.get('cpi_yoy') is not None:
+                market_str += f"\n- US CPI inflation (year over year): {macro['cpi_yoy']}% (previous month: {macro.get('cpi_yoy_prev')}%)"
+            news_str = "\n".join([f"- {h}" for h in context_data['news_headlines']]) or "- (no news feed available this run)"
             
             prompt = f"""
             {self.prompts['system_prompt']}
@@ -100,6 +103,7 @@ class ContentDirector:
             2. CRITICAL: Explicitly cite the "Swiss Re Sigma Report" for the long-term outlook.
             3. Tone: Bloomberg Terminal meets Architectural Digest. Sophisticated, urgent, yet reassuring.
             4. Focus on "Risk Landscape" and "Asset Resilience".
+            5. Use ONLY the numbers listed above. Never invent a figure, price or statistic; if a number is not listed, describe the trend in words instead.
             
             Output a JSON object with this EXACT structure:
             {{
@@ -124,6 +128,7 @@ class ContentDirector:
             
             # Attach Raw Data for downstream agents (Web Developer)
             briefing['raw_market_data'] = context_data['market_data']
+            briefing['macro'] = macro
             
             # 3. Save to Cache
             try:

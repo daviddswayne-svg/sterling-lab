@@ -109,67 +109,8 @@ def chat():
         print(f"❌ Error in chat endpoint: {e}")
         return jsonify({"error": str(e)}), 500
 
-import threading
-
-# Global Meeting State
-MEETING_STATE = {
-    "is_running": False,
-    "start_time": 0,
-    "completed_at": 0,
-    "current_agent": "idle"
-}
-
-def run_meeting_background():
-    """Background worker that runs the meeting generator to completion."""
-    global MEETING_STATE
-    
-    MEETING_STATE["is_running"] = True
-    MEETING_STATE["start_time"] = time.time()
-    MEETING_STATE["completed_at"] = 0
-    MEETING_STATE["current_agent"] = "system"
-    
-    print("🧵 Background Meeting Thread Started")
-    
-    try:
-        # Import here to avoid circular dependencies
-        from bedrock_agents.orchestrator import run_meeting_generator
-        
-        # Iterate through the generator to execute the workflow
-        # We don't stream the output, but we update the state for basic tracking
-        for agent, message in run_meeting_generator():
-            MEETING_STATE["current_agent"] = agent
-            print(f"   PLEASE WAIT: [{agent.upper()}] {message}")
-            
-    except Exception as e:
-        print(f"❌ Background Meeting Error: {e}")
-        MEETING_STATE["current_agent"] = "error"
-    finally:
-        MEETING_STATE["is_running"] = False
-        MEETING_STATE["completed_at"] = time.time()
-        print("✅ Background Meeting Thread Finished")
-
-@app.route('/api/meeting', methods=['POST', 'GET'])
-def run_meeting():
-    """Starts the meeting asynchronously in a background thread."""
-    global MEETING_STATE
-    
-    if MEETING_STATE["is_running"]:
-        return jsonify({"status": "already_running", "message": "Meeting already in progress"}), 409
-        
-    # Start background thread
-    thread = threading.Thread(target=run_meeting_background)
-    thread.daemon = True # Daemon thread so it doesn't block server shutdown
-    thread.start()
-    
-    return jsonify({
-        "status": "started", 
-        "message": "Staff meeting initiated in background."
-    })
-
-@app.route('/api/meeting/status', methods=['GET'])
-def meeting_status():
-    """Returns the current status of the meeting."""
-    return jsonify(MEETING_STATE)
+# NOTE: the staff meeting no longer runs in this container. It runs daily on the M3
+# (bedrock_agents/run_meeting.py); the Bedrock page replays its saved log (meeting_latest.json).
 
 @app.route('/api/tts', methods=['POST'])
 def tts_proxy():

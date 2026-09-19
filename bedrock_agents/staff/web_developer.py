@@ -12,6 +12,21 @@ class WebDeveloper:
         with open(PROMPTS_PATH, "r") as f:
             self.prompts = json.load(f)["web_developer"]
 
+    RISK_WORDS = {"LOW", "MODERATE", "ELEVATED", "SEVERE"}
+    OUTLOOK_WORDS = {"STABLE", "CAUTIOUS", "POSITIVE", "NEGATIVE"}
+
+    def _finalize(self, updates, brief, image_path):
+        """Overlay computed market tiles, constrain the model's two labels, attach the hero image."""
+        from ..market_stats import compute_market_stats, MISSING
+        updates.update(compute_market_stats(brief.get("raw_market_data"), brief.get("macro")))
+        risk = updates.get("market_risk", "").strip().upper()
+        outlook = updates.get("market_outlook", "").strip().upper()
+        updates["market_risk"] = risk if risk in self.RISK_WORDS else MISSING
+        updates["market_outlook"] = outlook if outlook in self.OUTLOOK_WORDS else MISSING
+        if image_path:
+            updates["hero_image"] = image_path
+        return updates
+
     def build_page(self, brief, image_path=None):
         """Generates HTML content based on the creative brief."""
         print(f"👨‍💻 Web Developer ({self.model}) is building the page '{brief.get('headline', 'Update')}'...")
@@ -22,24 +37,12 @@ class WebDeveloper:
         # Image is now embedded in the strict template below
         pass
 
-        # Extract Raw Market Data if available works
-        market_stats = ""
-        if "raw_market_data" in brief:
-             raw = brief["raw_market_data"]
-             # Format specific keys we care about
-             spy = raw.get("SPY", {"price": "N/A", "change_pct": "0.0"})
-             vix = raw.get("^VIX", {"price": "N/A", "change_pct": "0.0"})
-             market_stats = f"""
-             REAL-TIME DATA (Use these EXACT stats):
-             - S&P 500 (SPY): ${spy['price']} ({spy['change_pct']}%)
-             - Volatility (VIX): {vix['price']} (Change: {vix['change_pct']}%)
-             """
+        # Market tiles (S&P, VIX, yield, CPI, sector) are computed from real data in market_stats.py,
+        # never written by the model.
 
         prompt = f"""
         {self.prompts['system_prompt']}
         
-        {market_stats}
-
         Brief:
         {brief}
         
@@ -62,13 +65,8 @@ class WebDeveloper:
         - opp_desc
         - insight_title
         - insight_desc
-        - market_inflation (e.g. "+3.2% ▲")
-        - market_risk (e.g. "ELEVATED")
-        - market_yield (e.g. "4.12%")
-        - market_sector (e.g. "POSITIVE")
-        - market_sp500 (e.g. "+1.2% $500.12")
-        - market_volatility (e.g. "15.4 (LOW)")
-        - market_outlook (e.g. "STABLE")
+        - market_risk (exactly one word: LOW, MODERATE, ELEVATED or SEVERE)
+        - market_outlook (exactly one word: STABLE, CAUTIOUS, POSITIVE or NEGATIVE)
 
         Example Output:
         ===SECTION: strategy_title===
@@ -101,15 +99,15 @@ class WebDeveloper:
         if matches:
             for key, val in matches:
                 updates[key.strip()] = val.strip()
-            return updates
+            return self._finalize(updates, brief, image_path)
         else:
             print("❌ Web Developer failed to produce valid blocks. Raw content:")
             print(content[:200])
              # Fallback
-            return {
+            return self._finalize({
                 "strategy_title": brief.get('headline', 'Update Failed'),
                 "strategy_desc": "Unable to generate content structure. System Maintenance.",
-            }
+            }, brief, image_path)
 
 if __name__ == "__main__":
     dev = WebDeveloper()

@@ -1,12 +1,21 @@
 import json
 import os
+import re
 import time
+from datetime import datetime
 import requests
 import http.client
 import shutil
 import random
 from .. import llm
 from ..config import COMFYUI_HOST, MODELS, ASSETS_DIR, DATA_DIR, PROMPTS_PATH
+
+# Hero render settings. Benchmarked 2026-09-19 on the M3 (warm): 1024x576 @ 20 steps ~51 s;
+# the old 1024x1024 took ~90 s warm and 258 s cold, which blew the old 240 s timeout.
+IMG_WIDTH = 1024
+IMG_HEIGHT = 576
+IMG_STEPS = 20
+RENDER_TIMEOUT_S = 600
 
 class PhotoDesigner:
     def __init__(self):
@@ -133,14 +142,18 @@ class PhotoDesigner:
                     "class_type": "BasicScheduler",
                     "inputs": {
                         "scheduler": "simple",
-                        "steps": 20,
+                        "steps": IMG_STEPS,
                         "denoise": 1.0,
                         "model": ["10", 0]
                     }
                 },
                 "5": {
-                    "class_type": "EmptyLatentImage",
-                    "inputs": {"width": 1024, "height": 1024, "batch_size": 1}
+                    "class_type": "EmptySD3LatentImage",
+                    "inputs": {"width": IMG_WIDTH, "height": IMG_HEIGHT, "batch_size": 1}
+                },
+                "16": {
+                    "class_type": "FluxGuidance",
+                    "inputs": {"conditioning": ["6", 0], "guidance": 3.5}
                 },
                 "6": {
                     "class_type": "CLIPTextEncode",
@@ -201,7 +214,7 @@ class PhotoDesigner:
                     "class_type": "BasicGuider",
                     "inputs": {
                         "model": ["10", 0],
-                        "conditioning": ["6", 0]
+                        "conditioning": ["16", 0]
                     }
                 }
             }
@@ -264,13 +277,13 @@ class PhotoDesigner:
                 print("⚠️ No prompt_id available")
                 return self._get_fallback_image(category)
             
-            print(f"   ⏳ Rendering... (prompt_id: {prompt_id}, max 240s)")
+            print(f"   ⏳ Rendering... (prompt_id: {prompt_id}, max {RENDER_TIMEOUT_S}s)")
             
             # 3. Poll /history endpoint until the prompt is complete
             start_time = time.time()
             image_data = None
             
-            while time.time() - start_time < 240:
+            while time.time() - start_time < RENDER_TIMEOUT_S:
                 try:
                     # Check history for this prompt
                     conn = http.client.HTTPConnection(conn_host, conn_port, timeout=10)
@@ -313,14 +326,15 @@ class PhotoDesigner:
                                             image_data = img_response.read()
                                             conn.close()
                                             
-                                            # Save to assets directory
-                                            dest_filename = "bedrock_latest.png"
+                                            # Save under a unique name so browsers and the CDN never serve a stale hero
+                                            dest_filename = f"bedrock_{datetime.now():%Y%m%d-%H%M}.png"
                                             dest_path = os.path.join(ASSETS_DIR, dest_filename)
                                             
                                             with open(dest_path, 'wb') as f:
                                                 f.write(image_data)
                                             
                                             print(f"   ✅ Image saved to {dest_path}")
+                                            self._prune_old_images(keep=dest_filename)
                                             return f"/assets/{dest_filename}"
                                         else:
                                             conn.close()
@@ -355,6 +369,16 @@ class PhotoDesigner:
             import traceback
             traceback.print_exc()
             return self._get_fallback_image(category)
+
+    def _prune_old_images(self, keep, retain=3):
+        """Keep the newest few generated heroes (for rollback); delete older ones."""
+        try:
+            files = sorted(f for f in os.listdir(ASSETS_DIR) if re.fullmatch(r"bedrock_\d{8}-\d{4}\.png", f))
+            for old in files[:-retain]:
+                if old != keep:
+                    os.remove(os.path.join(ASSETS_DIR, old))
+        except Exception as e:
+            print(f"⚠️ Image prune skipped: {e}")
 
     def _get_fallback_image(self, category):
         """Pick a random image from the stock directory."""

@@ -1,105 +1,138 @@
-import sys
-import time
-import socket
-import subprocess
+import json
 import os
+import time
+import urllib.request
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from datetime import datetime
+
+from .config import COMFYUI_HOST, DASHBOARD_DIR
 from .staff.content_director import ContentDirector
 from .staff.web_developer import WebDeveloper
 from .staff.publishing_manager import PublishingManager
 from .staff.photo_designer import PhotoDesigner
 
-COMFY_DIR = "/Users/daviddswayne/.gemini/antigravity/scratch/night_shift_studio"
+MEETING_LOG = os.path.join(DASHBOARD_DIR, "bedrock", "meeting_latest.json")
 
-def check_and_start_comfyui():
-    """Checks if ComfyUI is running on port 8188, starts it if not."""
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    result = sock.connect_ex(('127.0.0.1', 8188))
-    sock.close()
-    
-    if result == 0:
-        print("✅ ComfyUI is already running.")
-        return
 
-    print("⚠️ ComfyUI is NOT running. Starting it now...")
+def comfyui_reachable(timeout=4):
     try:
-        # Start ComfyUI in background
-        subprocess.Popen(
-            ["python3", "main.py", "--listen", "--port", "8188"],
-            cwd=COMFY_DIR,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL
-        )
-        print("⏳ Waiting for ComfyUI to initialize (10s)...")
-        time.sleep(10)
-        print("✅ ComfyUI started.")
-    except Exception as e:
-        print(f"❌ Failed to start ComfyUI: {e}")
+        with urllib.request.urlopen(f"{COMFYUI_HOST}/system_stats", timeout=timeout) as r:
+            return r.status == 200
+    except Exception:
+        return False
 
-def run_meeting_generator():
-    """Yields (agent_name, status_message) tuples for streaming."""
-    
-    # Check if in Docker
-    if os.path.exists('/.dockerenv'):
-        yield "system", "Connected to Visual Cortex (Remote)..."
-        # Do not start local comfyui, assume host is running it.
-    else:
-        yield "system", "Checking visual cortex (ComfyUI)..."
-        check_and_start_comfyui()
-    
-    # 1. Content Director Plans
+
+def run_meeting_generator(publish=None):
+    """Runs the daily staff meeting. Yields (agent, message) tuples as it goes.
+
+    Runs on the M3 (see run_meeting.py). Stages: Director -> [Photo Designer render || Web Developer copy]
+    -> Publisher. Every event is timestamped and saved to meeting_latest.json, which the Bedrock page
+    replays when a visitor presses the staff-meeting button.
+    """
+    if publish is None:
+        publish = os.getenv("BEDROCK_PUBLISH", "1") != "0"
+
+    t0 = time.time()
+    events = []
+
+    def ev(agent, message):
+        events.append({"agent": agent, "message": message, "t": round(time.time() - t0, 1)})
+        return agent, message
+
+    # 0. Is the image engine up?
+    render_ok = comfyui_reachable()
+    yield ev("system", "Visual cortex online." if render_ok else "Visual cortex OFFLINE: no new image this run.")
+
+    # 1. Content Director plans (real market data + news -> brief)
     director = ContentDirector()
     try:
-        yield "director", "Analyzing market trends & drafting brief..."
+        yield ev("director", "Analyzing market trends & drafting brief...")
         brief = director.create_daily_brief()
-        # Adapting to new Cached Brief structure
-        # Use 'headline' as theme if 'theme' key is missing
-        theme = brief.get('theme', brief.get('headline', 'Global Market Risk'))
-        yield "director", f"Theme selected: {theme}"
+        theme = brief.get("theme", brief.get("headline", "Global Market Risk"))
+        yield ev("director", f"Theme selected: {theme}")
     except Exception as e:
-        yield "error", f"Director Failed: {e}"
+        yield ev("error", f"Director failed: {e}")
         return
 
-    # 2. Photo Designer Creates Assets
-    designer = PhotoDesigner()
-    image_path = None
-    try:
-        yield "designer", "Composing high-fidelity imagery..."
-        # Extract concept if available, otherwise use headline
-        concept = brief.get('image_concept', brief.get('headline', 'Modern Insurance Office'))
-        image_path = designer.generate_image(theme, concept)
-        yield "designer", "Image rendering complete."
-    except Exception as e:
-        yield "designer", f"Rendering failed (Using Stock): {e}"
+    # 2. Photo Designer (Flux render) and Web Developer (page copy) work at the same time
+    designer, web_dev = PhotoDesigner(), WebDeveloper()
+    concept = brief.get("image_concept", brief.get("headline", "Modern Insurance Office"))
+    image_path, updates = None, None
 
-    # 3. Web Developer Builds (with Image)
-    web_dev = WebDeveloper()
-    try:
-        yield "developer", "Coding responsive HTML structure..."
-        html_content = web_dev.build_page(brief, image_path)
-        yield "developer", "Frontend code compiled."
-    except Exception as e:
-        yield "error", f"Web Dev Failed: {e}"
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        if render_ok:
+            yield ev("designer", "Composing high-fidelity imagery...")
+            f_img = pool.submit(designer.generate_image, theme, concept)
+        else:
+            f_img = None
+        yield ev("developer", "Coding responsive HTML structure...")
+        f_web = pool.submit(web_dev.build_page, brief)
+
+        pending = [f for f in (f_img, f_web) if f is not None]
+        for fut in as_completed(pending):
+            if fut is f_web:
+                try:
+                    updates = fut.result()
+                    yield ev("developer", f"Page copy ready ({len(updates)} fields; market tiles from live data).")
+                except Exception as e:
+                    yield ev("error", f"Web Developer failed: {e}")
+            else:
+                try:
+                    image_path = fut.result()
+                except Exception as e:
+                    image_path = None
+                    print(f"Designer error: {e}")
+                if image_path and image_path.startswith("/assets/bedrock_"):
+                    yield ev("designer", f"Image rendered: {os.path.basename(image_path)}")
+                else:
+                    image_path = None
+                    yield ev("designer", "Render FAILED: keeping the previous image.")
+
+    if updates is None:
+        yield ev("error", "No page copy produced; nothing to publish.")
         return
+    if image_path:
+        updates["hero_image"] = image_path
 
-    # 4. Publishing Manager Deploys
+    # 3. Publishing Manager: edit the page, save the replay log, then commit + push + hot-swap
     publisher = PublishingManager()
     try:
-        yield "publisher", "Deploying to production container..."
-        publisher.update_website(html_content, theme)
-        yield "publisher", "Live deployment successful."
+        yield ev("publisher", "Applying updates to the page...")
+        changes = publisher.apply_updates(updates, theme)
+        yield ev("publisher", f"Page updated ({changes} changes).")
     except Exception as e:
-        yield "error", f"Publisher Failed: {e}"
+        yield ev("error", f"Publisher failed: {e}")
+        return
 
-    yield "system", "Meeting Adjourned"
+    yield ev("system", "Meeting Adjourned")
+    try:
+        with open(MEETING_LOG, "w") as f:
+            json.dump({
+                "date": datetime.now().isoformat(timespec="seconds"),
+                "theme": theme,
+                "duration_s": round(time.time() - t0, 1),
+                "image": image_path,
+                "events": events,
+            }, f, indent=2)
+    except Exception as e:
+        print(f"⚠️ Could not write meeting log: {e}")
+
+    if publish:
+        yield ("publisher", "Committing, pushing and hot-swapping...")
+        ok = publisher.publish(theme)
+        yield ("publisher", "Published live." if ok else "Publish FAILED: see log.")
+    else:
+        yield ("publisher", "Dry run: page edited locally, nothing pushed.")
+
 
 def main():
     print("========================================")
     print("🏢 Bedrock Insurance - Daily Cycle Start")
     print("========================================")
-    
-    # Simple wrapper for CLI usage
+    t = time.time()
     for agent, msg in run_meeting_generator():
-        print(f"[{agent.upper()}] {msg}")
+        print(f"[{time.time() - t:6.1f}s] [{agent.upper()}] {msg}", flush=True)
+
 
 if __name__ == "__main__":
     main()

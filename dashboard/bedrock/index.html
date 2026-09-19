@@ -539,88 +539,79 @@
             return div.id;
         }
 
-        // Staff Meeting Logic
-        // Async Staff Meeting Logic
-        let pollingInterval = null;
-        let simulationInterval = null;
+        // Staff Meeting: replays the most recent real meeting (saved by the daily M3 run as
+        // /bedrock/meeting_latest.json). Nothing here triggers any server-side work.
+        let replayTimer = null;
 
-        function startMeeting() {
-            document.getElementById('staffModal').classList.add('active');
+        async function startMeeting() {
+            const modal = document.getElementById('staffModal');
+            modal.classList.add('active');
+            stopReplay();
             const log = document.getElementById('meetingLog');
-            log.innerHTML = '<div>Connecting to Global HQ...</div>';
-
-            // Start Simulation (Visual Flair)
-            startSimulation();
-
-            // Trigger Backend Job
-            fetch('/api/meeting', { method: 'POST' })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'started' || data.status === 'already_running') {
-                        addLog('SYSTEM', 'Workflow Initiated. Agents are working offline.');
-                        // Start Polling for Completion
-                        pollingInterval = setInterval(checkMeetingStatus, 2000);
-                    } else {
-                        addLog('ERROR', 'Failed to start meeting: ' + data.message);
-                    }
-                })
-                .catch(err => {
-                    addLog('ERROR', 'Connection Failed: ' + err);
-                });
-        }
-
-        function checkMeetingStatus() {
-            fetch('/api/meeting/status')
-                .then(response => response.json())
-                .then(state => {
-                    const statusText = state.is_running ? "In Progress" : "Idle";
-                    const currentAgent = state.current_agent;
-
-                    // Update active avatar based on real backend state
-                    updateActiveAgent(currentAgent);
-
-                    if (!state.is_running && state.completed_at > 0) {
-                        // Work Complete
-                        clearInterval(pollingInterval);
-                        clearInterval(simulationInterval);
-
-                        addLog('SYSTEM', 'workflow_complete_signal_received');
-                        addLog('SYSTEM', 'NEW PAGE READY. REFRESHING...');
-
-                        // Update Header Status
-                        const statusDot = document.querySelector('.status-dot');
-                        const statusTextEl = document.querySelector('.status-text');
-                        if (statusDot) statusDot.style.background = '#34d399'; // Green
-                        if (statusTextEl) statusTextEl.textContent = "NEW PAGE READY";
-
-                        setTimeout(() => {
-                            location.reload();
-                        }, 3000);
-                    }
-                })
-                .catch(err => console.error("Polling error", err));
-        }
-
-        function updateActiveAgent(agentName) {
+            log.innerHTML = '';
             document.querySelectorAll('.staff-member').forEach(el => {
-                if (el.id !== `agent-${agentName}`) {
-                    el.classList.remove('active');
-                    // Don't clear text, keep history
-                }
+                el.classList.remove('active');
+                el.querySelector('.staff-status').textContent = 'Waiting...';
             });
 
+            let data;
+            try {
+                const r = await fetch('/bedrock/meeting_latest.json?ts=' + Date.now());
+                if (!r.ok) throw new Error(r.status);
+                data = await r.json();
+            } catch (err) {
+                addLog('SYSTEM', 'No meeting recording is available yet. The staff meet daily.');
+                return;
+            }
+
+            const when = new Date(data.date).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
+            addLog('SYSTEM', `Replaying the staff meeting from ${when} (${Math.round(data.duration_s)}s live)`);
+
+            let i = 0;
+            const step = () => {
+                if (i >= data.events.length) {
+                    updateActiveAgent(null);
+                    const dot = document.querySelector('.status-dot');
+                    if (dot) dot.style.background = '#34d399';
+                    return;
+                }
+                const e = data.events[i++];
+                updateActiveAgent(e.agent, e.message);
+                addLog(e.agent.toUpperCase(), e.message);
+                const next = data.events[i];
+                // Compress real gaps (seconds to minutes) into a watchable 0.7-2.2 s beat
+                const gap = next ? (next.t - e.t) : 0;
+                replayTimer = setTimeout(step, Math.min(Math.max(gap * 70, 700), 2200));
+            };
+            step();
+        }
+
+        function stopReplay() {
+            if (replayTimer) { clearTimeout(replayTimer); replayTimer = null; }
+        }
+
+        function closeMeeting() {
+            stopReplay();
+            document.getElementById('staffModal').classList.remove('active');
+        }
+
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMeeting(); });
+
+        function updateActiveAgent(agentName, message) {
             const agentMap = {
                 'director': 'agent-director',
                 'designer': 'agent-designer',
                 'developer': 'agent-developer',
                 'publisher': 'agent-publisher'
             };
-
+            document.querySelectorAll('.staff-member').forEach(el => {
+                if (el.id !== agentMap[agentName]) el.classList.remove('active');
+            });
             if (agentMap[agentName]) {
                 const el = document.getElementById(agentMap[agentName]);
                 if (el) {
                     el.classList.add('active');
-                    el.querySelector('.staff-status').textContent = "Processing...";
+                    el.querySelector('.staff-status').textContent = message || 'Processing...';
                 }
             }
         }
@@ -632,34 +623,10 @@
             log.appendChild(entry);
             log.scrollTop = log.scrollHeight;
         }
-
-        // Simulates log activity so the user knows something is happening
-        // (Since we lost the real-time stream)
-        function startSimulation() {
-            const messages = [
-                "Analyzing volatility index...",
-                "Cross-referencing Swiss Re Sigma data...",
-                "Optimizing visual assets for retina displays...",
-                "Calibrating CSS grid layout...",
-                "Validating HTML structure...",
-                "Preparing container for deployment...",
-                "Syncing with Swayne Systems Cloud..."
-            ];
-
-            let i = 0;
-            simulationInterval = setInterval(() => {
-                if (i < messages.length) {
-                    // Randomly assign to an agent for flavor
-                    const agents = ['DIRECTOR', 'DESIGNER', 'DEVELOPER', 'PUBLISHER'];
-                    const randomAgent = agents[Math.floor(Math.random() * agents.length)];
-                    addLog(randomAgent, messages[i]);
-                    i++;
-                }
-            }, 4000); // New message every 4 seconds
-        }
     </script>
 <!-- Staff Meeting Modal -->
 <div class="staff-modal" id="staffModal">
+<button onclick="closeMeeting()" title="Close" aria-label="Close" style="position:absolute; top:1rem; right:1.25rem; background:none; border:none; color:white; font-size:2rem; cursor:pointer; line-height:1;">×</button>
 <h2 style="color:white; margin-bottom: 2rem;">Bedrock Staff Meeting</h2>
 <div class="staff-grid">
 <!-- Director -->
