@@ -151,15 +151,15 @@
                 <h2>Bedrock: an insurer run by AI agents</h2>
                 <p class="case-hook">
                     A demo insurance company whose website is planned, illustrated, coded and published each day by a
-                    team of autonomous agents.
+                    team of autonomous agents, working from real market data.
                 </p>
 
                 <div class="case-media">
                     <div class="flow" role="img"
-                        aria-label="Diagram: market and news data feeds the Content Director, then the Photo Designer, Web Developer and Publishing Manager in sequence.">
+                        aria-label="Diagram: market and news data feeds the Content Director, then the Photo Designer and Web Developer work in parallel, then the Publishing Manager deploys.">
                         <div class="flow-step plain">
                             <strong>Market &amp; news data</strong>
-                            <span>Ingested each cycle</span>
+                            <span>Real prices, 10-year yield, CPI, headlines</span>
                         </div>
                         <div class="flow-arrow" aria-hidden="true">→</div>
                         <div class="flow-step">
@@ -167,22 +167,23 @@
                             <span>Drafts the daily brief and picks the theme</span>
                         </div>
                         <div class="flow-arrow" aria-hidden="true">→</div>
-                        <div class="flow-step">
-                            <strong>Photo Designer</strong>
-                            <span>Generates imagery through ComfyUI</span>
-                        </div>
-                        <div class="flow-arrow" aria-hidden="true">→</div>
-                        <div class="flow-step">
-                            <strong>Web Developer</strong>
-                            <span>Builds the responsive page</span>
+                        <div class="flow-split">
+                            <div class="flow-step">
+                                <strong>Photo Designer</strong>
+                                <span>Flux render on the M3</span>
+                            </div>
+                            <div class="flow-step">
+                                <strong>Web Developer</strong>
+                                <span>Page copy; market tiles computed in code</span>
+                            </div>
                         </div>
                         <div class="flow-arrow" aria-hidden="true">→</div>
                         <div class="flow-step alt">
                             <strong>Publishing Manager</strong>
-                            <span>Deploys to production</span>
+                            <span>Commits and hot-swaps to production</span>
                         </div>
                     </div>
-                    <figcaption>The daily "meeting": each agent hands its output to the next.</figcaption>
+                    <figcaption>The daily "meeting": the designer and developer work in parallel.</figcaption>
                 </div>
 
                 <dl class="case-points">
@@ -193,21 +194,28 @@
                     </div>
                     <div>
                         <dt>What I built</dt>
-                        <dd>Four role-specific agents and an orchestrator that runs them in sequence. The agents work
-                            from market and news data, fall back to stock imagery if rendering fails, and stop the
-                            cycle with a clear error if planning or coding fails, so a bad run never publishes.</dd>
+                        <dd>Four role-specific agents and an orchestrator, run once a day on a local Apple Silicon
+                            machine. The Director writes a brief from live market data and news; the Photo Designer
+                            renders a hero image with Flux while the Web Developer writes the page copy; the Publisher
+                            commits the change and pushes it to the running site. Every figure on the page is computed
+                            from fetched data, never written by the model, and a value that can't be fetched shows a
+                            dash. If a render fails, the previous image stays. Visitors can replay the latest meeting
+                            from the saved log.</dd>
                     </div>
                     <div>
                         <dt>Result</dt>
-                        <dd>A working daily cycle with no human in the loop, running on a local multi-machine inference
-                            setup. It was a testbed: it taught me most about failure handling and about where model
-                            output needs checking before it goes public.</dd>
+                        <dd>A full run takes about 90 seconds, down from several minutes that often ended in a
+                            timeout. The most useful lesson came from reading the logs: an early version silently
+                            substituted random prices when its data source blocked it, and the model then presented
+                            them as live. I removed every fallback that could invent a number and made failures visible
+                            instead.</dd>
                     </div>
                 </dl>
                 <ul class="tags">
                     <li>Multi-agent orchestration</li>
                     <li>Local LLMs</li>
-                    <li>ComfyUI</li>
+                    <li>ComfyUI / Flux</li>
+                    <li>Data integrity</li>
                     <li>Python</li>
                 </ul>
             </article>
