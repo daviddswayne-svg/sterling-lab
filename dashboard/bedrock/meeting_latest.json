@@ -1,13 +1,37 @@
 {
-  "date": "2026-09-19T14:24:50",
-  "theme": "Navigating Convergence: Asset Resilience Amidst Shift",
-  "duration_s": 62.9,
-  "image": "/assets/bedrock_20260919-1424.png",
+  "date": "2026-09-19T15:05:24",
+  "theme": "Securing Wealth Amidst Algorithmic Fragility",
+  "duration_s": 63.0,
+  "image": "/assets/bedrock_20260919-1505.png",
   "brief": {
-    "headline": "Navigating Convergence: Asset Resilience Amidst Shift",
+    "headline": "Securing Wealth Amidst Algorithmic Fragility",
     "market_sentiment": "Cautious",
-    "briefing_body": "The current market landscape presents a paradoxical calm; while the <b>^VIX sits at 14.81</b>, suggesting low immediate volatility, underlying structural shifts demand vigilant oversight. We observe rising inflationary pressure as <b>US CPI climbs to 3.7%</b>, paired with a tightening credit environment reflected in the <b>^TNX reaching 5.0</b>. While equity benchmarks like <b>SPY remain resilient at 761.69</b>, we must note the significant contraction in <b>AON, down 15.15% over the last month</b>, signaling a redistribution of brokerage dominance. As the <b>Swiss Re Sigma Report</b> warns, reinsurance markets are still adjusting to persistent inflation and elevated catastrophe losses. With the transition at Berkshire Hathaway and new regulatory greenlights for tokenized stocks via Securitize, our strategy must pivot toward protecting liquid digital assets against the long-term property catastrophe trends identified in the global reinsurance outlook.",
-    "date": "2026-09-19"
+    "briefing_body": "The current landscape presents a deceptive calm. While the <b>S&P 500</b> remains marginally positive and market volatility via the <b>VIX</b> has retreated to <b>14.81</b>, underlying fractures are deepening. We are observing a dangerous convergence of 'cyber-physical' vulnerabilities; recent failures in LNG tankers due to suspected cyber attacks signal that our global supply chains are increasingly brittle. While tokenized stock trading gains regulatory traction, inflationary pressures persist with <b>US CPI at 3.7%</b> and the <b>10-year Treasury yield climbing to 5.0%</b>. According to the <b>Swiss Re Institute US Property & Casualty Outlook (July 2026)</b>, we are entering a competitive phase where underwriting margins may compress. For our clients, the priority must shift from simple liquidity to 'algorithmic resilience'\u2014protecting physical assets against increasingly sophisticated digital incursions and the rising cost of reconstruction.",
+    "date": "2026-09-19",
+    "source": "Swiss Re sigma 2/2026 \u2022 Swiss Re H1 2026 cat-loss report \u2022 Swiss Re US P&C Outlook (Jul 2026) \u2022 Yahoo Finance \u2022 FRED \u2022 Insurance Journal, CNBC",
+    "sigma": [
+      {
+        "short": "Swiss Re sigma 2/2026",
+        "label": "Swiss Re Institute sigma No 2/2026",
+        "title": "World insurance in 2026: shock absorbers in a fragmenting world",
+        "published": "July 2026",
+        "url": "https://www.swissre.com/institute/research/sigma-research/sigma-2026-07-world-insurance.html"
+      },
+      {
+        "short": "Swiss Re H1 2026 cat-loss report",
+        "label": "Swiss Re Institute first-half 2026 insured catastrophe losses",
+        "title": "First-half 2026 insured catastrophe losses: below trend, rising risks",
+        "published": "August 2026",
+        "url": "https://www.swissre.com/institute/research/topics-and-risk-dialogues/climate-and-natural-catastrophe-risk/first-half-2026-insured-catastrophe-losses.html"
+      },
+      {
+        "short": "Swiss Re US P&C Outlook (Jul 2026)",
+        "label": "Swiss Re Institute US Property & Casualty Outlook",
+        "title": "US Property & Casualty outlook: growth stalls as peak profitability fades",
+        "published": "July 2026",
+        "url": "https://www.swissre.com/institute/research/sigma-research/Insurance-Monitoring/us-property-casualty-outlook-july-2026.html"
+      }
+    ]
   },
   "events": [
     {
@@ -17,48 +41,63 @@
     },
     {
       "agent": "director",
+      "message": "Read Swiss Re Institute sigma No 2/2026 (July 2026): 8 key findings.",
+      "t": 0.0
+    },
+    {
+      "agent": "director",
+      "message": "Read Swiss Re Institute first-half 2026 insured catastrophe losses (August 2026): 5 key findings.",
+      "t": 0.0
+    },
+    {
+      "agent": "director",
+      "message": "Loaded the public abstract of Swiss Re Institute US Property & Casualty Outlook (July 2026): 4 key findings.",
+      "t": 0.0
+    },
+    {
+      "agent": "director",
       "message": "Analyzing market trends & drafting brief...",
       "t": 0.0
     },
     {
       "agent": "director",
-      "message": "Theme selected: Navigating Convergence: Asset Resilience Amidst Shift",
-      "t": 5.8
+      "message": "Theme selected: Securing Wealth Amidst Algorithmic Fragility",
+      "t": 5.9
     },
     {
       "agent": "designer",
       "message": "Composing high-fidelity imagery...",
-      "t": 5.8
+      "t": 5.9
     },
     {
       "agent": "developer",
       "message": "Coding responsive HTML structure...",
-      "t": 5.8
+      "t": 5.9
     },
     {
       "agent": "developer",
       "message": "Page copy ready (15 fields; market tiles from live data).",
-      "t": 19.1
+      "t": 18.1
     },
     {
       "agent": "designer",
-      "message": "Image rendered: bedrock_20260919-1424.png",
-      "t": 62.8
+      "message": "Image rendered: bedrock_20260919-1505.png",
+      "t": 63.0
     },
     {
       "agent": "publisher",
       "message": "Applying updates to the page...",
-      "t": 62.9
+      "t": 63.0
     },
     {
       "agent": "publisher",
       "message": "Page updated (16 changes).",
-      "t": 62.9
+      "t": 63.0
     },
     {
       "agent": "system",
       "message": "Meeting Adjourned",
-      "t": 62.9
+      "t": 63.0
     }
   ]
 }
