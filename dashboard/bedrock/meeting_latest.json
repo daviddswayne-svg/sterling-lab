@@ -1,13 +1,13 @@
 {
-  "date": "2026-09-19T15:34:56",
-  "theme": "Securing Wealth Against Algorithmic Kinetic Warfare",
-  "duration_s": 66.5,
-  "image": "/assets/bedrock_20260919-1534.png",
+  "date": "2026-09-20T06:01:14",
+  "theme": "Navigating the Era of Kinetic Cyber-Physical Threats",
+  "duration_s": 72.0,
+  "image": "/assets/bedrock_20260920-0601.png",
   "brief": {
-    "headline": "Securing Wealth Against Algorithmic Kinetic Warfare",
+    "headline": "Navigating the Era of Kinetic Cyber-Physical Threats",
     "market_sentiment": "Cautious",
-    "briefing_body": "While the S&P 500 remains stable and market volatility is low, a profound shift in the risk landscape is emerging. The recent reported cyber attack on an LNG tanker highlights a terrifying new frontier: the weaponization of automated logistics. As physical infrastructure becomes increasingly susceptible to digital disruption, we must pivot our clients toward 'Kinetic-Cyber' resilience. While the 10-year Treasury yield has risen and inflation persists at <b>3.7%</b>, the true danger lies in invisible systemic failures. According to the <b>Swiss Re Institute US Property & Casualty Outlook (July 2026)</b>, we are entering a more competitive phase where underwriting margins may compress; however, for our clients, the focus must remain on protecting high-value assets from cascading autonomous errors. We recommend auditing all smart-infrastructure portfolios to ensure they can withstand sudden, unannounced system overrides in an era of interconnected fragility.",
-    "date": "2026-09-19",
+    "briefing_body": "As we observe a <b>1.03% rise</b> in the 10-year Treasury yield and a <b>3.7% US inflation rate</b>, the landscape is shifting from mere market volatility to systemic physical vulnerability. While the S&P 500 remains resilient at <b>761.69</b>, recent reports of cyber attacks on LNG tankers signal an era where digital breaches manifest as kinetic disasters. As noted in the <b>Swiss Re Institute US Property & Casualty Outlook (July 2026)</b>, we are entering a more competitive phase with compressing underwriting margins; however, the true risk lies in the 'tail risk' of expanding exposure. We must pivot our clients' strategies from simple asset hoarding to deep-tier resilience, specifically protecting against <b>cognitive-industrial sabotage</b>\u2014where autonomous supply chains are manipulated to cause physical catastrophic failure. In this high-interest environment, liquidity is secondary to structural integrity.",
+    "date": "2026-09-20",
     "source": "Swiss Re sigma 2/2026 \u2022 Swiss Re H1 2026 cat-loss report \u2022 Swiss Re US P&C Outlook (Jul 2026) \u2022 Yahoo Finance \u2022 FRED \u2022 Insurance Journal, CNBC",
     "sigma": [
       {
@@ -61,18 +61,18 @@
     },
     {
       "agent": "director",
-      "message": "Theme selected: Securing Wealth Against Algorithmic Kinetic Warfare",
-      "t": 6.4
+      "message": "Theme selected: Navigating the Era of Kinetic Cyber-Physical Threats",
+      "t": 7.8
     },
     {
       "agent": "designer",
       "message": "Composing high-fidelity imagery...",
-      "t": 6.4
+      "t": 7.8
     },
     {
       "agent": "developer",
       "message": "Coding responsive HTML structure...",
-      "t": 6.4
+      "t": 7.8
     },
     {
       "agent": "developer",
@@ -81,23 +81,28 @@
     },
     {
       "agent": "designer",
-      "message": "Image rendered: bedrock_20260919-1534.png",
-      "t": 66.5
+      "message": "Image rendered: bedrock_20260920-0601.png",
+      "t": 72.0
+    },
+    {
+      "agent": "publisher",
+      "message": "Dropped 1 invalid field(s); keeping previous text for them.",
+      "t": 72.0
     },
     {
       "agent": "publisher",
       "message": "Applying updates to the page...",
-      "t": 66.5
+      "t": 72.0
     },
     {
       "agent": "publisher",
-      "message": "Page updated (17 changes).",
-      "t": 66.5
+      "message": "Page updated (16 changes).",
+      "t": 72.0
     },
     {
       "agent": "system",
       "message": "Meeting Adjourned",
-      "t": 66.5
+      "t": 72.0
     }
   ]
 }
