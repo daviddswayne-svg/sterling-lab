@@ -1,13 +1,13 @@
 {
-  "date": "2026-09-22T06:02:23",
-  "theme": "Securing Legacy Amidst Algorithmic Expansion",
-  "duration_s": 139.9,
-  "image": "/assets/bedrock_20260922-0602.png",
+  "date": "2026-09-23T06:01:14",
+  "theme": "Securing Wealth Amidst Fragmenting Global Markets",
+  "duration_s": 68.6,
+  "image": "/assets/bedrock_20260923-0601.png",
   "brief": {
-    "headline": "Securing Legacy Amidst Algorithmic Expansion",
+    "headline": "Securing Wealth Amidst Fragmenting Global Markets",
     "market_sentiment": "Cautious",
-    "briefing_body": "The current landscape presents a paradox of low volatility and rising structural complexity. While the S&P 500 shows strength at <b>773.5</b>, an underlying tension persists as US inflation climbs to <b>3.7%</b>. We are observing a significant capital pivot toward hyperscaler AI infrastructure, with projections from JPMorgan suggesting spending could reach <b>$1 trillion</b> next year. However, this expansion introduces unprecedented 'Cognitive Liability.' As wearable AI devices proliferate, we face a new frontier of privacy-breach risks that challenge traditional asset protection. According to the <b>Swiss Re Institute sigma No 2/2026 (July 2026)</b>, while high interest rates act as a stabilizer for investment income, underwriting margins face increasing pressure. For our clients, true resilience now requires shielding not just physical estates from catastrophe, but digital identities from the emerging era of pervasive, autonomous sensing.",
-    "date": "2026-09-22",
+    "briefing_body": "The global landscape is currently defined by a paradox of low volatility and rising structural pressures. While the <b>S&P 500</b> shows strength at <b>773.5</b> and the <b>VIX</b> remains tranquil at <b>14.31</b>, we must look beyond the surface. As noted in the <b>Swiss Re Institute sigma No 2/2026 (July 2026)</b>, we are navigating a 'fragmenting world' where <b>US core CPI</b> is expected to peak near <b>3%</b> and interest rates remain higher-for-longer, evidenced by the <b>10-year Treasury yield</b> rising to <b>4.99%</b>. While the recent <b>Hurricane Polo</b> serves as a stark reminder of tail risks, global insured catastrophe losses for the first half of 2026 were surprisingly low at <b>USD 42 billion</b>. For our clients, the focus must shift from immediate volatility to long-term asset resilience against persistent inflation and shifting geopolitical dependencies.",
+    "date": "2026-09-23",
     "source": "Swiss Re sigma 2/2026 \u2022 Swiss Re H1 2026 cat-loss report \u2022 Swiss Re US P&C Outlook (Jul 2026) \u2022 Yahoo Finance \u2022 FRED \u2022 Insurance Journal, CNBC",
     "sigma": [
       {
@@ -61,43 +61,48 @@
     },
     {
       "agent": "director",
-      "message": "Theme selected: Securing Legacy Amidst Algorithmic Expansion",
-      "t": 7.6
+      "message": "Theme selected: Securing Wealth Amidst Fragmenting Global Markets",
+      "t": 7.8
     },
     {
       "agent": "designer",
       "message": "Composing high-fidelity imagery...",
-      "t": 7.6
+      "t": 7.8
     },
     {
       "agent": "developer",
       "message": "Coding responsive HTML structure...",
-      "t": 7.6
+      "t": 7.8
     },
     {
       "agent": "developer",
       "message": "Page copy ready (16 fields; market tiles from live data).",
-      "t": 14.2
+      "t": 22.2
     },
     {
       "agent": "designer",
-      "message": "Image rendered: bedrock_20260922-0602.png",
-      "t": 139.9
+      "message": "Image rendered: bedrock_20260923-0601.png",
+      "t": 68.6
+    },
+    {
+      "agent": "publisher",
+      "message": "Dropped 1 invalid field(s); keeping previous text for them.",
+      "t": 68.6
     },
     {
       "agent": "publisher",
       "message": "Applying updates to the page...",
-      "t": 139.9
+      "t": 68.6
     },
     {
       "agent": "publisher",
-      "message": "Page updated (17 changes).",
-      "t": 139.9
+      "message": "Page updated (16 changes).",
+      "t": 68.6
     },
     {
       "agent": "system",
       "message": "Meeting Adjourned",
-      "t": 139.9
+      "t": 68.6
     }
   ]
 }
