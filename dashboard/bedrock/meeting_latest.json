@@ -1,13 +1,13 @@
 {
-  "date": "2026-09-23T16:56:23",
-  "theme": "Shielding Wealth Against Algorithmic Identity Erosion",
-  "duration_s": 64.3,
-  "image": "/assets/bedrock_20260923-1656.png",
+  "date": "2026-09-24T06:01:11",
+  "theme": "Navigating Fragile Peace and Rising Liabilities",
+  "duration_s": 65.4,
+  "image": "/assets/bedrock_20260924-0601.png",
   "brief": {
-    "headline": "Shielding Wealth Against Algorithmic Identity Erosion",
+    "headline": "Navigating Fragile Peace and Rising Liabilities",
     "market_sentiment": "Cautious",
-    "briefing_body": "As we navigate a landscape defined by rising 10-year Treasury yields at <b>5.11%</b> and persistent inflation, a new frontier of risk emerges: the weaponization of deepfake biometrics to bypass high-security estate protocols. While current market volatility remains low according to the VIX, recent FBI investigations into data breaches signal an escalating threat to digital identity integrity. As noted in the <b>Swiss Re Institute sigma No 2/2026 (July 2026)</b>, we are operating in a 'fragmenting world' where higher-for-longer interest rates stabilize investment income but necessitate more rigorous asset protection. We must move beyond traditional cybersecurity toward 'Biological Authentication Indemnity.' Protecting your clients' legacies now requires securing not just their physical real estate and art collections, but the immutable digital signatures that authorize their very existence in an era of pervasive synthetic deception.",
-    "date": "2026-09-23",
+    "briefing_body": "The global landscape is currently defined by a deceptive calm. While the <b>S&P 500</b> remains marginally positive and market volatility via the <b>VIX</b> stays low, we are witnessing a profound structural shift. A temporary U.S.-China trade truce has been extended to January, yet state-backed cyber threats remain a persistent shadow over global infrastructure. As noted in the <b>Swiss Re Institute US Property & Casualty Outlook (July 2026)</b>, the industry is entering a more competitive phase where underwriting margins are gradually compressing. Investors should note the upward trajectory of the <b>10-year Treasury yield</b> to <b>5.12%</b> and rising inflation at <b>3.7%</b>. While current catastrophe losses appear below trend, our clients must prepare for the 'tail risk' of intensifying hazard patterns and the increasing severity of litigation costs that continue to pressure global liability premiums.",
+    "date": "2026-09-24",
     "source": "Swiss Re sigma 2/2026 \u2022 Swiss Re H1 2026 cat-loss report \u2022 Swiss Re US P&C Outlook (Jul 2026) \u2022 Yahoo Finance \u2022 FRED \u2022 Insurance Journal, CNBC",
     "sigma": [
       {
@@ -61,43 +61,43 @@
     },
     {
       "agent": "director",
-      "message": "Theme selected: Shielding Wealth Against Algorithmic Identity Erosion",
-      "t": 6.7
+      "message": "Theme selected: Navigating Fragile Peace and Rising Liabilities",
+      "t": 7.4
     },
     {
       "agent": "designer",
       "message": "Composing high-fidelity imagery...",
-      "t": 6.7
+      "t": 7.4
     },
     {
       "agent": "developer",
       "message": "Coding responsive HTML structure...",
-      "t": 6.7
+      "t": 7.4
     },
     {
       "agent": "developer",
       "message": "Page copy ready (16 fields; market tiles from live data).",
-      "t": 17.7
+      "t": 21.5
     },
     {
       "agent": "designer",
-      "message": "Image rendered: bedrock_20260923-1656.png",
-      "t": 64.3
+      "message": "Image rendered: bedrock_20260924-0601.png",
+      "t": 65.4
     },
     {
       "agent": "publisher",
       "message": "Applying updates to the page...",
-      "t": 64.3
+      "t": 65.4
     },
     {
       "agent": "publisher",
       "message": "Page updated (17 changes).",
-      "t": 64.3
+      "t": 65.4
     },
     {
       "agent": "system",
       "message": "Meeting Adjourned",
-      "t": 64.3
+      "t": 65.4
     }
   ]
 }
