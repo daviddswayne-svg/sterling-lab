@@ -1,13 +1,13 @@
 {
-  "date": "2026-09-19T15:34:56",
-  "theme": "Securing Wealth Against Algorithmic Kinetic Warfare",
-  "duration_s": 66.5,
-  "image": "/assets/bedrock_20260919-1534.png",
+  "date": "2026-09-25T06:01:08",
+  "theme": "Navigating the Fragmenting Global Risk Landscape",
+  "duration_s": 66.7,
+  "image": "/assets/bedrock_20260925-0601.png",
   "brief": {
-    "headline": "Securing Wealth Against Algorithmic Kinetic Warfare",
+    "headline": "Navigating the Fragmenting Global Risk Landscape",
     "market_sentiment": "Cautious",
-    "briefing_body": "While the S&P 500 remains stable and market volatility is low, a profound shift in the risk landscape is emerging. The recent reported cyber attack on an LNG tanker highlights a terrifying new frontier: the weaponization of automated logistics. As physical infrastructure becomes increasingly susceptible to digital disruption, we must pivot our clients toward 'Kinetic-Cyber' resilience. While the 10-year Treasury yield has risen and inflation persists at <b>3.7%</b>, the true danger lies in invisible systemic failures. According to the <b>Swiss Re Institute US Property & Casualty Outlook (July 2026)</b>, we are entering a more competitive phase where underwriting margins may compress; however, for our clients, the focus must remain on protecting high-value assets from cascading autonomous errors. We recommend auditing all smart-infrastructure portfolios to ensure they can withstand sudden, unannounced system overrides in an era of interconnected fragility.",
-    "date": "2026-09-19",
+    "briefing_body": "The dawn of September 25 brings a landscape of stark contrasts. While equity volatility remains low according to the <b>VIX</b>, we are witnessing significant divergence in the fixed-income and insurance sectors. The <b>10-year Treasury yield</b> has climbed to <b>5.18%</b>, reinforcing the 'higher-for-longer' interest rate regime. As noted in the <b>Swiss Re Institute sigma No 2/2026 (July 2026)</b>, these persistent rates act as a stabilizer for investment income even as underwriting margins face pressure. We must remain vigilant regarding liquidity and cyber-physical threats, evidenced by the recent <b>$351.6 million</b> Bitget exchange hack. While catastrophe losses in the first half of 2026 remained below trend at <b>$42 billion</b>, the long-term upward trajectory of risk is intact. For our clients, asset resilience now requires hedging against both rising litigation costs and the inflationary impulse of a fragmenting world.",
+    "date": "2026-09-25",
     "source": "Swiss Re sigma 2/2026 \u2022 Swiss Re H1 2026 cat-loss report \u2022 Swiss Re US P&C Outlook (Jul 2026) \u2022 Yahoo Finance \u2022 FRED \u2022 Insurance Journal, CNBC",
     "sigma": [
       {
@@ -61,43 +61,43 @@
     },
     {
       "agent": "director",
-      "message": "Theme selected: Securing Wealth Against Algorithmic Kinetic Warfare",
-      "t": 6.4
+      "message": "Theme selected: Navigating the Fragmenting Global Risk Landscape",
+      "t": 8.8
     },
     {
       "agent": "designer",
       "message": "Composing high-fidelity imagery...",
-      "t": 6.4
+      "t": 8.8
     },
     {
       "agent": "developer",
       "message": "Coding responsive HTML structure...",
-      "t": 6.4
+      "t": 8.8
     },
     {
       "agent": "developer",
       "message": "Page copy ready (16 fields; market tiles from live data).",
-      "t": 15.4
+      "t": 21.8
     },
     {
       "agent": "designer",
-      "message": "Image rendered: bedrock_20260919-1534.png",
-      "t": 66.5
+      "message": "Image rendered: bedrock_20260925-0601.png",
+      "t": 66.7
     },
     {
       "agent": "publisher",
       "message": "Applying updates to the page...",
-      "t": 66.5
+      "t": 66.7
     },
     {
       "agent": "publisher",
       "message": "Page updated (17 changes).",
-      "t": 66.5
+      "t": 66.7
     },
     {
       "agent": "system",
       "message": "Meeting Adjourned",
-      "t": 66.5
+      "t": 66.7
     }
   ]
 }
