@@ -10,7 +10,7 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 CHROMA_PATH = os.path.join(SCRIPT_DIR, "chroma_db")
 # MUST match the embedding model used during ingestion (ingest_sterling.py)
 EMBEDDING_MODEL = "nomic-embed-text" 
-LLM_MODEL = "llama3.3:latest"
+LLM_MODEL = "gemma4:26b"  # one warm model site-wide
 
 def verify_llm_access():
     print(f"--- Setting up RAG with LLM: {LLM_MODEL} ---")
