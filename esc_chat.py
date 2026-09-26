@@ -19,7 +19,13 @@ ESC_API_URL = os.getenv("ESC_API_URL", "http://localhost:8002")
 # Locally this equals ESC_API_URL. When deployed, set this env var to the
 # public-facing URL where /map/{id} is reachable from the user's browser.
 ESC_MAP_URL = os.getenv("ESC_MAP_URL", ESC_API_URL)
-REQUEST_TIMEOUT = 600  # seconds — Qwen queries typically take 60-200s; 600s safety net
+REQUEST_TIMEOUT = 600
+# Every call to the backend goes through this session so it carries the shared key
+# (X-ESC-Key, set from the ESC_API_KEY env var in Coolify). Without the env var no
+# header is sent - which the backend accepts until its own key is configured.
+_api = requests.Session()
+if os.getenv("ESC_API_KEY"):
+    _api.headers["X-ESC-Key"] = os.getenv("ESC_API_KEY")  # seconds — Qwen queries typically take 60-200s; 600s safety net
 
 # === STREAMLIT UI ===
 st.set_page_config(
@@ -118,7 +124,7 @@ st.markdown("""
 def fetch_thumbnail(image_id: int) -> bytes | None:
     """Fetch a thumbnail (400px). Cached so reruns on Load More don't re-fetch."""
     try:
-        r = requests.get(f"{ESC_API_URL}/image/{image_id}", params={"size": "thumb"}, timeout=10)
+        r = _api.get(f"{ESC_API_URL}/image/{image_id}", params={"size": "thumb"}, timeout=10)
         if r.status_code == 200:
             return r.content
     except Exception:
@@ -130,7 +136,7 @@ def fetch_thumbnail(image_id: int) -> bytes | None:
 def fetch_large_image(image_id: int) -> bytes | None:
     """Fetch a large (1200px) version. Cached for fast repeat opens."""
     try:
-        r = requests.get(f"{ESC_API_URL}/image/{image_id}", params={"size": "large"}, timeout=20)
+        r = _api.get(f"{ESC_API_URL}/image/{image_id}", params={"size": "large"}, timeout=20)
         if r.status_code == 200:
             return r.content
     except Exception:
@@ -142,7 +148,7 @@ def fetch_large_image(image_id: int) -> bytes | None:
 def fetch_image_meta(image_id: int) -> dict | None:
     """Fetch image metadata (filename, date, people, location). Cached so Load More is instant."""
     try:
-        r = requests.get(f"{ESC_API_URL}/image/{image_id}/meta", timeout=5)
+        r = _api.get(f"{ESC_API_URL}/image/{image_id}/meta", timeout=5)
         if r.status_code == 200:
             return r.json()
     except Exception:
@@ -525,7 +531,7 @@ def _render_map_link(trip_id: int):
 def fetch_stats():
     """Fetch database stats from ESC API."""
     try:
-        r = requests.get(f"{ESC_API_URL}/stats", timeout=5)
+        r = _api.get(f"{ESC_API_URL}/stats", timeout=5)
         if r.status_code == 200:
             return r.json()
     except Exception:
@@ -536,7 +542,7 @@ def fetch_stats():
 def check_health():
     """Check ESC API health."""
     try:
-        r = requests.get(f"{ESC_API_URL}/health", timeout=5)
+        r = _api.get(f"{ESC_API_URL}/health", timeout=5)
         if r.status_code == 200:
             data = r.json()
             return data.get("database") == "ok" and data.get("ollama", "").startswith("ok")
@@ -548,7 +554,7 @@ def check_health():
 def fetch_model_status() -> dict:
     """Check if gemma4:26b is loaded and ready."""
     try:
-        r = requests.get(f"{ESC_API_URL}/model_status", timeout=4)
+        r = _api.get(f"{ESC_API_URL}/model_status", timeout=4)
         if r.status_code == 200:
             return r.json()
     except Exception:
@@ -559,7 +565,7 @@ def fetch_model_status() -> dict:
 def send_chat(message: str, history: list, mode: str = "photos") -> dict | None:
     """Send chat message to ESC API."""
     try:
-        r = requests.post(
+        r = _api.post(
             f"{ESC_API_URL}/chat",
             json={"message": message, "history": history, "mode": mode},
             timeout=REQUEST_TIMEOUT,
@@ -577,23 +583,31 @@ REMEMBER_COOKIE = "esc_remember"
 REMEMBER_DAYS = 30
 
 
-def _set_remember_cookie(token: str | None):
-    """Write the keep-me-signed-in cookie on the page (or delete it when token is None).
+def _set_remember_cookie(token: str | None, persistent: bool = True):
+    """Write the sign-in cookie on the page (or delete it when token is None).
+    Every login gets one - maps, photos and the family tree need it. "Keep me signed in"
+    decides whether it lasts REMEMBER_DAYS or ends when the browser closes.
     Runs as a tiny script in a zero-height component; the cookie is scoped to /esc."""
-    value, max_age = (token, REMEMBER_DAYS * 86400) if token else ("", 0)
+    if token is None:
+        lifetime = "; max-age=0"
+    elif persistent:
+        lifetime = f"; max-age={REMEMBER_DAYS * 86400}"
+    else:
+        lifetime = ""   # session cookie
+    value = token or ""
     components.html(f"""<script>
         const secure = window.parent.location.protocol === "https:" ? "; Secure" : "";
         window.parent.document.cookie =
-            "{REMEMBER_COOKIE}={value}; path=/esc; max-age={max_age}; SameSite=Lax" + secure;
+            "{REMEMBER_COOKIE}={value}; path=/esc{lifetime}; SameSite=Lax" + secure;
     </script>""", height=0)
 
 
-def _signed_in(user: dict):
+def _signed_in(user: dict, persistent: bool):
     st.session_state.user = user
     st.session_state.session_id = user["session_id"]
     if user.get("remember_token"):
         st.session_state.remember_token = user["remember_token"]
-        st.session_state.pending_cookie = user["remember_token"]
+        st.session_state.pending_cookie = (user["remember_token"], persistent)
 
 
 def _try_resume():
@@ -604,7 +618,7 @@ def _try_resume():
     if not token:
         return
     try:
-        r = requests.post(f"{ESC_API_URL}/auth/resume", json={"token": token}, timeout=10)
+        r = _api.post(f"{ESC_API_URL}/auth/resume", json={"token": token}, timeout=10)
     except Exception:
         return  # API unreachable — fall through to the login page, keep the cookie
     if r.status_code == 200:
@@ -642,13 +656,13 @@ def _auth_forms():
                 st.warning("Please enter your username and password.")
             else:
                 try:
-                    r = requests.post(
+                    r = _api.post(
                         f"{ESC_API_URL}/auth/login",
-                        json={"username": username, "password": password, "remember": remember},
+                        json={"username": username, "password": password, "remember": True},
                         timeout=10,
                     )
                     if r.status_code == 200:
-                        _signed_in(r.json())
+                        _signed_in(r.json(), persistent=remember)
                         st.rerun()
                     else:
                         st.error(r.json().get("detail", "Login failed."))
@@ -672,19 +686,19 @@ def _auth_forms():
                 st.error("Password must be at least 6 characters.")
             else:
                 try:
-                    r = requests.post(
+                    r = _api.post(
                         f"{ESC_API_URL}/auth/register",
                         json={
                             "rdx_id": int(rdx_id),
                             "first_name": first_name,
                             "username": new_username,
                             "password": new_password,
-                            "remember": reg_remember,
+                            "remember": True,
                         },
                         timeout=10,
                     )
                     if r.status_code == 200:
-                        _signed_in(r.json())
+                        _signed_in(r.json(), persistent=reg_remember)
                         st.rerun()
                     else:
                         st.error(r.json().get("detail", "Registration failed."))
@@ -699,7 +713,8 @@ def main():
         show_auth_page()
         return
     if st.session_state.get("pending_cookie"):
-        _set_remember_cookie(st.session_state.pop("pending_cookie"))
+        token, persistent = st.session_state.pop("pending_cookie")
+        _set_remember_cookie(token, persistent)
 
     # === SIDEBAR ===
     st.sidebar.title("📷 Family History DB")
@@ -710,7 +725,7 @@ def main():
     st.sidebar.markdown(f"**{user.get('display_name', 'User')}**")
     if st.sidebar.button("Logout", key="logout_btn"):
         try:
-            requests.post(
+            _api.post(
                 f"{ESC_API_URL}/auth/logout",
                 params={"session_id": st.session_state.get("session_id"),
                         "token": st.session_state.get("remember_token")},
@@ -741,7 +756,7 @@ def main():
                 st.error("Password must be at least 6 characters.")
             else:
                 try:
-                    r = requests.post(
+                    r = _api.post(
                         f"{ESC_API_URL}/auth/change_password",
                         json={"user_id": user["id"], "current_password": cp_current, "new_password": cp_new},
                         timeout=10,
@@ -757,7 +772,7 @@ def main():
     with st.sidebar.expander("📊 My Activity"):
         if st.button("Load Activity", key="activity_load_btn"):
             try:
-                r = requests.get(f"{ESC_API_URL}/auth/activity", params={"user_id": user["id"]}, timeout=10)
+                r = _api.get(f"{ESC_API_URL}/auth/activity", params={"user_id": user["id"]}, timeout=10)
                 if r.status_code == 200:
                     st.session_state.activity_data = r.json()
             except Exception as e:
@@ -787,7 +802,7 @@ def main():
 
             if queries and st.button("Clear Query History", key="clear_queries_btn"):
                 try:
-                    r = requests.delete(f"{ESC_API_URL}/auth/activity", params={"user_id": user["id"]}, timeout=10)
+                    r = _api.delete(f"{ESC_API_URL}/auth/activity", params={"user_id": user["id"]}, timeout=10)
                     if r.status_code == 200:
                         st.session_state.activity_data["queries"] = []
                         st.success("Query history cleared.")
@@ -863,13 +878,13 @@ def main():
     col1, col2 = st.sidebar.columns(2)
     if col1.button("⏹ Stop", help="Cancel any in-flight query"):
         try:
-            requests.post(f"{ESC_API_URL}/cancel", timeout=3)
+            _api.post(f"{ESC_API_URL}/cancel", timeout=3)
         except Exception:
             pass
         st.sidebar.caption("Query stopped.")
     if col2.button("Clear Chat"):
         try:
-            requests.post(f"{ESC_API_URL}/cancel", timeout=3)
+            _api.post(f"{ESC_API_URL}/cancel", timeout=3)
         except Exception:
             pass
         st.session_state.messages = []
@@ -1119,7 +1134,7 @@ Ask questions about the Swayne family database in plain English — I'll query 1
         _user = st.session_state.get("user", {})
         if _user:
             try:
-                requests.post(
+                _api.post(
                     f"{ESC_API_URL}/auth/log_query",
                     params={
                         "user_id": _user["id"],
