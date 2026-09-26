@@ -1,6 +1,6 @@
 #!/bin/bash
 # M3 Mac Studio - Tunnel & Ollama Keepalive Script
-# Ensures Ollama is running and SSH tunnel to droplet is active
+# Ensures Ollama and the video server are running; reports on the SSH tunnel (launchd owns it)
 # Run at startup and every 2 hours via cron
 
 LOGFILE="$HOME/tunnel_keepalive_m3.log"
@@ -55,50 +55,16 @@ log "[2/3] Checking Video Server..."
 $HOME/mac_studio_scripts/start_video_server.sh | while read line; do log "   $line"; done
 
 # 3. Check SSH Tunnel
-log "[3/3] Checking SSH tunnel to droplet..."
-
-# Check if tunnel is already running
-TUNNEL_PID=$(pgrep -f "ssh.*$DROPLET.*$REMOTE_PORT:localhost:$TUNNEL_PORT")
-
-if [ -n "$TUNNEL_PID" ]; then
-    # Tunnel process exists, test if it works
-    log "   Found tunnel process (PID: $TUNNEL_PID), testing..."
-    
-    if ssh -O check -S ~/.ssh/tunnel-m3-control $DROPLET 2>/dev/null; then
-        log "✅ SSH tunnel is active and healthy"
-    else
-        log "⚠️  Tunnel process exists but connection dead, restarting..."
-        kill $TUNNEL_PID 2>/dev/null
-        sleep 2
-    fi
-fi
-
-# Start tunnel if not running or was killed
-TUNNEL_PID=$(pgrep -f "ssh.*$DROPLET.*$REMOTE_PORT:localhost:$TUNNEL_PORT")
-if [ -z "$TUNNEL_PID" ]; then
-    log "   Starting new SSH tunnel..."
-    
-    # Create tunnel with control socket for health checks
-    # Added -R 8888:localhost:8888 for Video Streaming
-    ssh -f -N \
-        -o ServerAliveInterval=60 \
-        -o ServerAliveCountMax=3 \
-        -o ExitOnForwardFailure=yes \
-        -M -S ~/.ssh/tunnel-m3-control \
-        -R $REMOTE_PORT:localhost:$TUNNEL_PORT \
-        -R 8888:localhost:8888 \
-        $DROPLET
-    
-    sleep 2
-    
-    if ssh -O check -S ~/.ssh/tunnel-m3-control $DROPLET 2>/dev/null; then
-        NEW_PID=$(pgrep -f "ssh.*$DROPLET.*$REMOTE_PORT:localhost:$TUNNEL_PORT")
-        log "✅ SSH tunnel established (PID: $NEW_PID)"
-    else
-        log "❌ ERROR: Failed to establish SSH tunnel"
-    fi
+log "[3/3] SSH tunnel to droplet..."
+# The tunnel is owned by launchd (com.swaynesystems.sterling.tunnel -> sterling_tunnel.sh):
+# one autossh tunnel for 8888/11434/8002/9101 that restarts itself until every port is
+# bound. This script used to start a second tunnel for 11434/8888; its "is it running?"
+# pgrep never matched, so from 2026-09 it logged a failed restart every 15 min. Removed
+# 2026-09-26 - now it only reports.
+if pgrep -f "autossh.*$DROPLET" > /dev/null; then
+    log "✅ launchd tunnel (autossh) is running"
 else
-    log "✅ SSH tunnel already active (PID: $TUNNEL_PID)"
+    log "⚠️  launchd tunnel not running - launchd should restart it (com.swaynesystems.sterling.tunnel)"
 fi
 
 log "=========================================="
