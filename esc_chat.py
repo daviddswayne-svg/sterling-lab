@@ -4,6 +4,7 @@ Connects to ESC API running on Mac Studio M3 via SSH tunnel
 """
 
 import streamlit as st
+import streamlit.components.v1 as components
 import requests
 import json
 import os
@@ -572,8 +573,61 @@ def send_chat(message: str, history: list, mode: str = "photos") -> dict | None:
     return None
 
 
+REMEMBER_COOKIE = "esc_remember"
+REMEMBER_DAYS = 30
+
+
+def _set_remember_cookie(token: str | None):
+    """Write the keep-me-signed-in cookie on the page (or delete it when token is None).
+    Runs as a tiny script in a zero-height component; the cookie is scoped to /esc."""
+    value, max_age = (token, REMEMBER_DAYS * 86400) if token else ("", 0)
+    components.html(f"""<script>
+        const secure = window.parent.location.protocol === "https:" ? "; Secure" : "";
+        window.parent.document.cookie =
+            "{REMEMBER_COOKIE}={value}; path=/esc; max-age={max_age}; SameSite=Lax" + secure;
+    </script>""", height=0)
+
+
+def _signed_in(user: dict):
+    st.session_state.user = user
+    st.session_state.session_id = user["session_id"]
+    if user.get("remember_token"):
+        st.session_state.remember_token = user["remember_token"]
+        st.session_state.pending_cookie = user["remember_token"]
+
+
+def _try_resume():
+    """After a refresh, log back in from the keep-me-signed-in cookie."""
+    if st.session_state.get("user") or st.session_state.get("signed_out"):
+        return
+    token = st.context.cookies.get(REMEMBER_COOKIE)
+    if not token:
+        return
+    try:
+        r = requests.post(f"{ESC_API_URL}/auth/resume", json={"token": token}, timeout=10)
+    except Exception:
+        return  # API unreachable — fall through to the login page, keep the cookie
+    if r.status_code == 200:
+        st.session_state.user = r.json()
+        st.session_state.session_id = st.session_state.user["session_id"]
+        st.session_state.remember_token = token
+    else:
+        st.session_state.clear_cookie = True  # expired or revoked
+
+
 def show_auth_page():
     """Login / Register page shown to unauthenticated users."""
+    if st.session_state.pop("clear_cookie", False):
+        _set_remember_cookie(None)
+
+    # Keep the form a readable width instead of spanning the wide layout
+    # (columns stack full-width on phones).
+    _, mid, _ = st.columns([1, 1, 1])
+    with mid:
+        _auth_forms()
+
+
+def _auth_forms():
     st.title("Family History Explorer")
     st.caption("Swayne Systems · Private access for Swayne family members")
 
@@ -582,6 +636,7 @@ def show_auth_page():
     with tab_login:
         username = st.text_input("Username", key="login_username")
         password = st.text_input("Password", type="password", key="login_password")
+        remember = st.checkbox("Keep me signed in", value=True, key="login_remember")
         if st.button("Login", key="login_btn", use_container_width=True):
             if not username or not password:
                 st.warning("Please enter your username and password.")
@@ -589,13 +644,11 @@ def show_auth_page():
                 try:
                     r = requests.post(
                         f"{ESC_API_URL}/auth/login",
-                        json={"username": username, "password": password},
+                        json={"username": username, "password": password, "remember": remember},
                         timeout=10,
                     )
                     if r.status_code == 200:
-                        user = r.json()
-                        st.session_state.user = user
-                        st.session_state.session_id = user["session_id"]
+                        _signed_in(r.json())
                         st.rerun()
                     else:
                         st.error(r.json().get("detail", "Login failed."))
@@ -605,10 +658,11 @@ def show_auth_page():
     with tab_register:
         st.caption("Register using your RDX ID from the family database. Ask David if you don't know yours.")
         rdx_id = st.number_input("Your RDX ID", min_value=1, step=1, key="reg_rdx")
-        first_name = st.text_input("Your first name (as it appears in the database)", key="reg_fname")
+        first_name = st.text_input("Your first name or nickname (as it appears in the database)", key="reg_fname")
         new_username = st.text_input("Choose a username", key="reg_username")
         new_password = st.text_input("Choose a password (6+ characters)", type="password", key="reg_password")
         confirm_password = st.text_input("Confirm password", type="password", key="reg_confirm")
+        reg_remember = st.checkbox("Keep me signed in", value=True, key="reg_remember")
         if st.button("Register", key="register_btn", use_container_width=True):
             if not all([rdx_id, first_name, new_username, new_password, confirm_password]):
                 st.warning("Please fill in all fields.")
@@ -625,13 +679,12 @@ def show_auth_page():
                             "first_name": first_name,
                             "username": new_username,
                             "password": new_password,
+                            "remember": reg_remember,
                         },
                         timeout=10,
                     )
                     if r.status_code == 200:
-                        user = r.json()
-                        st.session_state.user = user
-                        st.session_state.session_id = user["session_id"]
+                        _signed_in(r.json())
                         st.rerun()
                     else:
                         st.error(r.json().get("detail", "Registration failed."))
@@ -641,9 +694,12 @@ def show_auth_page():
 
 def main():
     # Auth gate — show login/register if not authenticated
+    _try_resume()
     if not st.session_state.get("user"):
         show_auth_page()
         return
+    if st.session_state.get("pending_cookie"):
+        _set_remember_cookie(st.session_state.pop("pending_cookie"))
 
     # === SIDEBAR ===
     st.sidebar.title("📷 Family History DB")
@@ -656,13 +712,19 @@ def main():
         try:
             requests.post(
                 f"{ESC_API_URL}/auth/logout",
-                params={"session_id": st.session_state.get("session_id")},
+                params={"session_id": st.session_state.get("session_id"),
+                        "token": st.session_state.get("remember_token")},
                 timeout=5,
             )
         except Exception:
             pass
-        for key in ["user", "session_id", "messages", "thinking", "active_mode", "pending_prompt"]:
+        for key in ["user", "session_id", "messages", "thinking", "active_mode", "pending_prompt",
+                    "remember_token", "pending_cookie"]:
             st.session_state.pop(key, None)
+        # This page's cookies were read when it loaded, so remember the logout for
+        # the rest of this visit, and delete the cookie from the browser.
+        st.session_state.signed_out = True
+        st.session_state.clear_cookie = True
         st.rerun()
 
     # Change password
@@ -933,7 +995,9 @@ Ask questions about the Swayne family database in plain English — I'll query 1
 
 🏔️ **"Climbing trips" vs "trips"** — saying *"climbing trips"* filters to officially tagged climbing expeditions (more accurate for elevation queries). *"Trips"* is broader and includes everything.
 
-👤 **Names & nicknames** — *"Mike"* = Michael Dennis Swayne · *"Michael"* = Michael Thomas Swayne · *"Dave"* = David · *"Don"* = Donald · *"Lillie"* = Elizabeth Brown Swayne · *"Liz"* = Elizabeth Ann Swayne. Say *"Elizabeth"* alone and I'll ask which one.
+👤 **Names & nicknames** — first names and nicknames both work (*"Don"* or *"Donald"*, *"Mike"* or *"Michael"*).
+- **Use a full name to go straight to the answer:** *"Don Ihlenfeldt"*, *"Mike Swayne"*, *"Michael Thomas"*.
+- **A first name on its own often matches several people** — the database has many Dons, Mikes and Elizabeths. When that happens I'll list the likeliest matches (most photographed first) and ask which one you meant. Reply with the number or the last name, and I'll answer your original question.
 
 📅 **Decades work naturally** — "trips in the 1970s," "photos from the 1990s," "species photographed in the 1960s" all work as expected."""
         st.session_state.messages.append({"role": "assistant", "content": welcome})
