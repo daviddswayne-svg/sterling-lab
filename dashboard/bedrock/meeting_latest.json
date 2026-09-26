@@ -1,13 +1,13 @@
 {
-  "date": "2026-09-25T06:01:08",
-  "theme": "Navigating the Fragmenting Global Risk Landscape",
-  "duration_s": 66.7,
-  "image": "/assets/bedrock_20260925-0601.png",
+  "date": "2026-09-26T06:01:42",
+  "theme": "Securing Wealth Amidst Synthetic Sovereignty Risks",
+  "duration_s": 98.5,
+  "image": "/assets/bedrock_20260926-0601.png",
   "brief": {
-    "headline": "Navigating the Fragmenting Global Risk Landscape",
+    "headline": "Securing Wealth Amidst Synthetic Sovereignty Risks",
     "market_sentiment": "Cautious",
-    "briefing_body": "The dawn of September 25 brings a landscape of stark contrasts. While equity volatility remains low according to the <b>VIX</b>, we are witnessing significant divergence in the fixed-income and insurance sectors. The <b>10-year Treasury yield</b> has climbed to <b>5.18%</b>, reinforcing the 'higher-for-longer' interest rate regime. As noted in the <b>Swiss Re Institute sigma No 2/2026 (July 2026)</b>, these persistent rates act as a stabilizer for investment income even as underwriting margins face pressure. We must remain vigilant regarding liquidity and cyber-physical threats, evidenced by the recent <b>$351.6 million</b> Bitget exchange hack. While catastrophe losses in the first half of 2026 remained below trend at <b>$42 billion</b>, the long-term upward trajectory of risk is intact. For our clients, asset resilience now requires hedging against both rising litigation costs and the inflationary impulse of a fragmenting world.",
-    "date": "2026-09-25",
+    "briefing_body": "As we navigate a landscape of low market volatility, we must look beyond the immediate stability of the <b>S&P 500</b> and the steady <b>10-year Treasury yield</b>. While recent North Korean cyber-operations against crypto platforms signal escalating state-sponsored digital aggression, a new frontier of risk emerges: <b>Deepfake Identity Appropriation</b>. As generative AI reaches parity with biological reality, the theft of 'digital personhood' threatens the very foundation of estate planning. According to the <b>Swiss Re Institute sigma No 2/2026 (July 2026)</b>, we are operating in a <b>fragmenting world</b> where inflation remains sticky at <b>3.7%</b>. In this environment, protecting physical assets is insufficient; we must now insure the integrity of the digital self. Clients must transition from mere asset protection to <b>biometric and cryptographic authentication</b> strategies to ensure their legacy remains untampered by synthetic actors.",
+    "date": "2026-09-26",
     "source": "Swiss Re sigma 2/2026 \u2022 Swiss Re H1 2026 cat-loss report \u2022 Swiss Re US P&C Outlook (Jul 2026) \u2022 Yahoo Finance \u2022 FRED \u2022 Insurance Journal, CNBC",
     "sigma": [
       {
@@ -47,57 +47,57 @@
     {
       "agent": "director",
       "message": "Read Swiss Re Institute first-half 2026 insured catastrophe losses (August 2026): 5 key findings.",
-      "t": 0.0
+      "t": 0.1
     },
     {
       "agent": "director",
       "message": "Loaded the public abstract of Swiss Re Institute US Property & Casualty Outlook (July 2026): 4 key findings.",
-      "t": 0.0
+      "t": 0.1
     },
     {
       "agent": "director",
       "message": "Analyzing market trends & drafting brief...",
-      "t": 0.0
+      "t": 0.1
     },
     {
       "agent": "director",
-      "message": "Theme selected: Navigating the Fragmenting Global Risk Landscape",
-      "t": 8.8
+      "message": "Theme selected: Securing Wealth Amidst Synthetic Sovereignty Risks",
+      "t": 9.7
     },
     {
       "agent": "designer",
       "message": "Composing high-fidelity imagery...",
-      "t": 8.8
+      "t": 9.7
     },
     {
       "agent": "developer",
       "message": "Coding responsive HTML structure...",
-      "t": 8.8
+      "t": 9.7
     },
     {
       "agent": "developer",
       "message": "Page copy ready (16 fields; market tiles from live data).",
-      "t": 21.8
+      "t": 15.8
     },
     {
       "agent": "designer",
-      "message": "Image rendered: bedrock_20260925-0601.png",
-      "t": 66.7
+      "message": "Image rendered: bedrock_20260926-0601.png",
+      "t": 98.5
     },
     {
       "agent": "publisher",
       "message": "Applying updates to the page...",
-      "t": 66.7
+      "t": 98.5
     },
     {
       "agent": "publisher",
       "message": "Page updated (17 changes).",
-      "t": 66.7
+      "t": 98.5
     },
     {
       "agent": "system",
       "message": "Meeting Adjourned",
-      "t": 66.7
+      "t": 98.5
     }
   ]
 }
