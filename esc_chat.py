@@ -6,6 +6,7 @@ Connects to ESC API running on Mac Studio M3 via SSH tunnel
 import streamlit as st
 import streamlit.components.v1 as components
 import requests
+import uuid
 import json
 import os
 import re
@@ -210,76 +211,6 @@ def _fill_large_placeholders(pending: list[tuple]):
                 ph.image(large, use_container_width=True)
         else:
             ph.caption("Full-size image unavailable")
-
-
-def render_image_grid(image_ids: list[int]):
-    """Display a thumbnail grid for a list of image IDs."""
-    if not image_ids:
-        return
-
-    st.markdown('<div class="image-grid-label">📷 Photos from this query</div>', unsafe_allow_html=True)
-
-    # Fetch thumbnails + metadata (cap at 12) — warmed in parallel first
-    _prefetch_images(image_ids[:12])
-    items = []
-    for img_id in image_ids[:12]:
-        thumb = fetch_thumbnail(img_id)
-        if thumb:
-            meta = fetch_image_meta(img_id)
-            items.append((img_id, thumb, meta))
-
-    if not items:
-        return
-
-    # 3-column grid
-    cols = st.columns(3)
-    mac_paths = []
-    pending_larges = []   # (img_id, placeholder, caption) — filled after the grid paints
-    for i, (img_id, thumb_bytes, meta) in enumerate(items):
-        with cols[i % 3]:
-            # Build caption: filename + year
-            if meta:
-                name = meta.get("filename", f"ID {img_id}")
-                date = meta.get("date", "")
-                year = f"  {date[6:8]}" if len(date) >= 8 else ""
-                if year:
-                    yr = int(year)
-                    year = f"  {'20' if yr <= 26 else '19'}{yr:02d}"
-                people = meta.get("people", [])
-                loc = meta.get("locations", [])
-                caption_parts = [name + year]
-                if people:
-                    caption_parts.append(", ".join(people[:2]))
-                if loc:
-                    caption_parts.append(loc[0])
-                caption = "  ·  ".join(caption_parts)
-                if meta.get("mac_path"):
-                    mac_paths.append((img_id, name, meta["mac_path"], thumb_bytes))
-            else:
-                caption = f"Image {img_id}"
-
-            # Click to view larger image (full-size fetched AFTER the grid paints)
-            with st.popover("🔍", use_container_width=True):
-                pending_larges.append((img_id, st.empty(), caption))
-
-            st.image(thumb_bytes, caption=caption[:60], use_container_width=True)
-
-    st.caption(f"Showing {len(items)} of {len(image_ids)} photo{'s' if len(image_ids) != 1 else ''} found")
-
-    # Mac path expander — thumbnail + 🔍 popover + copyable path
-    if mac_paths:
-        with st.expander(f"📁 File paths ({len(mac_paths)})", expanded=False):
-            for img_id, name, path, thumb_bytes in mac_paths:
-                col1, col2 = st.columns([1, 4])
-                with col1:
-                    st.image(thumb_bytes, width=70)
-                    with st.popover("🔍"):
-                        pending_larges.append((img_id, st.empty(), name))
-                with col2:
-                    st.code(path, language=None)
-
-    # Grid is on screen — now stream the popover full-size images in
-    _fill_large_placeholders(pending_larges)
 
 
 def _photo_caption(meta: dict | None, img_id: int) -> str:
@@ -528,6 +459,7 @@ def _render_map_link(trip_id: int):
     )
 
 
+@st.cache_data(ttl=15, show_spinner=False)
 def fetch_stats():
     """Fetch database stats from ESC API."""
     try:
@@ -539,6 +471,7 @@ def fetch_stats():
     return None
 
 
+@st.cache_data(ttl=15, show_spinner=False)
 def check_health():
     """Check ESC API health."""
     try:
@@ -551,6 +484,7 @@ def check_health():
     return False
 
 
+@st.cache_data(ttl=15, show_spinner=False)
 def fetch_model_status() -> dict:
     """Check if gemma4:26b is loaded and ready."""
     try:
@@ -563,11 +497,13 @@ def fetch_model_status() -> dict:
 
 
 def send_chat(message: str, history: list, mode: str = "photos") -> dict | None:
-    """Send chat message to ESC API."""
+    """Send chat message to ESC API. The request_id lets Stop cancel just this question."""
+    request_id = uuid.uuid4().hex
+    st.session_state.current_request_id = request_id
     try:
         r = _api.post(
             f"{ESC_API_URL}/chat",
-            json={"message": message, "history": history, "mode": mode},
+            json={"message": message, "history": history, "mode": mode, "request_id": request_id},
             timeout=REQUEST_TIMEOUT,
         )
         if r.status_code == 200:
@@ -843,9 +779,9 @@ def main():
     st.sidebar.subheader("Connection")
     healthy = check_health()
     if healthy:
-        st.sidebar.success("Mac Studio M3 Connected")
+        st.sidebar.success("Family database connected")
     else:
-        st.sidebar.error("Mac Studio M3 Offline")
+        st.sidebar.error("Family database unavailable")
 
     # Model status — use session flag while blocked so sidebar updates immediately
     if st.session_state.get("thinking", False):
@@ -876,17 +812,15 @@ def main():
     # Stop / Clear buttons
     st.sidebar.markdown("---")
     col1, col2 = st.sidebar.columns(2)
-    if col1.button("⏹ Stop", help="Cancel any in-flight query"):
-        try:
-            _api.post(f"{ESC_API_URL}/cancel", timeout=3)
-        except Exception:
-            pass
+    if col1.button("⏹ Stop", help="Cancel your question that is still running"):
+        request_id = st.session_state.get("current_request_id")
+        if request_id:
+            try:
+                _api.post(f"{ESC_API_URL}/cancel", params={"request_id": request_id}, timeout=3)
+            except Exception:
+                pass
         st.sidebar.caption("Query stopped.")
     if col2.button("Clear Chat"):
-        try:
-            _api.post(f"{ESC_API_URL}/cancel", timeout=3)
-        except Exception:
-            pass
         st.session_state.messages = []
         st.rerun()
 
@@ -903,7 +837,8 @@ def main():
     # === FAMILY TREE MODE (no chat — standalone UI) ===
     if mode == "family_tree":
         import streamlit.components.v1 as components
-        full_url = f"{ESC_MAP_URL}/family/17"
+        start_id = (st.session_state.get("user") or {}).get("rdx_id") or 17
+        full_url = f"{ESC_MAP_URL}/family/{start_id}"
         # CSS injected into the Streamlit page (not inside the component) so that
         # calc(100vh) refers to the real browser viewport, not the component iframe.
         # Streamlit's header is ~60px; the rest goes to the tree.
@@ -1106,14 +1041,13 @@ Ask questions about the Swayne family database in plain English — I'll query 1
                         "role": "assistant",
                         "content": result["response"],
                         "sql_trace": sql_trace,
-                        "image_ids": result.get("image_ids", []),
                         "image_data": image_data,
                         "day_photos": day_photos,
                         "is_magazine": is_magazine,
                         "map_trip_id": map_trip_id,
                     })
                 else:
-                    error_msg = "Failed to get a response from the ESC API. Is the Mac Studio connected?"
+                    error_msg = "The family database is temporarily unavailable — please try again in a minute."
                     st.error(error_msg)
                     st.session_state.messages.append({"role": "assistant", "content": error_msg})
 

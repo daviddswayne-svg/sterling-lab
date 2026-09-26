@@ -4,7 +4,7 @@ langchain-community==0.3.12
 langchain-core==0.3.25
 
 # === Web Framework ===
-streamlit
+streamlit==1.64.0  # pinned 2026-09-26 to the version the live container runs
 streamlit-authenticator>=0.4.0
 flask
 flask-cors
