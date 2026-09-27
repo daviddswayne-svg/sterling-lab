@@ -256,9 +256,18 @@ def _show_full_photo(img_id: int, caption: str):
         st.caption("Full-size image unavailable")
 
 
-@st.dialog("Where this photo was taken", width="large")
-def _show_photo_map(lat: float, lon: float, caption: str):
-    """Leaflet map pinned at the photo's camera position (Street / Topo / Satellite)."""
+@st.dialog("Approximate photo location", width="large")
+def _show_photo_map(lat: float, lon: float, caption: str,
+                    place: str | None = None, proximity: str | None = None):
+    """Leaflet map (Street / Topo / Satellite) pinned at the photo's recorded
+    coordinates. These are NOT GPS: they are the location of a place tagged on
+    the photo, with an estimate of how far away the camera was."""
+    if place:
+        away = f" — camera {proximity} away" if proximity else ""
+        st.markdown(f"Pin is at **{place}**, a place tagged on this photo{away}. "
+                    "Not an exact GPS position.")
+    else:
+        st.markdown("Approximate location recorded for this photo. Not an exact GPS position.")
     components.html(f"""
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -275,7 +284,7 @@ topo.addTo(map);
 L.control.layers({{"Topo": topo, "Street": street, "Satellite": sat}}).addTo(map);
 L.marker([{lat}, {lon}]).addTo(map);
 </script>""", height=440)
-    st.caption(f"{caption} — 📍 {lat:.5f}, {lon:.5f}")
+    st.caption(f"{caption} — pin at {lat:.5f}, {lon:.5f}")
     g_col, c_col = st.columns(2)
     g_col.link_button("Open in Google Maps", f"https://www.google.com/maps?q={lat},{lon}",
                       use_container_width=True)
@@ -297,8 +306,8 @@ def _photo_buttons(img_id: int, meta: dict | None, caption: str, key: str):
         lat, lon = (meta or {}).get("lat"), (meta or {}).get("lon")
         has_coords = lat is not None and lon is not None
         if st.button("📍", key=f"map_{key}", use_container_width=True, disabled=not has_coords,
-                     help="Show on map" if has_coords else "No coordinates recorded"):
-            _show_photo_map(lat, lon, caption)
+                     help="Approximate location on a map" if has_coords else "No location recorded"):
+            _show_photo_map(lat, lon, caption, meta.get("coord_place"), meta.get("coord_proximity"))
 
 
 def render_photo_browser(image_data: list[dict], msg_idx: int,
