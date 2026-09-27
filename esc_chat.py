@@ -250,15 +250,49 @@ def _show_full_photo(img_id: int, caption: str):
         st.caption("Full-size image unavailable")
 
 
+@st.dialog("Where this photo was taken", width="large")
+def _show_photo_map(lat: float, lon: float, caption: str):
+    """Leaflet map pinned at the photo's camera position (Street / Topo / Satellite)."""
+    components.html(f"""
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<div id="map" style="height:430px;border-radius:8px"></div>
+<script>
+const map = L.map('map').setView([{lat}, {lon}], 13);
+const street = L.tileLayer('https://{{s}}.tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png', {{
+  maxZoom: 19, attribution: '© OpenStreetMap'}});
+const topo = L.tileLayer('https://{{s}}.tile.opentopomap.org/{{z}}/{{x}}/{{y}}.png', {{
+  maxZoom: 17, attribution: '© OpenTopoMap (CC-BY-SA), © OpenStreetMap'}});
+const sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{{z}}/{{y}}/{{x}}', {{
+  maxZoom: 19, attribution: 'Imagery © Esri'}});
+topo.addTo(map);
+L.control.layers({{"Topo": topo, "Street": street, "Satellite": sat}}).addTo(map);
+L.marker([{lat}, {lon}]).addTo(map);
+</script>""", height=440)
+    st.caption(f"{caption} — 📍 {lat:.5f}, {lon:.5f}")
+    g_col, c_col = st.columns(2)
+    g_col.link_button("Open in Google Maps", f"https://www.google.com/maps?q={lat},{lon}",
+                      use_container_width=True)
+    c_col.link_button("Open in CalTopo", f"https://caltopo.com/map.html#ll={lat},{lon}&z=14&b=mbt",
+                      use_container_width=True)
+
+
 def _photo_buttons(img_id: int, meta: dict | None, caption: str, key: str):
-    """Two buttons under a thumbnail: 🔍 = info popover, ⛶ = full-size photo."""
-    info_col, full_col = st.columns(2, gap="small")
+    """Buttons under a thumbnail: 🔍 = info popover, ⛶ = full-size photo,
+    📍 = map of where it was taken (disabled when no coordinates are recorded)."""
+    info_col, full_col, map_col = st.columns(3, gap="small")
     with info_col:
         with st.popover("🔍", use_container_width=True, help="Photo info"):
             _photo_meta_markdown(meta)
     with full_col:
         if st.button("⛶", key=key, use_container_width=True, help="Full size"):
             _show_full_photo(img_id, caption)
+    with map_col:
+        lat, lon = (meta or {}).get("lat"), (meta or {}).get("lon")
+        has_coords = lat is not None and lon is not None
+        if st.button("📍", key=f"map_{key}", use_container_width=True, disabled=not has_coords,
+                     help="Show on map" if has_coords else "No coordinates recorded"):
+            _show_photo_map(lat, lon, caption)
 
 
 def render_photo_browser(image_data: list[dict], msg_idx: int,
