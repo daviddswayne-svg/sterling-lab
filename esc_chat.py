@@ -134,18 +134,6 @@ def fetch_thumbnail(image_id: int) -> bytes | None:
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
-def fetch_large_image(image_id: int) -> bytes | None:
-    """Fetch a large (1200px) version. Cached for fast repeat opens."""
-    try:
-        r = _api.get(f"{ESC_API_URL}/image/{image_id}", params={"size": "large"}, timeout=20)
-        if r.status_code == 200:
-            return r.content
-    except Exception:
-        pass
-    return None
-
-
-@st.cache_data(ttl=3600, show_spinner=False)
 def fetch_image_meta(image_id: int) -> dict | None:
     """Fetch image metadata (filename, date, people, location). Cached so Load More is instant."""
     try:
@@ -157,19 +145,14 @@ def fetch_image_meta(image_id: int) -> dict | None:
     return None
 
 
-def _prefetch_images(ids: list[int], thumbs: bool = True, metas: bool = True,
-                     larges: bool = False):
+def _prefetch_images(ids: list[int], thumbs: bool = True, metas: bool = True):
     """Warm the image caches in PARALLEL before a gallery renders.
 
-    The render loops call fetch_thumbnail / fetch_image_meta / fetch_large_image
+    The render loops call fetch_thumbnail / fetch_image_meta
     one image at a time — dozens of sequential round-trips through the SSH
     tunnel per page. Fetching concurrently makes renders ~10x faster;
     st.cache_data then serves the render-loop calls instantly.
-
-    NOTE: larges default OFF for the blocking pre-render path — 25+ full-size
-    images before first paint made the gallery feel hung. Popover full-size
-    images are deferred: rendered into st.empty placeholders AFTER the gallery
-    paints (see _fill_large_placeholders)."""
+    (The 🔍 popover shows info only — no full-size image fetches.)"""
     ids = [i for i in ids if i is not None]
     if not ids:
         return
@@ -178,8 +161,6 @@ def _prefetch_images(ids: list[int], thumbs: bool = True, metas: bool = True,
         tasks += [(fetch_thumbnail, i) for i in ids]
     if metas:
         tasks += [(fetch_image_meta, i) for i in ids]
-    if larges:
-        tasks += [(fetch_large_image, i) for i in ids]
     if not tasks:
         return
     try:
@@ -192,25 +173,6 @@ def _prefetch_images(ids: list[int], thumbs: bool = True, metas: bool = True,
         init = None
     with ThreadPoolExecutor(max_workers=12, initializer=init) as ex:
         list(ex.map(lambda t: t[0](t[1]), tasks))
-
-
-def _fill_large_placeholders(pending: list[tuple]):
-    """Fill popover st.empty placeholders with full-size images AFTER the gallery
-    has painted. pending = [(img_id, placeholder, caption_or_None), ...].
-    The thumbnails/captions are already on screen when this runs — these arrive
-    a moment later, invisibly (popovers are closed until clicked)."""
-    if not pending:
-        return
-    _prefetch_images([p[0] for p in pending], thumbs=False, metas=False, larges=True)
-    for img_id, ph, caption in pending:
-        large = fetch_large_image(img_id)
-        if large is not None:
-            if caption:
-                ph.image(large, caption=caption, use_container_width=True)
-            else:
-                ph.image(large, use_container_width=True)
-        else:
-            ph.caption("Full-size image unavailable")
 
 
 def _photo_caption(meta: dict | None, img_id: int) -> str:
@@ -237,20 +199,32 @@ def _photo_meta_markdown(meta: dict | None):
     people = [p for p in (meta.get("people") or []) if p]
     if people:
         parts.append(f"**People:** {', '.join(people)}")
-    locs = [l for l in (meta.get("locations") or []) if l]
-    if locs:
-        parts.append(f"**Location:** {', '.join(locs[:2])}")
+    feats = meta.get("features")
+    if feats is None:   # older backend: plain location names
+        feats = [{"name": l} for l in (meta.get("locations") or []) if l]
+    if feats:
+        names = [f"{f['name']} ({f['type']})" if f.get("type") else f["name"]
+                 for f in feats if f.get("name")]
+        parts.append(f"**Features:** {', '.join(names)}")
+    species = meta.get("species") or []
+    if species:
+        names = []
+        for sp in species:
+            common, sci = sp.get("common"), sp.get("scientific")
+            if common and sci:
+                names.append(f"{common} (*{sci}*)")
+            else:
+                names.append(f"*{sci}*" if sci else common)
+        parts.append(f"**Species:** {', '.join(names)}")
+    rocks = [r for r in (meta.get("rocks") or []) if r]
+    if rocks:
+        parts.append(f"**Rock:** {', '.join(rocks)}")
     if meta.get("quality"):
         parts.append(f"**Quality:** {meta['quality']}")
     if parts:
         st.markdown("  \n".join(parts))
-
-
-def _photo_popover_content(large_bytes: bytes | None, meta: dict | None):
-    """Render large image + metadata inside a popover (eager version)."""
-    if large_bytes:
-        st.image(large_bytes, use_container_width=True)
-    _photo_meta_markdown(meta)
+    else:
+        st.caption("No details recorded for this photo.")
 
 
 def render_photo_browser(image_data: list[dict], msg_idx: int,
@@ -272,7 +246,6 @@ def render_photo_browser(image_data: list[dict], msg_idx: int,
         _prefetch_images([item["id"] for item in image_data[:shown]])   # thumbs + meta only
         rendered = 0
         grid_cols = None
-        pending_larges = []   # (img_id, placeholder, None) — filled after the page paints
         for item in image_data[:shown]:
             img_id = item["id"]
             thumb = fetch_thumbnail(img_id)
@@ -285,7 +258,6 @@ def render_photo_browser(image_data: list[dict], msg_idx: int,
                 st.image(thumb, use_container_width=True)
                 caption = _photo_caption(meta, img_id)
                 with st.popover("🔍", use_container_width=True):
-                    pending_larges.append((img_id, st.empty(), None))
                     _photo_meta_markdown(meta)
                 st.caption(caption)
             rendered += 1
@@ -300,10 +272,6 @@ def render_photo_browser(image_data: list[dict], msg_idx: int,
             if st.button(f"Load 25 more ({remaining} remaining)", key=f"load_more_{msg_idx}"):
                 st.session_state[count_key] = shown + 25
                 st.rerun()
-
-        # Page is fully painted (incl. the Load More button) — now stream in the
-        # popover full-size images. Invisible until a 🔍 is clicked.
-        _fill_large_placeholders(pending_larges)
 
 
 # ── Mike's Journal Magazine ──────────────────────────────────────────────────
@@ -334,7 +302,7 @@ _DAY_HDR = re.compile(
 
 def _render_inline_photos(ids: list[int]):
     """Render 1-3 photos centered inline between journal paragraphs."""
-    _prefetch_images(ids, larges=True)   # ≤3 photos — eager larges are cheap here
+    _prefetch_images(ids)
     available = []
     for img_id in ids:
         thumb = fetch_thumbnail(img_id)
@@ -359,8 +327,7 @@ def _render_inline_photos(ids: list[int]):
             meta = fetch_image_meta(img_id)
             st.image(thumb, use_container_width=True)
             with st.popover("🔍", use_container_width=True):
-                large = fetch_large_image(img_id)
-                _photo_popover_content(large, meta)
+                _photo_meta_markdown(meta)
             st.caption(_photo_caption(meta, img_id))
 
 
