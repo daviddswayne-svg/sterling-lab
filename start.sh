@@ -34,16 +34,6 @@ NGINX_PID=$!
 echo "✅ Nginx started with PID: $NGINX_PID"
 sleep 2 # Allow bind
 
-# Step 3: Start Streamlit
-echo "[3/8] Starting Streamlit on port 8501..."
-streamlit run chat_app.py \
-    --server.port=8501 \
-    --server.address=0.0.0.0 \
-    --server.headless=true \
-    --server.baseUrlPath=/lab \
-    2>&1 | tee /tmp/streamlit.log &
-STREAMLIT_PID=$!
-
 # Step 3b: Start ESC Family History Explorer on port 8502
 echo "[3b/8] Starting ESC Chat on port 8502..."
 streamlit run esc_chat.py \
@@ -65,12 +55,6 @@ mkdir -p /app/chroma_db_synthetic
 mkdir -p /app/bedrock_agents/data/chroma_bedrock_intel
 echo "✅ ChromaDB directories ready"
 
-# Step 6: RAG Disabled - Using MCP Tools Instead
-echo "[6/8] RAG Ingestion Skipped (MCP Migration)"
-echo "   [INFO] ChromaDB/RAG has been replaced with MCP tools (Exa, GitHub)"
-echo "   [INFO] Main chat at /lab uses real-time web search"
-echo "✅ MCP-powered system ready"
-
 # Step 8: Start VoxSure Forensic Audit Services
 echo "[8/8] Starting VoxSure Forensic Audit Services..."
 # Backend on 12346
@@ -81,7 +65,6 @@ echo "✅ VoxSure Services started (PID: $VOXSURE_PID)"
 # Step 9: Wait/Monitor
 echo "[9/9] System started. Monitoring PIDs..."
 echo "      Nginx: $NGINX_PID"
-echo "      Streamlit: $STREAMLIT_PID"
 echo "      ESC Chat: $ESC_PID"
 echo "      API: $API_PID"
 echo "      VoxSure: $VOXSURE_PID"

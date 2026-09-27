@@ -14,7 +14,6 @@ python-multipart
 
 # === LLM Clients ===
 ollama
-exa-py==2.2.0
 
 # === Data & Documents ===
 pandas
