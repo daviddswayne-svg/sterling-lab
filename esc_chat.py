@@ -207,10 +207,16 @@ def _photo_meta_markdown(meta: dict | None):
     parts = []
     if meta.get("trip"):
         parts.append(f"**Trip:** {meta['trip']}")
+    if meta.get("photographer"):
+        parts.append(f"**Photographer:** {meta['photographer']}")
     # Defensive: DB rows with NULL names used to yield None entries (join() crash)
     people = [p for p in (meta.get("people") or []) if p]
     if people:
         parts.append(f"**People:** {', '.join(people)}")
+    if meta.get("admin_region"):
+        parts.append(f"**Region:** {meta['admin_region']}")
+    if meta.get("direction"):
+        parts.append(f"**Direction:** {meta['direction']}")
     feats = meta.get("features")
     if feats is None:   # older backend: plain location names
         feats = [{"name": l} for l in (meta.get("locations") or []) if l]
