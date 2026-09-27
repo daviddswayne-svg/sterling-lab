@@ -134,6 +134,18 @@ def fetch_thumbnail(image_id: int) -> bytes | None:
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
+def fetch_large_image(image_id: int) -> bytes | None:
+    """Fetch a large (1200px) version — only when a full-size button is clicked."""
+    try:
+        r = _api.get(f"{ESC_API_URL}/image/{image_id}", params={"size": "large"}, timeout=20)
+        if r.status_code == 200:
+            return r.content
+    except Exception:
+        pass
+    return None
+
+
+@st.cache_data(ttl=3600, show_spinner=False)
 def fetch_image_meta(image_id: int) -> dict | None:
     """Fetch image metadata (filename, date, people, location). Cached so Load More is instant."""
     try:
@@ -227,6 +239,28 @@ def _photo_meta_markdown(meta: dict | None):
         st.caption("No details recorded for this photo.")
 
 
+@st.dialog("Photo", width="large")
+def _show_full_photo(img_id: int, caption: str):
+    """Full-size photo in a modal — fetched only when the ⛶ button is clicked."""
+    with st.spinner("Loading full size…"):
+        large = fetch_large_image(img_id)
+    if large is not None:
+        st.image(large, caption=caption, use_container_width=True)
+    else:
+        st.caption("Full-size image unavailable")
+
+
+def _photo_buttons(img_id: int, meta: dict | None, caption: str, key: str):
+    """Two buttons under a thumbnail: 🔍 = info popover, ⛶ = full-size photo."""
+    info_col, full_col = st.columns(2, gap="small")
+    with info_col:
+        with st.popover("🔍", use_container_width=True, help="Photo info"):
+            _photo_meta_markdown(meta)
+    with full_col:
+        if st.button("⛶", key=key, use_container_width=True, help="Full size"):
+            _show_full_photo(img_id, caption)
+
+
 def render_photo_browser(image_data: list[dict], msg_idx: int,
                          label: str = None, expanded: bool = True):
     """Lazy-loading photo gallery: 4-column thumbnail grid, 25 at a time. Skips off-disk images."""
@@ -257,8 +291,7 @@ def render_photo_browser(image_data: list[dict], msg_idx: int,
             with grid_cols[rendered % COLS]:
                 st.image(thumb, use_container_width=True)
                 caption = _photo_caption(meta, img_id)
-                with st.popover("🔍", use_container_width=True):
-                    _photo_meta_markdown(meta)
+                _photo_buttons(img_id, meta, caption, key=f"full_{msg_idx}_{rendered}_{img_id}")
                 st.caption(caption)
             rendered += 1
 
@@ -300,7 +333,7 @@ _DAY_HDR = re.compile(
 )
 
 
-def _render_inline_photos(ids: list[int]):
+def _render_inline_photos(ids: list[int], key_prefix: str = "jnl"):
     """Render 1-3 photos centered inline between journal paragraphs."""
     _prefetch_images(ids)
     available = []
@@ -326,9 +359,9 @@ def _render_inline_photos(ids: list[int]):
         with col:
             meta = fetch_image_meta(img_id)
             st.image(thumb, use_container_width=True)
-            with st.popover("🔍", use_container_width=True):
-                _photo_meta_markdown(meta)
-            st.caption(_photo_caption(meta, img_id))
+            caption = _photo_caption(meta, img_id)
+            _photo_buttons(img_id, meta, caption, key=f"{key_prefix}_{img_id}")
+            st.caption(caption)
 
 
 def render_journal_magazine(response: str, day_photos: list[dict],
@@ -390,7 +423,8 @@ def render_journal_magazine(response: str, day_photos: list[dict],
                 st.markdown(text)
             # Only show photos once per date (backend may have multiple headers/same date)
             if date_key and date_key in photos_by_date and date_key not in rendered_dates:
-                _render_inline_photos(photos_by_date[date_key])
+                _render_inline_photos(photos_by_date[date_key],
+                                      key_prefix=f"jnl_{msg_idx}_{date_key}")
                 rendered_dates.add(date_key)
             if header:
                 st.markdown("---")
