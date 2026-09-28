@@ -17,7 +17,6 @@
   .aidw-open .aidw-bubble { display: none; }
   .aidw-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;
     font: 600 14px "Inter", system-ui, sans-serif; color: #f1f5f9; }
-  .aidw-top a { color: #a5b4fc; font-weight: 500; font-size: 12px; text-decoration: none; }
   .aidw-close { background: none; border: 0; color: #94a3b8; font-size: 22px; line-height: 1; cursor: pointer; }
   .aidw-body { flex: 1; min-height: 0; }
   @media (max-width: 520px) {
@@ -36,7 +35,7 @@
     </button>
     <div class="aidw-panel" role="dialog" aria-label="AI David">
       <div class="aidw-top"><span>AI David</span>
-        <span><a href="/david/">Full page ↗</a> <button class="aidw-close" type="button" aria-label="Close">×</button></span>
+        <button class="aidw-close" type="button" aria-label="Close">×</button>
       </div>
       <div class="aidw-body"></div>
     </div>`;
@@ -53,7 +52,7 @@
     });
   }
 
-  wrap.querySelector(".aidw-bubble").addEventListener("click", async () => {
+  async function open() {
     wrap.classList.add("aidw-open");
     if (chat) return;
     chat = "loading";
@@ -63,9 +62,15 @@
       wrap.querySelector(".aid-input").focus();
     } catch (e) {
       chat = null;
-      wrap.querySelector(".aidw-body").textContent = "AI David couldn't load. Try the full page.";
+      wrap.querySelector(".aidw-body").textContent = "AI David couldn't load. Try again in a minute.";
     }
-  });
+  }
+  wrap.querySelector(".aidw-bubble").addEventListener("click", open);
+  // Anything on the page marked data-open-ai-david (the homepage CTA) opens the widget too.
+  document.querySelectorAll("[data-open-ai-david]").forEach((a) => a.addEventListener("click", (ev) => {
+    ev.preventDefault();
+    open();
+  }));
   wrap.querySelector(".aidw-close").addEventListener("click", () => {
     wrap.classList.remove("aidw-open");
     if (chat && chat.stop) chat.stop();
