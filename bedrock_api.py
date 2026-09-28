@@ -173,15 +173,14 @@ def tts_proxy():
         return jsonify({"error": str(e)}), 500
 
 # --- AI David: talking-head chat (dashboard/david/) -----------------------------------------------
-# gemma4 answers from david/facts.txt; ElevenLabs speaks it in David's cloned voice and returns
-# per-character timings that drive the mouth frames in the browser. Called from the container
-# directly, so the voice doesn't depend on the M3 tunnel.
+# gemma4 answers from david/facts.txt; David's cloned voice (Chatterbox, voice_service.py on the M3,
+# reached through the sterling tunnel) speaks it one sentence at a time with per-character timings
+# that drive the mouth frames in the browser. The reply streams as NDJSON so the text shows at once
+# and the first sentence plays while the rest is still being voiced.
 DAVID_FACTS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "david", "facts.txt")
-ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY", "")
-DAVID_VOICE_ID = os.getenv("DAVID_VOICE_ID", "rjgzTjOCnuup89lc2ELP")
-DAVID_TTS_MODEL = os.getenv("DAVID_TTS_MODEL", "eleven_flash_v2_5")
+DAVID_VOICE_URL = os.getenv("DAVID_VOICE_URL", "http://10.0.0.1:9102")
 DAVID_PER_VISITOR = int(os.getenv("DAVID_PER_VISITOR", "20"))  # questions per IP per UTC day
-DAVID_DAILY_CAP = int(os.getenv("DAVID_DAILY_CAP", "300"))      # site-wide, protects ElevenLabs credits
+DAVID_DAILY_CAP = int(os.getenv("DAVID_DAILY_CAP", "300"))      # site-wide, keeps the M3 from being swamped
 _david_usage = {"day": None, "ips": defaultdict(int), "total": 0}
 _david_lock = threading.Lock()
 
@@ -249,6 +248,34 @@ def _echoes_visitor(message, reply, n=6):
     return any(tuple(r[i:i + n]) in grams for i in range(len(r) - n + 1))
 
 
+def _sentences(text, min_len=40, max_len=70):
+    """Split a reply into speakable chunks: sentence by sentence, very short ones merged forward, long ones
+    cut at a comma (else a space). Each chunk is voiced a bit faster than real time, so keeping chunks
+    short and even means the next one is ready before the current one finishes playing: no gaps."""
+    parts, buf = [], ""
+    for sent in re.split(r"(?<=[.!?])\s+", text):
+        buf = f"{buf} {sent}".strip()
+        if len(buf) >= min_len:
+            parts.append(buf)
+            buf = ""
+    if buf:
+        if parts and len(parts[-1]) + len(buf) < max_len:
+            parts[-1] = f"{parts[-1]} {buf}"
+        else:
+            parts.append(buf)
+    chunks = []
+    for p in parts:  # hard cap for the voice service; replies are short so this rarely triggers
+        while len(p) > max_len:
+            cut = p.rfind(", ", 0, max_len)
+            cut = cut + 1 if cut > max_len // 3 else p.rfind(" ", 0, max_len)
+            cut = cut if cut > 0 else max_len
+            chunks.append(p[:cut].strip())
+            p = p[cut:].strip()
+        if p:
+            chunks.append(p)
+    return chunks
+
+
 def _speakable(text):
     text = re.sub(r"[*_#`>]+", "", text)             # stray markdown
     text = re.sub(r"https?://\S+", "", text)         # URLs don't read well aloud
@@ -290,30 +317,26 @@ def david_chat():
         _david_refund(ip)
         return jsonify({"error": "I lost my train of thought. Try asking again."}), 502
 
-    out = {"reply": reply, "remaining": remaining, "audio_b64": None, "alignment": None, "voice": "off"}
-    if _echoes_visitor(message, reply):
-        out["voice"] = "withheld"   # don't let visitors put words in David's mouth
-    elif ELEVENLABS_API_KEY:
-        try:
-            r = requests.post(
-                f"https://api.elevenlabs.io/v1/text-to-speech/{DAVID_VOICE_ID}/with-timestamps",
-                params={"output_format": "mp3_44100_128"},
-                headers={"xi-api-key": ELEVENLABS_API_KEY, "Content-Type": "application/json"},
-                json={"text": reply, "model_id": DAVID_TTS_MODEL},
-                timeout=30,
-            )
-            if r.status_code == 200:
-                tts = r.json()
-                out.update(audio_b64=tts.get("audio_base64"),
-                           alignment=tts.get("alignment") or tts.get("normalized_alignment"),
-                           voice="on")
-            else:
-                print(f"⚠️ ElevenLabs {r.status_code}: {r.text[:200]}")
-                out["voice"] = "error"
-        except Exception as e:
-            print(f"⚠️ ElevenLabs error: {e}")
-            out["voice"] = "error"
-    return jsonify(out)
+    # Voice unless the reply parrots the visitor (don't let people put words in David's mouth).
+    voice = "withheld" if _echoes_visitor(message, reply) else "on"
+
+    def stream():
+        yield json.dumps({"reply": reply, "remaining": remaining, "voice": voice}) + "\n"
+        if voice == "on":
+            for i, chunk in enumerate(_sentences(reply)):
+                try:
+                    r = requests.post(f"{DAVID_VOICE_URL}/speak", json={"text": chunk}, timeout=60)
+                    r.raise_for_status()
+                    seg = r.json()
+                    yield json.dumps({"seg": i, "audio_b64": seg["audio_b64"], "alignment": seg["alignment"]}) + "\n"
+                except Exception as e:
+                    print(f"⚠️ AI David voice error: {e}")
+                    yield json.dumps({"voice": "error"}) + "\n"
+                    break
+        yield json.dumps({"done": True}) + "\n"
+
+    return Response(stream_with_context(stream()), mimetype="application/x-ndjson",
+                    headers={"Cache-Control": "no-store", "X-Accel-Buffering": "no"})
 
 
 @app.route('/api/bedrock/market-analysis', methods=['GET'])

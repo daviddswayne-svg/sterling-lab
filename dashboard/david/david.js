@@ -2,8 +2,9 @@
 // Shared by the homepage widget (widget.js) and the /david/ page.
 //   AIDavid.mount(element, { size: "widget" | "page" })
 // Frames are LivePortrait renders of one photo (~/Projects/ai-david/gen_frames.py on the M3).
-// The API (/api/david/chat) returns the reply, the MP3 and per-character timings from ElevenLabs;
-// on every animation frame we look up the character being spoken and show its mouth shape.
+// The API (/api/david/chat) streams the reply text, then one MP3 per sentence with per-character
+// timings from David's cloned voice on the M3; on every animation frame we look up the character
+// being spoken and show its mouth shape.
 (function () {
   "use strict";
   const BASE = "/david/frames/";
@@ -80,7 +81,8 @@
     let muted = false;
     let audioCtx = null;
     let gain = null;
-    let source = null;
+    let talk = null;      // current reply: scheduled audio segments + their letter timings
+    let talkId = 0;       // bumps on every new reply/stop so late segments of an old reply are dropped
     const history = [];
 
     function show(name) {
@@ -130,48 +132,71 @@
     }
 
     function stopSpeaking() {
-      if (source) { try { source.stop(); } catch (e) { /* already stopped */ } }
-      source = null;
+      talkId++;
+      if (talk) talk.sources.forEach((src) => { try { src.stop(); } catch (e) { /* already stopped */ } });
+      talk = null;
       speaking = false;
       root.classList.remove("aid-talking");
       show("rest");
     }
 
-    async function speak(b64, alignment) {
+    function finishTalking() {
+      talk = null;
+      speaking = false;
+      root.classList.remove("aid-talking");
+      show("smile");
+      setTimeout(() => { if (!speaking && shown === "smile") show("rest"); }, 1200);
+    }
+
+    // The reply arrives one sentence at a time; each clip is scheduled to start when the previous ends,
+    // and one animation loop picks the mouth shape from whichever clip is playing.
+    async function enqueue(id, b64, alignment) {
       const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
       const buffer = await audioCtx.decodeAudioData(bytes.buffer);
-      stopSpeaking();
-      source = audioCtx.createBufferSource();
-      source.buffer = buffer;
-      source.connect(gain);
-      const chars = alignment.characters || [];
-      const starts = alignment.character_start_times_seconds || [];
-      const ends = alignment.character_end_times_seconds || [];
-      const t0 = audioCtx.currentTime + 0.05;
-      let i = 0;
-      let current = "rest";
-      let since = 0;
-      speaking = true;
-      root.classList.add("aid-talking");
-      source.onended = () => {
-        stopSpeaking();
-        show("smile");
-        setTimeout(() => { if (!speaking && shown === "smile") show("rest"); }, 1200);
-      };
-      source.start(t0);
-      (function tick() {
-        if (!speaking) return;
-        const t = audioCtx.currentTime - t0;
-        while (i < chars.length - 1 && ends[i] <= t) i++;
-        const want = t >= starts[i] && t < ends[i] ? visemeFor(chars[i]) : "rest";
-        // Hold each shape ~60 ms so fast letters don't flicker.
-        if (want !== current && t - since > 0.06) {
-          current = want;
-          since = t;
-          show(want);
-        }
-        requestAnimationFrame(tick);
-      })();
+      if (id !== talkId) return;
+      if (!talk) talk = { segs: [], sources: [], endAt: 0, done: false, current: "rest", since: 0 };
+      const t0 = Math.max(audioCtx.currentTime + 0.05, talk.endAt);
+      const src = audioCtx.createBufferSource();
+      src.buffer = buffer;
+      src.connect(gain);
+      src.start(t0);
+      talk.sources.push(src);
+      talk.segs.push({
+        t0, end: t0 + buffer.duration, i: 0,
+        chars: alignment.characters || [],
+        starts: alignment.character_start_times_seconds || [],
+        ends: alignment.character_end_times_seconds || [],
+      });
+      talk.endAt = t0 + buffer.duration;
+      if (!speaking) {
+        speaking = true;
+        root.classList.add("aid-talking");
+        requestAnimationFrame(() => tick(id));
+      }
+    }
+
+    function tick(id) {
+      if (id !== talkId || !talk) return;
+      const now = audioCtx.currentTime;
+      if (talk.done && now >= talk.endAt) { finishTalking(); return; }
+      const seg = talk.segs.find((s) => now >= s.t0 && now < s.end);
+      let want = "rest";
+      if (seg) {
+        const t = now - seg.t0;
+        while (seg.i < seg.chars.length - 1 && seg.ends[seg.i] <= t) seg.i++;
+        if (t >= seg.starts[seg.i] && t < seg.ends[seg.i]) want = visemeFor(seg.chars[seg.i]);
+      }
+      // Hold each shape ~60 ms so fast letters don't flicker.
+      if (want !== talk.current && now - talk.since > 0.06) {
+        talk.current = want;
+        talk.since = now;
+        show(want);
+      }
+      requestAnimationFrame(() => tick(id));
+    }
+
+    function remainingText(n) {
+      left.textContent = n + " question" + (n === 1 ? "" : "s") + " left today";
     }
 
     form.addEventListener("submit", async (ev) => {
@@ -180,6 +205,7 @@
       if (!text || send.disabled) return;
       ensureAudio();
       stopSpeaking();
+      const id = talkId;
       input.value = "";
       say("user", text);
       const thinking = say("assistant", "…");
@@ -192,23 +218,51 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ message: text, history: history.slice(-MAX_HISTORY) }),
         });
-        const data = await r.json().catch(() => ({}));
-        thinking.remove();
-        if (typeof data.remaining === "number") {
-          left.textContent = data.remaining + " question" + (data.remaining === 1 ? "" : "s") + " left today";
-        }
         if (!r.ok) {
+          const data = await r.json().catch(() => ({}));
+          thinking.remove();
+          if (typeof data.remaining === "number") remainingText(data.remaining);
           say("assistant", data.error || "Something went wrong. Try again in a minute.");
-          if (r.status === 429) { input.disabled = true; send.disabled = true; return; }
-        } else {
-          const note = data.voice === "withheld" ? "(not spoken: I don't read out words people hand me)"
-            : data.voice === "on" ? null : "(voice unavailable right now)";
-          say("assistant", data.reply, note);
-          history.push({ role: "user", content: text }, { role: "assistant", content: data.reply });
-          if (data.voice === "on" && data.audio_b64 && data.alignment) {
-            speak(data.audio_b64, data.alignment).catch(() => stopSpeaking());
-          }
+          if (r.status === 429) { input.disabled = true; send.disabled = true; }
+          return;
         }
+        // NDJSON: {reply, remaining, voice} first, then {seg, audio_b64, alignment} per sentence, then {done}.
+        const reader = r.body.getReader();
+        const decoder = new TextDecoder();
+        let buf = "";
+        let msg = null;
+        let voiceOk = true;
+        const handle = async (line) => {
+          const d = JSON.parse(line);
+          if (d.reply != null) {
+            thinking.remove();
+            if (typeof d.remaining === "number") remainingText(d.remaining);
+            const note = d.voice === "withheld" ? "(not spoken: I don't read out words people hand me)" : null;
+            msg = say("assistant", d.reply, note);
+            history.push({ role: "user", content: text }, { role: "assistant", content: d.reply });
+          } else if (d.audio_b64 && d.alignment && voiceOk) {
+            await enqueue(id, d.audio_b64, d.alignment).catch(() => {});
+          } else if (d.voice === "error") {
+            voiceOk = false;
+            if (msg) msg.append(el("span", "aid-note", "(voice unavailable right now)"));
+          } else if (d.done) {
+            if (talk && id === talkId) talk.done = true;
+          }
+        };
+        for (;;) {
+          const { value, done } = await reader.read();
+          if (value) buf += decoder.decode(value, { stream: true });
+          let nl;
+          while ((nl = buf.indexOf("\n")) >= 0) {
+            const line = buf.slice(0, nl).trim();
+            buf = buf.slice(nl + 1);
+            if (line) await handle(line);
+          }
+          if (done) break;
+        }
+        if (buf.trim()) await handle(buf.trim());
+        if (talk && id === talkId) talk.done = true;
+        if (!msg) { thinking.remove(); say("assistant", "Something went wrong. Try again in a minute."); }
       } catch (e) {
         thinking.remove();
         say("assistant", "I can't reach the server right now. Try again in a minute.");
