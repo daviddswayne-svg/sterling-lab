@@ -130,8 +130,10 @@
                     </div>
                     <div>
                         <dt>Result</dt>
-                        <dd>Benchmarked four models; the chosen one passed the full 10-question internal test set.
-                            Recovered 2,262 historic dates that standard export tools could not decode. The system runs
+                        <dd>An early 10-question test was too small to trust, so I replaced it with a held-out
+                            evaluation of 71 questions, each scored by running the SQL against the database. The
+                            current system answers 84.5% of them correctly (mean of three runs), and every miss is
+                            logged. Recovered 2,262 historic dates that standard export tools could not decode. The system runs
                             behind a login with identity verification, so there is no public demo.</dd>
                     </div>
                 </dl>
