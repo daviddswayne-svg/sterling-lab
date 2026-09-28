@@ -1,0 +1,68 @@
+ESC FAMILY HISTORY EXPLORER - HOW TO USE IT
+What AI David knows about using the Family History Explorer at swaynesystems.ai/esc/. This is only how the app
+works; AI David cannot see or search the family database. This file is public (the repo is public).
+
+WHAT IT IS
+- A private site for Swayne family members to explore the family history database in plain English: about 144,000
+  photos, 3,000 people and 6,900 trips over 140+ years. You type a question, and the app writes the database query
+  for you and shows the answer.
+- It runs on David's own Mac Studio with the Gemma 4 model. If nobody has used it for a while, the first question
+  can take about a minute while the model loads; after that answers are quick.
+
+SIGNING IN
+- Two tabs: Login and Register.
+- Login: your username and password. Tick "Keep me signed in" to stay signed in on that device.
+- Register: you need your RDX ID (your number in the family database), your first name or nickname exactly as it
+  appears in the database, a username you choose, and a password of at least 6 characters (typed twice). If you
+  don't know your RDX ID, ask the real David; AI David never gives out RDX IDs.
+- Common register messages: "Please fill in all fields", "Passwords do not match", "Password must be at least 6
+  characters". If registration still fails, check the name matches the database and the RDX ID is right, or ask
+  David.
+
+THE SIDEBAR (after you sign in)
+- Your name, and a Logout button.
+- Change Password: current password, then the new one twice.
+- My Activity: Load Activity shows your login history and past questions; Clear Query History deletes them.
+- Mode: pick Photos, Journals, Trip Map or Family Tree. Switching modes clears the chat.
+- Connection: shows whether the family database and the model are ready ("Thinking..." while it works).
+- Database Schema: a picture of how the tables connect, with a full-size button.
+- Stop: cancels a question that is still running. Clear Chat: starts over.
+- Dashboard: back to the Swayne Systems home page.
+
+PHOTOS MODE (the main explorer)
+- Ask anything about the family history in plain English: people, photos, trips, places, species, dates.
+- Results come back as a TABLE by default, with all the rows. Say "summarize" or "give me an overview" for a
+  written summary instead.
+- Photos appear only when you ask for them: add "show photos" or "show images". Each photo has a full-size button
+  and a map-pin button (shows where it was taken, when a location is recorded; locations are approximate). Big
+  sets show 25 at a time with a "Load 25 more" button.
+- "Climbing trips" means officially tagged climbing expeditions (best for elevation questions); "trips" includes
+  everything.
+- Decades work naturally: "trips in the 1970s", "photos from the 1990s".
+- Names and nicknames both work ("Mike" or "Michael"). A full name goes straight to the answer. A first name on its
+  own often matches several people, so the app lists the likeliest matches and asks which one you meant; reply
+  with the name you want.
+- Each answer has an expandable "SQL Queries" section showing exactly how the database was searched.
+
+JOURNALS MODE (Mike's Journal Magazine)
+- Mike Swayne's trip journals from the 1930s to the 2020s: mountaineering, fishing, road trips, wildlife surveys
+  and family travel.
+- Browse by topic or place, for a list with excerpts: "Find fishing trip journals from the 1960s".
+- Open one journal as a photo magazine, with the day-by-day story and photos: "Tell me about the [trip name]".
+- Search the journal text by keyword: "Find journals that mention bears".
+- If you say "Michael" or "Elizabeth" it asks which one, because those names are shared across generations.
+
+TRIP MAP MODE
+- Name a specific trip ("Show me the map for the [year] [trip name]"), or use a trip number: "Map trip 640".
+- If several trips match, it lists them so you can pick one, then say "Map trip [number]".
+- The map shows the GPS route line when one exists (otherwise a dashed line between waypoints), waypoints with name
+  and elevation, and camera icons you can click to see photos taken there.
+
+FAMILY TREE MODE
+- An ancestry (pedigree) chart that starts from you. There is no chat in this mode. Use "Open Full Screen" for a
+  bigger view.
+
+GOOD HABITS
+- Be specific: a full name, a year or decade, a place.
+- If an answer looks wrong, rephrase with more detail, or open "SQL Queries" to see what was searched.
+- If a question is taking too long, press Stop and try a narrower question.

@@ -178,6 +178,7 @@ def tts_proxy():
 # that drive the mouth frames in the browser. The reply streams as NDJSON so the text shows at once
 # and the first sentence plays while the rest is still being voiced.
 DAVID_FACTS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "david", "facts.txt")
+DAVID_ESC_HELP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "david", "esc_help.txt")
 DAVID_VOICE_URL = os.getenv("DAVID_VOICE_URL", "http://10.0.0.1:9102")
 DAVID_PER_VISITOR = int(os.getenv("DAVID_PER_VISITOR", "20"))  # questions per IP per UTC day
 DAVID_DAILY_CAP = int(os.getenv("DAVID_DAILY_CAP", "300"))      # site-wide, keeps the M3 from being swamped
@@ -210,6 +211,31 @@ def _david_facts():
             return f.read()
     except OSError:
         return "(fact sheet unavailable: say you can't talk about David's background right now)"
+
+
+# On the ESC Family History Explorer page AI David is also its how-to guide. He only knows how the
+# app works (david/esc_help.txt); he has no access to the family database and never gives out IDs.
+DAVID_ESC_RULES = """
+
+YOU ARE ON THE ESC FAMILY HISTORY EXPLORER PAGE
+Visitors here are Swayne family members (signed in, or signing in or registering). Help them use the app, using
+ONLY the guide below. You can still chat about David's work as usual.
+- You cannot see or search the family database. For any family-history fact (a person, trip, photo, date, count),
+  don't guess: tell them to type it into the ESC chat box, and suggest a good way to word it for the right mode.
+- Never give out, guess or repeat RDX IDs or any person ID numbers. If someone needs their RDX ID, tell them to ask
+  the real David.
+- Keep answers short and practical: which mode to pick, what to type, which button to press.
+
+ESC GUIDE:
+"""
+
+
+def _david_esc_help():
+    try:
+        with open(DAVID_ESC_HELP_PATH, encoding="utf-8") as f:
+            return DAVID_ESC_RULES + f.read()
+    except OSError:
+        return ""
 
 
 def _client_ip():
@@ -299,7 +325,10 @@ def david_chat():
                "I've talked a lot today and I'm resting my voice. Come back tomorrow.")
         return jsonify({"error": msg, "remaining": remaining}), 429
 
-    messages = [{"role": "system", "content": DAVID_PERSONA + _david_facts()}]
+    system = DAVID_PERSONA + _david_facts()
+    if data.get("context") == "esc":
+        system += _david_esc_help()
+    messages = [{"role": "system", "content": system}]
     for turn in (data.get("history") or [])[-6:]:
         if isinstance(turn, dict) and turn.get("role") in ("user", "assistant") and turn.get("content"):
             messages.append({"role": turn["role"], "content": str(turn["content"])[:800]})

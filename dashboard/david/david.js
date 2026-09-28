@@ -1,6 +1,6 @@
 // AI David: David's photo, lip-synced to his cloned voice, with a question box.
 // Shared by the homepage widget (widget.js) and the /david/ page.
-//   AIDavid.mount(element, { size: "widget" | "page" })
+//   AIDavid.mount(element, { size: "inline" | "widget", context: "home" | "esc" })
 // Frames are LivePortrait renders of one photo (~/Projects/ai-david/gen_frames.py on the M3).
 // The API (/api/david/chat) streams the reply, then one MP3 per sentence chunk with per-character
 // timings from David's cloned voice on the M3. The reply is spoken, not shown (text only appears when
@@ -18,6 +18,10 @@
   const ENV_STEP = 0.02;   // loudness envelope resolution (s)
   const HOLD = 0.09;       // minimum time a mouth shape stays up (s)
   const VOWEL_SHAPE = { a: "aa", e: "ee", i: "ee", y: "ee", o: "oh", u: "oo" };
+  const HINTS = {
+    home: "Ask me about my work, the projects on this site, or anything really. I'll answer out loud.",
+    esc: "Ask me how to use the Family History Explorer: photos, journals, trip maps, the family tree, or signing in.",
+  };
 
   function el(tag, cls, text) {
     const n = document.createElement(tag);
@@ -74,7 +78,8 @@
 
   function mount(root, opts) {
     opts = opts || {};
-    root.classList.add("aid", "aid-" + (opts.size || "page"));
+    const context = opts.context === "esc" ? "esc" : "home";
+    root.classList.add("aid", "aid-" + (opts.size || "widget"));
 
     // --- face ---
     const face = el("div", "aid-face");
@@ -98,7 +103,7 @@
 
     // --- questions ---
     const log = el("div", "aid-log");
-    log.append(el("p", "aid-hint", "Ask me about my work, the projects on this site, or anything really. I'll answer out loud."));
+    log.append(el("p", "aid-hint", HINTS[context]));
     const spoken = el("div", "aid-sr");     // screen readers still get every reply
     spoken.setAttribute("aria-live", "polite");
     const form = el("form", "aid-form");
@@ -284,7 +289,7 @@
         const r = await fetch("/api/david/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: text, history: history.slice(-MAX_HISTORY) }),
+          body: JSON.stringify({ message: text, history: history.slice(-MAX_HISTORY), context }),
         });
         if (!r.ok) {
           const data = await r.json().catch(() => ({}));
