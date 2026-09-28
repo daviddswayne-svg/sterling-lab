@@ -151,3 +151,29 @@
 /* Widget panel: compact face on top. */
 .aid-widget { height: 100%; }
 .aid-widget .aid-face { width: 62%; margin: 0 auto; }
+
+/* "thinking…" over the bottom of the face while the reply is prepared */
+.aid-status {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  transform: translateX(-50%);
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.75);
+  color: var(--aid-text);
+  font-size: 13px;
+  opacity: 0;
+  transition: opacity 150ms;
+  pointer-events: none;
+}
+.aid-status.on { opacity: 1; animation: aid-pulse 1.2s ease-in-out infinite; }
+.aid-hint { margin: 0; font-size: 13px; color: var(--aid-dim); }
+/* spoken replies for screen readers only */
+.aid-sr {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

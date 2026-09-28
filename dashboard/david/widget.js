@@ -58,7 +58,7 @@
     if (chat) return;
     chat = "loading";
     try {
-      await Promise.all([load("/david/david.css?v=1", "link"), load("/david/david.js?v=1", "script")]);
+      await Promise.all([load("/david/david.css?v=2", "link"), load("/david/david.js?v=2", "script")]);
       chat = window.AIDavid.mount(wrap.querySelector(".aidw-body"), { size: "widget" });
       wrap.querySelector(".aid-input").focus();
     } catch (e) {
