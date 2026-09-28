@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI David | Swayne Systems</title>
+    <meta name="description" content="Talk to AI David: an AI version of David Swayne, in his cloned voice.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/david/david.css?v=1">
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: radial-gradient(circle at 20% 0%, #1e1b4b 0%, #0f172a 55%);
+            color: #f1f5f9;
+            font-family: "Inter", system-ui, sans-serif;
+        }
+        main { max-width: 1040px; margin: 0 auto; padding: 20px 16px 32px; box-sizing: border-box; }
+        .top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 18px; }
+        .top a { color: #a5b4fc; text-decoration: none; font-size: 14px; }
+        h1 { margin: 0; font-size: 26px; }
+        .how { margin-top: 22px; font-size: 13px; line-height: 1.6; color: #94a3b8; max-width: 760px; }
+    </style>
+</head>
+
+<body>
+    <main>
+        <div class="top">
+            <h1>Talk to AI David</h1>
+            <a href="/">← Swayne Systems</a>
+        </div>
+        <div id="ai-david"></div>
+        <p class="how">
+            How it works: the face is one photo of David, re-posed into ten mouth and eye shapes with LivePortrait
+            on his Mac Studio. Answers come from Gemma 4 running on that same machine, using a fact sheet David
+            approved. ElevenLabs speaks them in his cloned voice and reports when each letter is said, and the page
+            switches mouth shapes in time with it.
+        </p>
+    </main>
+    <script src="/david/david.js?v=1"></script>
+    <script>AIDavid.mount(document.getElementById("ai-david"), { size: "page" });</script>
+</body>
+
+</html>
