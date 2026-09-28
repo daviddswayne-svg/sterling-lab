@@ -277,12 +277,179 @@
                 </ul>
             </article>
 
+            <article class="case" id="ai-david">
+                <p class="case-kicker">Voice cloning · Lip-sync · Local AI</p>
+                <h2>AI David: a talking head in my own voice</h2>
+                <p class="case-hook">
+                    An AI version of me that answers visitors out loud, in my cloned voice, with a face that moves in
+                    time with the words. Everything runs on my own Mac Studio.
+                </p>
+
+                <figure class="case-media">
+                    <img src="img/ai-david-frames.jpg" width="1632" height="373" loading="lazy"
+                        alt="Five versions of the same portrait of David: mouth closed, mouth open, a wide 'ee' shape, a rounded 'oh' shape, and eyes closed.">
+                    <figcaption>Five of the ten shapes, all re-posed from one AI-generated portrait.</figcaption>
+                </figure>
+
+                <dl class="case-points">
+                    <div>
+                        <dt>Problem</dt>
+                        <dd>A chatbot on a personal site is only worth having if it sounds like the person and doesn't
+                            make things up about them. My cloned voice on ElevenLabs needed a pricier plan, and a video
+                            avatar per answer is slow and expensive.</dd>
+                    </div>
+                    <div>
+                        <dt>What I built</dt>
+                        <dd>One portrait re-posed into ten mouth and eye shapes with LivePortrait. Answers come from
+                            Gemma 4, limited to a fact sheet I approved; anything outside it gets "you'd have to ask the
+                            real David". The voice is cloned from a two-minute recording with Chatterbox (open source,
+                            MIT) and every clip carries an inaudible AI watermark. Replies are voiced a sentence at a
+                            time and force-aligned letter by letter, so the page can shape the mouth to the sound.
+                            Visitors get 20 questions a day.</dd>
+                    </div>
+                    <div>
+                        <dt>Result</dt>
+                        <dd>The voice starts about four seconds after a question, in testing, with no per-use fees.
+                            The first lip-sync changed shape on every letter and ran slightly ahead of the audio, which
+                            looked frantic. Driving how far the mouth opens from the audio's own loudness, taking the
+                            shape from each syllable's vowel, and correcting for speaker latency brought it down to
+                            about three changes a second, locked to the sound.</dd>
+                    </div>
+                </dl>
+                <ul class="tags">
+                    <li>Chatterbox</li>
+                    <li>LivePortrait</li>
+                    <li>Forced alignment</li>
+                    <li>Gemma 4 / Ollama</li>
+                    <li>Web Audio</li>
+                </ul>
+            </article>
+
+            <article class="case" id="voxels">
+                <p class="case-kicker">3D in the browser · Three.js</p>
+                <h2>Voxel simulations: a virus and a city</h2>
+                <p class="case-hook">
+                    Two interactive voxel worlds that run in the browser: a bacteriophage infecting a bacterium, and
+                    Seattle Center with its monorail.
+                </p>
+
+                <div class="case-media pair">
+                    <figure>
+                        <img src="/assets/voxel_art_preview.png" width="886" height="578" loading="lazy"
+                            alt="A voxel T4 bacteriophage with a pale blue head and thin grey legs standing on a green bacterium.">
+                        <figcaption>T4 bacteriophage landing on its host</figcaption>
+                    </figure>
+                    <figure>
+                        <img src="/assets/monorail_preview.png" width="901" height="451" loading="lazy"
+                            alt="A voxel city street with a curving elevated monorail track and red and blue trains.">
+                        <figcaption>Seattle Center monorail</figcaption>
+                    </figure>
+                </div>
+
+                <dl class="case-points">
+                    <div>
+                        <dt>Problem</dt>
+                        <dd>Explain a process you can't see (how a virus takes over a cell) and model a place people know,
+                            in a way anyone can open in a browser and explore.</dd>
+                    </div>
+                    <div>
+                        <dt>What I built</dt>
+                        <dd>The phage is generated voxel by voxel: an icosahedral head, a helical tail sheath, baseplate
+                            and legs, and a cut-away bacterium with its wall, membrane, DNA and ribosomes. It plays as a
+                            loop in three acts: the phage lands and injects its DNA, takes over the cell (host DNA
+                            dissolves, viral DNA copies itself, ribosomes are hijacked), and new phage heads assemble.
+                            The Seattle Center model has the Space Needle, MoPOP, working elevators, a monorail on a
+                            spline track, several camera views and procedural sound. Both were built with Google AI
+                            Studio (Gemini) as the coding partner.</dd>
+                    </div>
+                    <div>
+                        <dt>Result</dt>
+                        <dd>Both run on the home page. An audit of the city model showed why it felt heavy: 213
+                            separately drawn boxes and duplicated voxels meant hundreds of draw calls. A rebuild in
+                            progress puts everything on one voxel grid with greedy meshing and voxelizes the Space
+                            Needle from a 3D model; in testing it draws the scene in about 120 calls, loads in under a
+                            second and holds 60 frames per second.</dd>
+                    </div>
+                </dl>
+                <ul class="tags">
+                    <li>Three.js / WebGL</li>
+                    <li>Procedural generation</li>
+                    <li>Greedy meshing</li>
+                    <li>Google AI Studio</li>
+                </ul>
+            </article>
+
+            <article class="case" id="synth">
+                <p class="case-kicker">Human + AI music · Hardware synths</p>
+                <h2>A synth band that plays from code</h2>
+                <p class="case-hook">
+                    Songs written as code that plays real hardware synthesizers over MIDI. I direct and judge by ear;
+                    Claude writes the parts.
+                </p>
+
+                <div class="case-media">
+                    <div class="flow" role="img"
+                        aria-label="Diagram: research and a brief lead to Claude writing a song script, which plays the hardware; David listens and gives notes, looping back; the final version is mixed, recorded and mastered.">
+                        <div class="flow-step plain">
+                            <strong>Research &amp; brief</strong>
+                            <span>A band and era, key, tempo, which machine plays what</span>
+                        </div>
+                        <div class="flow-arrow" aria-hidden="true">→</div>
+                        <div class="flow-step">
+                            <strong>Song script</strong>
+                            <span>Claude writes the parts as Python on a shared engine</span>
+                        </div>
+                        <div class="flow-arrow" aria-hidden="true">→</div>
+                        <div class="flow-step">
+                            <strong>Hardware plays it</strong>
+                            <span>SH-4D, S-1, RA-90 and SP-404 over MIDI</span>
+                        </div>
+                        <div class="flow-arrow" aria-hidden="true">→</div>
+                        <div class="flow-step alt">
+                            <strong>Listen, give notes</strong>
+                            <span>Three to six rounds by ear, then mix, record, master</span>
+                        </div>
+                    </div>
+                    <figcaption>The loop: every change is judged on the real instruments, not on a screen.</figcaption>
+                </div>
+
+                <dl class="case-points">
+                    <div>
+                        <dt>Problem</dt>
+                        <dd>I wanted original songs in the style of bands I love, played on real synths rather than
+                            software. My first attempt, a local-LLM pipeline that wrote music as ABC notation and
+                            converted it to MIDI, produced generic results and I retired it.</dd>
+                    </div>
+                    <div>
+                        <dt>What I built</dt>
+                        <dd>Each song is a standalone script on a shared engine (a clock that handles mixed meters,
+                            sections, mix levels) driving a Roland SH-4D, S-1, RA-90 and an SP-404MKII sampler through a
+                            Mackie mixer. A songbook collects the rules learned from my feedback (for example: pads must
+                            not fade in and out, and any knob movement has to be big enough to hear in a full mix), and
+                            finished recordings are mastered automatically to streaming loudness.</dd>
+                    </div>
+                    <div>
+                        <dt>Result</dt>
+                        <dd>More than a dozen songs drafted, with a handful of keepers in the style of The Cure,
+                            Depeche Mode, Pink Floyd and Grimes. The lesson: the AI is fast at writing parts, but taste
+                            lives in the listening loop, so the process is built around short rounds of real playback
+                            and written-down rules.</dd>
+                    </div>
+                </dl>
+                <ul class="tags">
+                    <li>Python</li>
+                    <li>MIDI</li>
+                    <li>Roland SH-4D / S-1 / RA-90</li>
+                    <li>SP-404MKII</li>
+                    <li>Claude</li>
+                </ul>
+            </article>
+
         </main>
 
         <footer class="work-footer">
             <p>
-                Also on the <a href="/">home page</a>: an interactive voxel model of Seattle Center and a
-                bacteriophage micro-simulation, both built with Three.js.
+                On the <a href="/">home page</a>: talk to AI David, and play the voxel simulations.
             </p>
             <p>David Swayne · <a href="mailto:daviddswayne@gmail.com">daviddswayne@gmail.com</a> · © 2026</p>
         </footer>
