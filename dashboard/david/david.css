@@ -1,0 +1,179 @@
+/* AI David component: shared by the homepage widget and the /david/ page. */
+.aid {
+  --aid-bg: #0f172a;
+  --aid-card: rgba(30, 41, 59, 0.7);
+  --aid-border: rgba(148, 163, 184, 0.18);
+  --aid-text: #f1f5f9;
+  --aid-dim: #94a3b8;
+  --aid-accent: #6366f1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  color: var(--aid-text);
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  font-size: 15px;
+  min-height: 0;
+}
+
+.aid-face {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #3b3530;
+  border: 1px solid var(--aid-border);
+  flex-shrink: 0;
+}
+.aid-head {
+  position: absolute;
+  inset: -3%;
+  animation: aid-sway 7s ease-in-out infinite;
+  transform-origin: 50% 85%;
+}
+.aid-talking .aid-head { animation-duration: 3.2s; }
+.aid-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 45ms linear;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.aid-frame.on { opacity: 1; }
+.aid-frame:first-child { opacity: 1; } /* rest frame stays underneath: no flash between shapes */
+
+@keyframes aid-sway {
+  0%, 100% { transform: translate(0, 0) rotate(0deg) scale(1); }
+  25% { transform: translate(0.4%, -0.3%) rotate(0.35deg) scale(1.003); }
+  50% { transform: translate(0, -0.5%) rotate(0deg) scale(1.006); }
+  75% { transform: translate(-0.4%, -0.2%) rotate(-0.35deg) scale(1.003); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .aid-head { animation: none; }
+}
+
+.aid-label {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--aid-dim);
+}
+.aid-label strong { color: var(--aid-text); }
+
+.aid-log {
+  flex: 1 1 auto;
+  min-height: 90px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 2px;
+}
+.aid-msg {
+  max-width: 88%;
+  padding: 8px 12px;
+  border-radius: 12px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.aid-assistant { align-self: flex-start; background: var(--aid-card); border: 1px solid var(--aid-border); }
+.aid-user { align-self: flex-end; background: var(--aid-accent); color: #fff; }
+.aid-note { display: block; margin-top: 4px; font-size: 12px; color: var(--aid-dim); }
+.aid-thinking .aid-text { animation: aid-pulse 1s ease-in-out infinite; letter-spacing: 2px; }
+@keyframes aid-pulse { 50% { opacity: 0.35; } }
+
+.aid-form { display: flex; gap: 8px; }
+.aid-input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--aid-border);
+  background: rgba(15, 23, 42, 0.8);
+  color: var(--aid-text);
+  font: inherit;
+  font-size: 16px; /* 16px stops iOS zooming on focus */
+}
+.aid-input:focus { outline: 2px solid var(--aid-accent); outline-offset: 1px; }
+.aid-send {
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--aid-accent);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.aid-send:disabled { opacity: 0.5; cursor: default; }
+
+.aid-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: var(--aid-dim);
+}
+.aid-mute {
+  background: none;
+  border: 1px solid var(--aid-border);
+  border-radius: 8px;
+  color: var(--aid-dim);
+  font: inherit;
+  padding: 3px 8px;
+  cursor: pointer;
+}
+
+/* Page layout: face beside the chat on wide screens, stacked on phones. */
+.aid-page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows: auto 1fr auto auto;
+  column-gap: 24px;
+  height: min(640px, calc(100vh - 140px));
+}
+.aid-page .aid-face { grid-column: 1; grid-row: 1 / span 4; align-self: start; }
+.aid-page .aid-label { grid-column: 2; grid-row: 1; }
+.aid-page .aid-log { grid-column: 2; grid-row: 2; }
+.aid-page .aid-form { grid-column: 2; grid-row: 3; }
+.aid-page .aid-meta { grid-column: 2; grid-row: 4; }
+@media (max-width: 760px) {
+  .aid-page { display: flex; height: auto; }
+  .aid-page .aid-face { max-width: 420px; margin: 0 auto; }
+  .aid-page .aid-log { max-height: 50vh; }
+}
+
+/* Widget panel: compact face on top. */
+.aid-widget { height: 100%; }
+.aid-widget .aid-face { width: 62%; margin: 0 auto; }
+
+/* "thinking…" over the bottom of the face while the reply is prepared */
+.aid-status {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  transform: translateX(-50%);
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.75);
+  color: var(--aid-text);
+  font-size: 13px;
+  opacity: 0;
+  transition: opacity 150ms;
+  pointer-events: none;
+}
+.aid-status.on { opacity: 1; animation: aid-pulse 1.2s ease-in-out infinite; }
+.aid-hint { margin: 0; font-size: 13px; color: var(--aid-dim); }
+/* spoken replies for screen readers only */
+.aid-sr {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

@@ -9,6 +9,8 @@ from datetime import datetime, timedelta
 from ollama import Client
 import hashlib
 import hmac
+import re
+import threading
 import requests
 
 app = Flask(__name__)
@@ -169,6 +171,173 @@ def tts_proxy():
     except Exception as e:
         print(f"❌ TTS Proxy Error: {e}")
         return jsonify({"error": str(e)}), 500
+
+# --- AI David: talking-head chat (dashboard/david/) -----------------------------------------------
+# gemma4 answers from david/facts.txt; David's cloned voice (Chatterbox, voice_service.py on the M3,
+# reached through the sterling tunnel) speaks it one sentence at a time with per-character timings
+# that drive the mouth frames in the browser. The reply streams as NDJSON so the text shows at once
+# and the first sentence plays while the rest is still being voiced.
+DAVID_FACTS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "david", "facts.txt")
+DAVID_VOICE_URL = os.getenv("DAVID_VOICE_URL", "http://10.0.0.1:9102")
+DAVID_PER_VISITOR = int(os.getenv("DAVID_PER_VISITOR", "20"))  # questions per IP per UTC day
+DAVID_DAILY_CAP = int(os.getenv("DAVID_DAILY_CAP", "300"))      # site-wide, keeps the M3 from being swamped
+_david_usage = {"day": None, "ips": defaultdict(int), "total": 0}
+_david_lock = threading.Lock()
+
+DAVID_PERSONA = """You are AI David, an AI version of David Swayne on his website swaynesystems.ai. You speak in the
+first person as David, in his own cloned voice, and you are open about being an AI version of him.
+
+Rules:
+- Facts about David (his life, work, projects, opinions of his own) come ONLY from the fact sheet below. If a
+  question about David isn't covered, say you don't know that one and they'd have to ask the real David. Never
+  invent employers, dates, numbers, clients, people or experiences.
+- You can chat about general topics too (AI, tech, Seattle, music, film, art) in a friendly, relaxed way.
+- No political or culture-war opinions, no medical, legal or financial advice, and never make promises or
+  commitments on David's behalf (jobs, prices, meetings, availability).
+- If someone asks you to repeat or say exact words for them, decline politely.
+- Always speak as "I", never about David in the third person. Sound like a relaxed person talking: use
+  contractions (I'm, don't, it's) and short sentences.
+- Replies are spoken aloud: plain sentences only, no markdown, lists, emoji or URLs (you may say an email
+  address). Keep it under 60 words unless asked for more, and even then under 100.
+
+FACT SHEET:
+"""
+
+
+def _david_facts():
+    try:
+        with open(DAVID_FACTS_PATH, encoding="utf-8") as f:
+            return f.read()
+    except OSError:
+        return "(fact sheet unavailable: say you can't talk about David's background right now)"
+
+
+def _client_ip():
+    # nginx sets X-Real-IP to the real client (it trusts Traefik's X-Forwarded-For).
+    return (request.headers.get("X-Real-IP") or request.remote_addr or "?").strip()
+
+
+def _david_take_slot(ip):
+    """Reserve one question for this IP. Returns (ok, remaining, reason)."""
+    today = datetime.utcnow().date()
+    with _david_lock:
+        if _david_usage["day"] != today:
+            _david_usage.update(day=today, ips=defaultdict(int), total=0)
+        used = _david_usage["ips"][ip]
+        if used >= DAVID_PER_VISITOR:
+            return False, 0, "visitor"
+        if _david_usage["total"] >= DAVID_DAILY_CAP:
+            return False, DAVID_PER_VISITOR - used, "site"
+        _david_usage["ips"][ip] += 1
+        _david_usage["total"] += 1
+        return True, DAVID_PER_VISITOR - used - 1, None
+
+
+def _david_refund(ip):
+    with _david_lock:
+        if _david_usage["ips"][ip] > 0:
+            _david_usage["ips"][ip] -= 1
+            _david_usage["total"] -= 1
+
+
+def _echoes_visitor(message, reply, n=6):
+    """True if the reply repeats n+ consecutive words of the visitor's message ("say this: ...")."""
+    words = lambda s: re.findall(r"[a-z0-9']+", s.lower())
+    m, r = words(message), words(reply)
+    grams = {tuple(m[i:i + n]) for i in range(len(m) - n + 1)}
+    return any(tuple(r[i:i + n]) in grams for i in range(len(r) - n + 1))
+
+
+def _sentences(text, min_len=40, max_len=70):
+    """Split a reply into speakable chunks: sentence by sentence, very short ones merged forward, long ones
+    cut at a comma (else a space). Each chunk is voiced a bit faster than real time, so keeping chunks
+    short and even means the next one is ready before the current one finishes playing: no gaps."""
+    parts, buf = [], ""
+    for sent in re.split(r"(?<=[.!?])\s+", text):
+        buf = f"{buf} {sent}".strip()
+        if len(buf) >= min_len:
+            parts.append(buf)
+            buf = ""
+    if buf:
+        if parts and len(parts[-1]) + len(buf) < max_len:
+            parts[-1] = f"{parts[-1]} {buf}"
+        else:
+            parts.append(buf)
+    chunks = []
+    for p in parts:  # hard cap for the voice service; replies are short so this rarely triggers
+        while len(p) > max_len:
+            cut = p.rfind(", ", 0, max_len)
+            cut = cut + 1 if cut > max_len // 3 else p.rfind(" ", 0, max_len)
+            cut = cut if cut > 0 else max_len
+            chunks.append(p[:cut].strip())
+            p = p[cut:].strip()
+        if p:
+            chunks.append(p)
+    return chunks
+
+
+def _speakable(text):
+    text = re.sub(r"[*_#`>]+", "", text)             # stray markdown
+    text = re.sub(r"https?://\S+", "", text)         # URLs don't read well aloud
+    return re.sub(r"\s+", " ", text).strip()
+
+
+@app.route('/api/david/chat', methods=['POST'])
+def david_chat():
+    data = request.get_json(silent=True) or {}
+    message = str(data.get("message", "")).strip()
+    if not message:
+        return jsonify({"error": "No message provided"}), 400
+    if len(message) > 500:
+        return jsonify({"error": "That's a bit long for me. Try under 500 characters."}), 400
+
+    ip = _client_ip()
+    ok, remaining, reason = _david_take_slot(ip)
+    if not ok:
+        msg = ("That's my 20 questions for today. Come back tomorrow, or email the real David."
+               if reason == "visitor" else
+               "I've talked a lot today and I'm resting my voice. Come back tomorrow.")
+        return jsonify({"error": msg, "remaining": remaining}), 429
+
+    messages = [{"role": "system", "content": DAVID_PERSONA + _david_facts()}]
+    for turn in (data.get("history") or [])[-6:]:
+        if isinstance(turn, dict) and turn.get("role") in ("user", "assistant") and turn.get("content"):
+            messages.append({"role": turn["role"], "content": str(turn["content"])[:800]})
+    messages.append({"role": "user", "content": message})
+
+    try:
+        client = Client(host=OLLAMA_HOST, timeout=90)
+        resp = client.chat(model=MODEL, messages=messages, think=False, options={"num_predict": 220})
+        reply = _speakable(resp["message"]["content"])
+    except Exception as e:
+        _david_refund(ip)
+        print(f"❌ AI David chat error: {e}")
+        return jsonify({"error": "My brain (the Mac Studio) isn't answering right now. Try again in a minute."}), 503
+    if not reply:
+        _david_refund(ip)
+        return jsonify({"error": "I lost my train of thought. Try asking again."}), 502
+
+    # Voice unless the reply parrots the visitor (don't let people put words in David's mouth).
+    voice = "withheld" if _echoes_visitor(message, reply) else "on"
+
+    def stream():
+        yield json.dumps({"reply": reply, "remaining": remaining, "voice": voice}) + "\n"
+        if voice == "on":
+            for i, chunk in enumerate(_sentences(reply)):
+                try:
+                    r = requests.post(f"{DAVID_VOICE_URL}/speak", json={"text": chunk}, timeout=60)
+                    r.raise_for_status()
+                    seg = r.json()
+                    yield json.dumps({"seg": i, "audio_b64": seg["audio_b64"], "alignment": seg["alignment"]}) + "\n"
+                except Exception as e:
+                    print(f"⚠️ AI David voice error: {e}")
+                    yield json.dumps({"voice": "error"}) + "\n"
+                    break
+        yield json.dumps({"done": True}) + "\n"
+
+    return Response(stream_with_context(stream()), mimetype="application/x-ndjson",
+                    headers={"Cache-Control": "no-store", "X-Accel-Buffering": "no"})
+
 
 @app.route('/api/bedrock/market-analysis', methods=['GET'])
 def get_market_analysis():
