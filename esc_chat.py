@@ -71,6 +71,13 @@ st.markdown("""
         background: #1a1f2e !important;
     }
 
+    /* Narrower sidebar (Streamlit's default is ~300px); only while open, so collapsing still works */
+    section[data-testid="stSidebar"][aria-expanded="true"] {
+        width: 250px !important;
+        min-width: 250px !important;
+        max-width: 250px !important;
+    }
+
     [data-testid="stSidebar"] * {
         color: #ffffff !important;
     }
