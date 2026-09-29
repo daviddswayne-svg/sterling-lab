@@ -180,6 +180,8 @@ def tts_proxy():
 DAVID_FACTS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "david", "facts.txt")
 DAVID_ESC_HELP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "david", "esc_help.txt")
 DAVID_VOICE_URL = os.getenv("DAVID_VOICE_URL", "http://10.0.0.1:9102")
+# TEST (video-test branch): lip-synced video per chunk from MuseTalk on the PC. Off unless set.
+DAVID_VIDEO_URL = os.getenv("DAVID_VIDEO_URL", "")
 DAVID_PER_VISITOR = int(os.getenv("DAVID_PER_VISITOR", "20"))  # questions per IP per UTC day
 DAVID_DAILY_CAP = int(os.getenv("DAVID_DAILY_CAP", "300"))      # site-wide, keeps the M3 from being swamped
 _david_usage = {"day": None, "ips": defaultdict(int), "total": 0}
@@ -349,19 +351,53 @@ def david_chat():
     # Voice unless the reply parrots the visitor (don't let people put words in David's mouth).
     voice = "withheld" if _echoes_visitor(message, reply) else "on"
 
+    video_fps = 25 if data.get("video_fps") == 25 else 12
+
+    def voiced_chunks():
+        """Yield (i, voice segment) per chunk, or (i, None) if the voice fails."""
+        for i, chunk in enumerate(_sentences(reply)):
+            try:
+                r = requests.post(f"{DAVID_VOICE_URL}/speak", json={"text": chunk}, timeout=60)
+                r.raise_for_status()
+                yield i, r.json()
+            except Exception as e:
+                print(f"⚠️ AI David voice error: {e}")
+                yield i, None
+                return
+
     def stream():
         yield json.dumps({"reply": reply, "remaining": remaining, "voice": voice}) + "\n"
-        if voice == "on":
-            for i, chunk in enumerate(_sentences(reply)):
-                try:
-                    r = requests.post(f"{DAVID_VOICE_URL}/speak", json={"text": chunk}, timeout=60)
-                    r.raise_for_status()
-                    seg = r.json()
-                    yield json.dumps({"seg": i, "audio_b64": seg["audio_b64"], "alignment": seg["alignment"]}) + "\n"
-                except Exception as e:
-                    print(f"⚠️ AI David voice error: {e}")
+        if voice == "on" and not DAVID_VIDEO_URL:
+            for i, seg in voiced_chunks():
+                if seg is None:
                     yield json.dumps({"voice": "error"}) + "\n"
                     break
+                yield json.dumps({"seg": i, "audio_b64": seg["audio_b64"], "alignment": seg["alignment"]}) + "\n"
+        elif voice == "on":
+            # Video test: the M3 voices chunk i+1 while the PC renders chunk i (a thread feeds a queue).
+            import queue as _q
+            voiced = _q.Queue()
+            threading.Thread(target=lambda: ([voiced.put(x) for x in voiced_chunks()], voiced.put(None)),
+                             daemon=True).start()
+            frame = 0
+            while True:
+                item = voiced.get()
+                if item is None:
+                    break
+                i, seg = item
+                if seg is None:
+                    yield json.dumps({"voice": "error"}) + "\n"
+                    break
+                try:
+                    r = requests.post(f"{DAVID_VIDEO_URL}/render", timeout=120,
+                                      json={"audio_b64": seg["audio_b64"], "fps": video_fps, "start_frame": frame})
+                    r.raise_for_status()
+                    v = r.json()
+                    frame = v["next_frame"]
+                    yield json.dumps({"seg": i, "video_b64": v["video_b64"], "render_s": v["render_s"]}) + "\n"
+                except Exception as e:  # render failed: fall back to the voice + still frames for this chunk
+                    print(f"⚠️ AI David video error: {e}")
+                    yield json.dumps({"seg": i, "audio_b64": seg["audio_b64"], "alignment": seg["alignment"]}) + "\n"
         yield json.dumps({"done": True}) + "\n"
 
     return Response(stream_with_context(stream()), mimetype="application/x-ndjson",
