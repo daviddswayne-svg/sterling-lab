@@ -5,7 +5,7 @@
 //     -> a floating "Ask AI David" bubble; everything loads on first open.
 (function () {
   "use strict";
-  const V = "4";
+  const V = "5";
   const script = document.currentScript;
   const context = (script && script.dataset.context) || "home";
 
@@ -42,16 +42,18 @@
   }
 
   // --- floating bubble ---
-  const raised = context === "esc";   // clear Streamlit's chat box at the bottom of the ESC page
+  // On ESC the bubble sits top-right, just under Streamlit's header bar; elsewhere bottom-right.
+  const atTop = context === "esc";
+  const edge = atTop ? "top: 64px" : "bottom: 20px";
   const css = `
-  .aidw-bubble { position: fixed; right: 20px; bottom: ${raised ? 96 : 20}px; z-index: 1000000; display: flex;
+  .aidw-bubble { position: fixed; right: 20px; ${edge}; z-index: 1000000; display: flex;
     align-items: center; gap: 10px; padding: 6px 16px 6px 6px; border: 1px solid rgba(148,163,184,.25);
     border-radius: 999px; background: rgba(15,23,42,.92); color: #f1f5f9; font: 600 14px "Inter", system-ui, sans-serif;
     cursor: pointer; box-shadow: 0 8px 28px rgba(0,0,0,.45); backdrop-filter: blur(6px); }
   .aidw-bubble img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; object-position: 50% 30%; }
   .aidw-bubble:hover { border-color: #6366f1; }
-  .aidw-panel { position: fixed; right: 20px; bottom: ${raised ? 96 : 20}px; z-index: 1000001; width: 360px;
-    height: min(640px, calc(100vh - ${raised ? 116 : 40}px)); display: none; flex-direction: column; padding: 14px;
+  .aidw-panel { position: fixed; right: 20px; ${edge}; z-index: 1000001; width: 360px;
+    height: min(640px, calc(100vh - ${atTop ? 84 : 40}px)); display: none; flex-direction: column; padding: 14px;
     border: 1px solid rgba(148,163,184,.25); border-radius: 18px; background: #0f172a;
     box-shadow: 0 16px 48px rgba(0,0,0,.6); box-sizing: border-box; }
   .aidw-open .aidw-panel { display: flex; }

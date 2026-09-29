@@ -943,9 +943,8 @@ def main():
     if "messages" not in st.session_state:
         st.session_state.messages = []
 
-    if not st.session_state.messages:
-        if mode == "map":
-            welcome = """### Welcome to Trip Map
+    if mode == "map":
+        welcome = """### Welcome to Trip Map
 
 View interactive route maps for any trip in the database. Maps show GPS route segments (when available), ordered waypoints with elevation, and clickable 📷 camera icons that open photos from that location.
 
@@ -965,8 +964,8 @@ View interactive route maps for any trip in the database. Maps show GPS route se
 - 🔴 GPS route line (CalTopo) when available, or dashed line connecting waypoints
 - 🔵 DB waypoints with name and elevation
 - 📷 Camera icons — click any to see a photo from that location"""
-        elif mode == "journals":
-            welcome = """### Welcome to Mike's Journal Magazine
+    elif mode == "journals":
+        welcome = """### Welcome to Mike's Journal Magazine
 
 Mike Swayne kept detailed trip journals from the 1930s through the 2020s — mountaineering, fishing, road trips, wildlife surveys, and family travels. When you open a specific journal, it renders as a **photo magazine**: day-by-day narrative with photos matched to each day inline, and a full trip photo gallery at the bottom.
 
@@ -982,8 +981,8 @@ Mike Swayne kept detailed trip journals from the 1930s through the 2020s — mou
 > "Find any journal mentioning the Sockeye run" · "Find journals that mention bears"
 
 **Name tip:** If you say "Michael" or "Elizabeth" I'll ask which one — Dad and brother share a name, as do Mom and sister."""
-        else:
-            welcome = """### Welcome to the Family History Explorer
+    else:
+        welcome = """### Welcome to the Family History Explorer
 
 Ask questions about the Swayne family database in plain English — I'll query 121 tables covering people, photos, trips, geographic features, species, and more.
 
@@ -1000,10 +999,41 @@ Ask questions about the Swayne family database in plain English — I'll query 1
 - **A first name on its own often matches several people** — the database has many Dons, Mikes and Elizabeths. When that happens I'll list the likeliest matches (most photographed first) and ask which one you meant. Reply with the number or the last name, and I'll answer your original question.
 
 📅 **Decades work naturally** — "trips in the 1970s," "photos from the 1990s," "species photographed in the 1960s" all work as expected."""
-        st.session_state.messages.append({"role": "assistant", "content": welcome})
 
-    # Display chat history
-    for msg_idx, message in enumerate(st.session_state.messages):
+    # Question box near the top (inline, not pinned to the bottom). Submitting sets the pending prompt
+    # and reruns so the sidebar shows "Thinking..." immediately.
+    if mode == "map":
+        input_placeholder = "Name a trip to map, or say 'map trip 640'..."
+    elif mode == "journals":
+        input_placeholder = "Ask about a journal or trip..."
+    else:
+        input_placeholder = "Ask about the family history..."
+    if prompt := st.container().chat_input(input_placeholder):
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        st.session_state.thinking = True
+        st.session_state.pending_prompt = prompt
+        # Log the query (fire-and-forget, never block the UI)
+        _user = st.session_state.get("user", {})
+        if _user:
+            try:
+                _api.post(
+                    f"{ESC_API_URL}/auth/log_query",
+                    params={
+                        "user_id": _user["id"],
+                        "session_id": st.session_state.get("session_id"),
+                        "query": prompt,
+                    },
+                    timeout=3,
+                )
+            except Exception:
+                pass
+        st.rerun()
+
+    # The long instructions live in a collapsed section so they don't push the answers down.
+    with st.expander("💡 How to ask", expanded=False):
+        st.markdown(welcome.split("\n", 1)[1].lstrip() if welcome.startswith("###") else welcome)
+
+    def render_message(msg_idx, message):
         with st.chat_message(message["role"]):
             if message.get("is_magazine"):
                 render_journal_magazine(
@@ -1029,7 +1059,17 @@ Ask questions about the Swayne family database in plain English — I'll query 1
                         if trace.get("result_preview"):
                             st.markdown(trace["result_preview"][:300])
 
-    # Handle pending prompt — runs after history renders so user msg is visible first
+    # Group the conversation into exchanges (a question + its answer) and show the newest first.
+    exchanges = []
+    for i, m in enumerate(st.session_state.messages):
+        if m["role"] == "user" or not exchanges:
+            exchanges.append([])
+        exchanges[-1].append(i)
+    waiting = exchanges.pop() if st.session_state.get("pending_prompt") and exchanges else []
+    for i in waiting:  # the question being answered right now goes on top
+        render_message(i, st.session_state.messages[i])
+
+    # Answer the pending question right under it, above the older exchanges.
     if mode == "journals":
         spinner_text = "Retrieving journal..."
     elif mode == "map":
@@ -1103,33 +1143,9 @@ Ask questions about the Swayne family database in plain English — I'll query 1
 
         st.session_state.thinking = False
 
-    # Chat input — set pending state and rerun so sidebar shows "Thinking..." immediately
-    if mode == "map":
-        input_placeholder = "Name a trip to map, or say 'map trip 640'..."
-    elif mode == "journals":
-        input_placeholder = "Ask about a journal or trip..."
-    else:
-        input_placeholder = "Ask about the family history..."
-    if prompt := st.chat_input(input_placeholder):
-        st.session_state.messages.append({"role": "user", "content": prompt})
-        st.session_state.thinking = True
-        st.session_state.pending_prompt = prompt
-        # Log the query (fire-and-forget, never block the UI)
-        _user = st.session_state.get("user", {})
-        if _user:
-            try:
-                _api.post(
-                    f"{ESC_API_URL}/auth/log_query",
-                    params={
-                        "user_id": _user["id"],
-                        "session_id": st.session_state.get("session_id"),
-                        "query": prompt,
-                    },
-                    timeout=3,
-                )
-            except Exception:
-                pass
-        st.rerun()
+    for exchange in reversed(exchanges):
+        for i in exchange:
+            render_message(i, st.session_state.messages[i])
 
 
 if __name__ == "__main__":
