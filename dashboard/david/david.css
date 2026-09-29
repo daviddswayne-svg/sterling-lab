@@ -178,7 +178,7 @@
   white-space: nowrap;
 }
 
-/* TEST (video-test branch): MuseTalk clips, framed like the still frames (same -3% bleed as .aid-head) */
+/* MuseTalk video clips, framed like the still frames (same -3% bleed as .aid-head) */
 .aid-video {
   position: absolute;
   top: -3%; left: -3%;

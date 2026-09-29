@@ -281,43 +281,47 @@
                 <p class="case-kicker">Voice cloning · Lip-sync · Local AI</p>
                 <h2>AI David: a talking head in my own voice</h2>
                 <p class="case-hook">
-                    An AI version of me that answers visitors out loud, in my cloned voice, with a face that moves in
-                    time with the words. Everything runs on my own Mac Studio.
+                    An AI version of me that answers visitors out loud, in my cloned voice, with lip-synced video.
+                    Everything runs on my own machines: a Mac Studio for the answers and voice, a PC's RTX 3060 for
+                    the video.
                 </p>
 
                 <figure class="case-media">
                     <img src="img/ai-david-frames.jpg" width="1632" height="373" loading="lazy"
                         alt="Five versions of the same portrait of David: mouth closed, mouth open, a wide 'ee' shape, a rounded 'oh' shape, and eyes closed.">
-                    <figcaption>Five of the ten shapes, all re-posed from one AI-generated portrait.</figcaption>
+                    <figcaption>The still-frame fallback: five of ten shapes re-posed from one AI-generated portrait.</figcaption>
                 </figure>
 
                 <dl class="case-points">
                     <div>
                         <dt>Problem</dt>
                         <dd>A chatbot on a personal site is only worth having if it sounds like the person and doesn't
-                            make things up about them. My cloned voice on ElevenLabs needed a pricier plan, and a video
-                            avatar per answer is slow and expensive.</dd>
+                            make things up about them. My cloned voice on ElevenLabs needed a pricier plan, and hosted
+                            video avatars charge by the minute.</dd>
                     </div>
                     <div>
                         <dt>What I built</dt>
-                        <dd>One portrait re-posed into ten mouth and eye shapes with LivePortrait. Answers come from
-                            Gemma 4, limited to a fact sheet I approved; anything outside it gets "you'd have to ask the
-                            real David". The voice is cloned from a two-minute recording with Chatterbox (open source,
-                            MIT) and every clip carries an inaudible AI watermark. Replies are voiced a sentence at a
-                            time and force-aligned letter by letter, so the page can shape the mouth to the sound.
-                            Visitors get 20 questions a day.</dd>
+                        <dd>Answers come from Gemma 4, limited to a fact sheet I approved; anything outside it gets
+                            "you'd have to ask the real David". The voice is cloned from a two-minute recording with
+                            Chatterbox (open source, MIT), and every clip carries an inaudible AI watermark. Each sentence
+                            is then lip-synced onto a short idle loop of me (made from one portrait with LivePortrait) by
+                            MuseTalk on my PC's RTX 3060, while the Mac voices the next sentence. If the PC is off or
+                            busy with another visitor, the page falls back to ten still mouth shapes driven by the
+                            audio. Visitors get 20 questions a day.</dd>
                     </div>
                     <div>
                         <dt>Result</dt>
-                        <dd>The voice starts about four seconds after a question, in testing, with no per-use fees.
-                            The first lip-sync changed shape on every letter and ran slightly ahead of the audio, which
-                            looked frantic. Driving how far the mouth opens from the audio's own loudness, taking the
-                            shape from each syllable's vowel, and correcting for speaker latency brought it down to
-                            about three changes a second, locked to the sound.</dd>
+                        <dd>Video starts about eight seconds after a question, with no per-use fees. On a 3060, full
+                            25 fps rendered 2.7 times slower than the speech, so video runs at 12 fps, which keeps pace
+                            with it; padding every batch to one size removed stalls from the GPU re-tuning itself for
+                            each sentence length. The still-frame version taught its own lesson: changing shape on every
+                            letter looked frantic, so its mouth follows the audio's loudness and each syllable's
+                            vowel.</dd>
                     </div>
                 </dl>
                 <ul class="tags">
                     <li>Chatterbox</li>
+                    <li>MuseTalk</li>
                     <li>LivePortrait</li>
                     <li>Forced alignment</li>
                     <li>Gemma 4 / Ollama</li>

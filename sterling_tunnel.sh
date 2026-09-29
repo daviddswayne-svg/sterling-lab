@@ -3,6 +3,7 @@
 # Sterling Lab SSH Tunnel — the ONE reverse tunnel from the Mac Studio M3 to the droplet
 #   8888  video server     11434  Ollama (site AI)     8002  ESC API     9101  Bedrock trigger
 #   9102  AI David voice (~/Projects/ai-david/voice_service.py, launchd com.swaynesystems.david-voice)
+#   9140  AI David video (M3 localhost:9140 = launchd com.swaynesystems.david-video-tunnel -> PC MuseTalk)
 # (m3_keepalive.sh no longer runs its own tunnel for 11434/8888 — 2026-09-26.)
 #
 # ExitOnForwardFailure=yes: if any port can't be bound (e.g. the droplet still holds it
@@ -26,6 +27,7 @@ exec /opt/homebrew/bin/autossh -M 0 \
   -R 0.0.0.0:8002:localhost:8002 \
   -R 0.0.0.0:9101:localhost:9101 \
   -R 0.0.0.0:9102:localhost:9102 \
+  -R 0.0.0.0:9140:localhost:9140 \
   -o ServerAliveInterval=30 \
   -o ServerAliveCountMax=3 \
   -o ExitOnForwardFailure=yes \

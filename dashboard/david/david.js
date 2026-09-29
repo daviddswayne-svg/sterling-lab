@@ -2,9 +2,10 @@
 // Shared by the homepage widget (widget.js) and the /david/ page.
 //   AIDavid.mount(element, { size: "inline" | "widget", context: "home" | "esc" })
 // Frames are LivePortrait renders of one photo (~/Projects/ai-david/gen_frames.py on the M3).
-// The API (/api/david/chat) streams the reply, then one MP3 per sentence chunk with per-character
-// timings from David's cloned voice on the M3. The reply is spoken, not shown (text only appears when
-// there's no voice: muted, voice down, or withheld).
+// The API (/api/david/chat) streams the reply, then one clip per sentence chunk: a lip-synced MP4 from
+// MuseTalk on the PC when it can render, otherwise an MP3 of David's cloned voice (M3) with per-character
+// timings that drive the still frames. The reply is spoken, not shown (text only appears when there's no
+// voice: muted, voice down, or withheld).
 //
 // Lip-sync: how OPEN the mouth is follows the loudness of the decoded audio (so it can't drift from the
 // sound); the SHAPE comes from the vowel of the syllable being spoken; each shape is held >= HOLD so the
@@ -95,7 +96,7 @@
       head.appendChild(img);
     });
     const status = el("div", "aid-status");
-    // TEST (video-test branch): lip-synced video clips from MuseTalk play over the still frames.
+    // Lip-synced video clips (MuseTalk on the PC) play over the still frames when the PC can render them.
     const video = el("video", "aid-video");
     video.playsInline = true;
     video.hidden = true;
@@ -329,8 +330,7 @@
         const r = await fetch("/api/david/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: text, history: history.slice(-MAX_HISTORY), context,
-            video_fps: new URLSearchParams(location.search).get("videofps") === "25" ? 25 : 12 }),
+          body: JSON.stringify({ message: text, history: history.slice(-MAX_HISTORY), context }),
         });
         if (!r.ok) {
           const data = await r.json().catch(() => ({}));
