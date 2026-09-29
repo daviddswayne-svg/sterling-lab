@@ -177,3 +177,12 @@
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
+
+/* TEST (video-test branch): MuseTalk clips, framed like the still frames (same -3% bleed as .aid-head) */
+.aid-video {
+  position: absolute;
+  top: -3%; left: -3%;
+  width: 106%; height: 106%;
+  object-fit: cover;
+  z-index: 2;
+}

@@ -95,7 +95,11 @@
       head.appendChild(img);
     });
     const status = el("div", "aid-status");
-    face.append(head, status);
+    // TEST (video-test branch): lip-synced video clips from MuseTalk play over the still frames.
+    const video = el("video", "aid-video");
+    video.playsInline = true;
+    video.hidden = true;
+    face.append(head, video, status);
 
     const label = el("p", "aid-label");
     label.append(el("strong", null, "AI David"),
@@ -174,6 +178,7 @@
       muted = !muted;
       mute.textContent = muted ? "🔇 Sound off" : "🔊 Sound on";
       if (gain) gain.gain.value = muted ? 0 : 1;
+      video.muted = muted;
     });
 
     function ensureAudio() {
@@ -192,9 +197,16 @@
       return (audioCtx.outputLatency || 0) + (audioCtx.baseLatency || 0);
     }
 
+    function newTalk() {
+      return { segs: [], sources: [], endAt: 0, done: false, current: "rest", since: 0, videos: [], vplaying: false };
+    }
+
     function stopSpeaking() {
       talkId++;
       if (talk) talk.sources.forEach((src) => { try { src.stop(); } catch (e) { /* already stopped */ } });
+      if (talk) talk.videos.forEach((u) => URL.revokeObjectURL(u));
+      video.pause();
+      video.hidden = true;
       talk = null;
       speaking = false;
       root.classList.remove("aid-talking");
@@ -202,6 +214,8 @@
     }
 
     function finishTalking() {
+      video.pause();
+      video.hidden = true;
       talk = null;
       speaking = false;
       root.classList.remove("aid-talking");
@@ -214,7 +228,7 @@
       const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
       const buffer = await audioCtx.decodeAudioData(bytes.buffer);
       if (id !== talkId) return;
-      if (!talk) talk = { segs: [], sources: [], endAt: 0, done: false, current: "rest", since: 0 };
+      if (!talk) talk = newTalk();
       const t0 = Math.max(audioCtx.currentTime + 0.05, talk.endAt);
       const src = audioCtx.createBufferSource();
       src.buffer = buffer;
@@ -236,6 +250,32 @@
         root.classList.add("aid-talking");
         requestAnimationFrame(() => tick(id));
       }
+    }
+
+    // Video clips (one per chunk) play back to back; if the next isn't ready yet the last frame holds.
+    function enqueueVideo(id, b64) {
+      if (id !== talkId) return;
+      if (!talk) talk = newTalk();
+      const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+      talk.videos.push(URL.createObjectURL(new Blob([bytes], { type: "video/mp4" })));
+      if (!talk.vplaying) playNextVideo(id);
+    }
+
+    function playNextVideo(id) {
+      if (id !== talkId || !talk) return;
+      const url = talk.videos.shift();
+      if (!url) {
+        talk.vplaying = false;
+        if (talk.done) finishTalking();
+        return;
+      }
+      talk.vplaying = true;
+      if (!speaking) { speaking = true; setStatus(""); root.classList.add("aid-talking"); }
+      video.src = url;
+      video.muted = muted;
+      video.hidden = false;
+      video.onended = () => { URL.revokeObjectURL(url); playNextVideo(id); };
+      video.play().catch(() => playNextVideo(id));
     }
 
     function mouthAt(seg, t) {
@@ -289,7 +329,8 @@
         const r = await fetch("/api/david/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: text, history: history.slice(-MAX_HISTORY), context }),
+          body: JSON.stringify({ message: text, history: history.slice(-MAX_HISTORY), context,
+            video_fps: new URLSearchParams(location.search).get("videofps") === "25" ? 25 : 12 }),
         });
         if (!r.ok) {
           const data = await r.json().catch(() => ({}));
@@ -313,6 +354,8 @@
             history.push({ role: "user", content: text }, { role: "assistant", content: reply });
             if (d.voice === "withheld") { voiceOk = false; setStatus(""); showText("(not spoken: I don't read out words people hand me)"); }
             else if (muted) showText("(sound is off)");
+          } else if (d.video_b64 && voiceOk) {
+            enqueueVideo(id, d.video_b64);
           } else if (d.audio_b64 && d.alignment && voiceOk) {
             await enqueue(id, d.audio_b64, d.alignment).catch(() => {});
           } else if (d.voice === "error") {
@@ -320,7 +363,10 @@
             if (!talk) setStatus("");
             showText("(voice unavailable right now)");
           } else if (d.done) {
-            if (talk && id === talkId) talk.done = true;
+            if (talk && id === talkId) {
+              talk.done = true;
+              if (talk.videos.length === 0 && !talk.vplaying && talk.segs.length === 0) finishTalking();
+            }
           }
         };
         for (;;) {
