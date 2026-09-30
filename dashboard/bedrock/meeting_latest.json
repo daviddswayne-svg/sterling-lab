@@ -1,12 +1,12 @@
 {
-  "date": "2026-09-29T16:14:35",
-  "theme": "Securing Wealth Amidst Fragmenting Global Stability",
-  "duration_s": 72.2,
-  "image": "/assets/bedrock_20260929-1614.png",
+  "date": "2026-09-29T18:39:37",
+  "theme": "Securing Wealth Against Algorithmic Identity Erosion",
+  "duration_s": 70.7,
+  "image": "/assets/bedrock_20260929-1839.png",
   "brief": {
-    "headline": "Securing Wealth Amidst Fragmenting Global Stability",
+    "headline": "Securing Wealth Against Algorithmic Identity Erosion",
     "market_sentiment": "Cautious",
-    "briefing_body": "The current landscape presents a paradox of stability and underlying friction. While the S&P 500 remains relatively flat and the VIX shows moderate volatility, the 10-year Treasury yield has climbed significantly to <b>5.26%</b>, reflecting a 'higher-for-longer' interest rate regime. We are observing a divergence in risk; as noted in the <b>Swiss Re Institute sigma No 2/2026 (July 2026)</b>, while US core inflation may peak near <b>3%</b>, the inflationary impulse from global conflicts continues to pressure underwriting margins. For our clients, the focus must shift toward <b>Asset Resilience</b>. With US liability premiums projected to grow by <b>3.2%</b> due to rising litigation costs and large jury awards, traditional coverage is becoming more expensive. We must proactively audit portfolios against rising reconstruction costs and the persistent upward trend in global catastrophe exposure to ensure long-term solvency.",
+    "briefing_body": "As we navigate a landscape of <b>3.7% inflation</b> and a <b>5.26% 10-year Treasury yield</b>, the primary threat to your clients' portfolios is no longer just physical; it is the integrity of the digital persona. While the <b>S&P 500</b> remains relatively stable, the rise of 'Deepfake Arbitrage'\u2014where synthetic identities execute fraudulent high-frequency trades\u2014demands a new layer of biometric and cryptographic asset insulation. Current market volatility is <b>moderate</b>, yet the <b>Swiss Re Institute US Property & Casualty Outlook (July 2026)</b> notes that underwriting margins are compressing as the industry enters a more competitive phase. For the ultra-high-net-worth, the goal is moving beyond traditional coverage toward 'Cognitive Continuity' insurance. We must prepare for a world where the authenticity of an owner's digital signature is as vital as the deed to their estate.",
     "date": "2026-09-29",
     "source": "Swiss Re sigma 2/2026 \u2022 Swiss Re H1 2026 cat-loss report \u2022 Swiss Re US P&C Outlook (Jul 2026) \u2022 Yahoo Finance \u2022 FRED \u2022 Insurance Journal, CNBC",
     "sigma": [
@@ -61,43 +61,43 @@
     },
     {
       "agent": "director",
-      "message": "Theme selected: Securing Wealth Amidst Fragmenting Global Stability",
-      "t": 8.2
+      "message": "Theme selected: Securing Wealth Against Algorithmic Identity Erosion",
+      "t": 6.6
     },
     {
       "agent": "designer",
       "message": "Composing high-fidelity imagery...",
-      "t": 8.2
+      "t": 6.6
     },
     {
       "agent": "developer",
       "message": "Coding responsive HTML structure...",
-      "t": 8.2
+      "t": 6.6
     },
     {
       "agent": "developer",
       "message": "Page copy ready (16 fields; market tiles from live data).",
-      "t": 14.7
+      "t": 13.0
     },
     {
       "agent": "designer",
-      "message": "Image rendered: bedrock_20260929-1614.png",
-      "t": 72.2
+      "message": "Image rendered: bedrock_20260929-1839.png",
+      "t": 70.7
     },
     {
       "agent": "publisher",
       "message": "Applying updates to the page...",
-      "t": 72.2
+      "t": 70.7
     },
     {
       "agent": "publisher",
       "message": "Page updated (17 changes).",
-      "t": 72.2
+      "t": 70.7
     },
     {
       "agent": "system",
       "message": "Meeting Adjourned",
-      "t": 72.2
+      "t": 70.7
     }
   ]
 }
