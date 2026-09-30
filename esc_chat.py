@@ -97,6 +97,26 @@ st.markdown("""
         box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
     }
 
+    /* The question box: labelled "Chat" and outlined so it's obvious where to type */
+    .esc-chat-label {
+        font-size: 1.35rem;
+        font-weight: 700;
+        margin: 0.4rem 0 0.1rem 0;
+    }
+    .esc-chat-help {
+        font-size: 1rem;
+        color: #cbd5e1;
+        margin-bottom: 0.5rem;
+    }
+    .st-key-esc_chat_box [data-testid="stChatInput"] {
+        border: 2px solid #818cf8 !important;
+        border-radius: 12px !important;
+        box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.15);
+    }
+    .st-key-esc_chat_box textarea {
+        font-size: 1.05rem !important;
+    }
+
     /* Choice buttons (which person / pick another / trips): an even grid of
        outlined cards - as many columns as fit, one column on a phone */
     [class*="st-key-chips_"] {
@@ -1070,11 +1090,11 @@ Ask questions about the Swayne family database in plain English — I'll query 1
     # Question box near the top (inline, not pinned to the bottom). Submitting sets the pending prompt
     # and reruns so the sidebar shows "Thinking..." immediately.
     if mode == "map":
-        input_placeholder = "Name a trip to map, or say 'map trip 640'..."
+        input_placeholder = "Type a trip name here, then press Enter"
     elif mode == "journals":
-        input_placeholder = "Ask about a journal or trip..."
+        input_placeholder = "Type your question about a journal or trip here, then press Enter"
     else:
-        input_placeholder = "Ask about the family history..."
+        input_placeholder = "Type your question here, then press Enter"
     def submit(prompt: str, display: str | None = None):
         """Queue a question. `display` is what the user's bubble shows when it differs
         from what is sent (a name button sends "2" but shows the person's name)."""
@@ -1100,7 +1120,14 @@ Ask questions about the Swayne family database in plain English — I'll query 1
             except Exception:
                 pass
 
-    if prompt := st.container().chat_input(input_placeholder):
+    # A plain-words label: many users have never used a chat box before
+    st.markdown(
+        '<div class="esc-chat-label">💬 Chat</div>'
+        '<div class="esc-chat-help">Type a question in the box below and press <b>Enter</b> '
+        '(or click the <b>arrow</b> at the right). The answer appears underneath.</div>',
+        unsafe_allow_html=True,
+    )
+    if prompt := st.container(key="esc_chat_box").chat_input(input_placeholder):
         submit(prompt)
         st.rerun()
 
