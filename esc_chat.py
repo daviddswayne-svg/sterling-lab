@@ -1003,7 +1003,7 @@ Ask questions about the Swayne family database in plain English — I'll query 1
 
 👤 **Names & nicknames** — first names and nicknames both work (*"Don"* or *"Donald"*, *"Mike"* or *"Michael"*).
 - **Use a full name to go straight to the answer:** *"Don Ihlenfeldt"*, *"Mike Swayne"*, *"Michael Thomas"*.
-- **A first name on its own often matches several people** — the database has many Dons, Mikes and Elizabeths. When that happens I'll list the likeliest matches (most photographed first) and ask which one you meant. Reply with the number or the last name, and I'll answer your original question.
+- **A first name on its own often matches several people** — the database has many Dons, Mikes and Elizabeths. When that happens I'll list everyone who matches (most photographed first) — click the one you meant and I'll answer your original question. If I guess a name for you ("Assuming Eva means…"), click **Pick another** to switch.
 
 📅 **Decades work naturally** — "trips in the 1970s," "photos from the 1990s," "species photographed in the 1960s" all work as expected."""
 
@@ -1015,8 +1015,13 @@ Ask questions about the Swayne family database in plain English — I'll query 1
         input_placeholder = "Ask about a journal or trip..."
     else:
         input_placeholder = "Ask about the family history..."
-    if prompt := st.container().chat_input(input_placeholder):
-        st.session_state.messages.append({"role": "user", "content": prompt})
+    def submit(prompt: str, display: str | None = None):
+        """Queue a question. `display` is what the user's bubble shows when it differs
+        from what is sent (a name button sends "2" but shows the person's name)."""
+        msg = {"role": "user", "content": prompt}
+        if display and display != prompt:
+            msg["display"] = display
+        st.session_state.messages.append(msg)
         st.session_state.thinking = True
         st.session_state.pending_prompt = prompt
         # Log the query (fire-and-forget, never block the UI)
@@ -1028,21 +1033,85 @@ Ask questions about the Swayne family database in plain English — I'll query 1
                     params={
                         "user_id": _user["id"],
                         "session_id": st.session_state.get("session_id"),
-                        "query": prompt,
+                        "query": display or prompt,
                     },
                     timeout=3,
                 )
             except Exception:
                 pass
+
+    if prompt := st.container().chat_input(input_placeholder):
+        submit(prompt)
         st.rerun()
+
+    def _choice_button(c: dict, key: str):
+        label = f"{c['label']}  ·  {c['detail']}" if c.get("detail") else c["label"]
+        st.button(label, key=key, width="stretch", on_click=submit,
+                  args=(c["reply"], c["label"] if c["reply"].isdigit() or c["reply"] == "all" else None),
+                  disabled=bool(st.session_state.get("pending_prompt")))
+
+    def render_which_choices(msg_idx: int, choices: list[dict]):
+        """Buttons for "which Don did you mean?" - clicking one answers the question."""
+        top = [c for c in choices if not c.get("more")]
+        rest = [c for c in choices if c.get("more")]
+        for n, c in enumerate(top):
+            _choice_button(c, f"which_{msg_idx}_{n}")
+        if rest:
+            with st.expander(f"{len(rest)} more people named {rest[0]['group']} (fewer photos)"):
+                cols = st.columns(2)
+                for n, c in enumerate(rest):
+                    with cols[n % 2]:
+                        _choice_button(c, f"which_{msg_idx}_more_{n}")
+        st.caption("Or type their full name in the question box.")
+
+    def render_assumed_choices(msg_idx: int, choices: list[dict]):
+        """Under an "Assuming Eva means …" note: ask the same question about someone else."""
+        groups = {}
+        for c in choices:
+            groups.setdefault((c["group"], c.get("assumed", "")), []).append(c)
+        for g, ((name, assumed), cs) in enumerate(groups.items()):
+            with st.expander(f"Not {assumed}? Pick another {name}"):
+                for n, c in enumerate(cs):
+                    _choice_button(c, f"alt_{msg_idx}_{g}_{n}")
+
+    def render_answer_text(msg_idx: int, message: dict, is_latest: bool):
+        """The answer's text, with name buttons where they belong."""
+        choices = message.get("choices") or []
+        kind = message.get("choice_kind")
+        if kind == "which" and choices:
+            if is_latest:   # a pick only makes sense as the answer to the latest question
+                st.markdown(message.get("display_text") or message["content"])
+                render_which_choices(msg_idx, choices)
+            else:
+                st.markdown(message["content"])
+            return
+        content = message["content"]
+        if kind == "assumed" and choices:
+            paras = content.split("\n\n")
+            k = 0
+            while k < len(paras) and paras[k].startswith("*Assuming "):
+                k += 1
+            if k:
+                st.markdown("\n\n".join(paras[:k]))
+                render_assumed_choices(msg_idx, choices)
+                content = "\n\n".join(paras[k:])
+            else:
+                render_assumed_choices(msg_idx, choices)
+        if content.strip():
+            st.markdown(content)
 
     # The long instructions live in a collapsed section so they don't push the answers down.
     with st.expander("💡 How to ask", expanded=False):
         st.markdown(welcome.split("\n", 1)[1].lstrip() if welcome.startswith("###") else welcome)
 
     def render_message(msg_idx, message):
+        is_latest = msg_idx == len(st.session_state.messages) - 1
         with st.chat_message(message["role"]):
-            if message.get("is_magazine"):
+            if message["role"] == "user":
+                st.markdown(message.get("display") or message["content"])
+            elif message.get("is_magazine"):
+                if message.get("choice_kind") == "assumed" and message.get("choices"):
+                    render_assumed_choices(msg_idx, message["choices"])
                 render_journal_magazine(
                     message["content"],
                     message.get("day_photos", []),
@@ -1050,7 +1119,7 @@ Ask questions about the Swayne family database in plain English — I'll query 1
                     msg_idx,
                 )
             else:
-                st.markdown(message["content"])
+                render_answer_text(msg_idx, message, is_latest)
                 if message.get("image_data"):
                     render_photo_browser(message["image_data"], msg_idx)
                 if message.get("map_trip_id"):
@@ -1101,13 +1170,22 @@ Ask questions about the Swayne family database in plain English — I'll query 1
                     is_magazine = mode == "journals" and bool(image_data or day_photos)
 
                     map_trip_id = result.get("map_trip_id")
+                    new_msg = {
+                        "role": "assistant",
+                        "content": result["response"],
+                        "choices": result.get("choices", []),
+                        "choice_kind": result.get("choice_kind", ""),
+                        "display_text": result.get("display_text", ""),
+                    }
 
                     if is_magazine:
+                        if new_msg["choice_kind"] == "assumed" and new_msg["choices"]:
+                            render_assumed_choices(new_msg_idx, new_msg["choices"])
                         render_journal_magazine(
                             result["response"], day_photos, image_data, new_msg_idx
                         )
                     else:
-                        st.markdown(result["response"])
+                        render_answer_text(new_msg_idx, new_msg, True)
                         if image_data:
                             render_photo_browser(image_data, new_msg_idx)
                         if map_trip_id:
@@ -1135,8 +1213,7 @@ Ask questions about the Swayne family database in plain English — I'll query 1
                         st.caption(f"Completed in {timing / 1000:.1f}s using {result.get('model', 'unknown')}")
 
                     st.session_state.messages.append({
-                        "role": "assistant",
-                        "content": result["response"],
+                        **new_msg,
                         "sql_trace": sql_trace,
                         "image_data": image_data,
                         "day_photos": day_photos,
