@@ -137,41 +137,6 @@ def meeting_status():
         return jsonify({"status": "offline", "running": False, "events": []})
 
 
-@app.route('/api/tts', methods=['POST'])
-def tts_proxy():
-    """Proxies TTS request to Local Mac Studio via Tunnel"""
-    try:
-        data = request.json
-        if not data or 'text' not in data:
-            return jsonify({"error": "No text provided"}), 400
-            
-        print(f"🎤 Requesting audio for: {data['text'][:30]}...")
-        
-        # Connect to Local Mac Studio via Tunnel (Docker Gateway IP for Linux/Coolify)
-        # Port 8001 is forwarded by sterling_tunnel.sh (Mapped to Mac 8000)
-        tts_url = "http://10.0.1.1:8001/generate"
-        
-        # Forward the request
-        resp = requests.post(tts_url, json={
-            "text": data['text'],
-            "voice": "David", # Hardcoded for this interface
-            "speed": 1.0
-        }, timeout=30) # Allow time for generation
-        
-        if resp.status_code == 200:
-            # Return the audio file directly
-            return Response(
-                resp.content, 
-                mimetype="audio/wav",
-                headers={"Content-Disposition": "attachment; filename=generated.wav"}
-            )
-        else:
-            return jsonify({"error": f"TTS Backend Error: {resp.text}"}), resp.status_code
-
-    except Exception as e:
-        print(f"❌ TTS Proxy Error: {e}")
-        return jsonify({"error": str(e)}), 500
-
 # --- AI David: talking-head chat (dashboard/david/) -----------------------------------------------
 # gemma4 answers from david/facts.txt; David's cloned voice (Chatterbox, voice_service.py on the M3,
 # reached through the sterling tunnel) speaks it one sentence at a time with per-character timings
