@@ -97,6 +97,16 @@ st.markdown("""
         box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
     }
 
+    /* Speaker label on each chat bubble */
+    .esc-who {
+        font-size: 0.85rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: #a5b4fc;
+        margin-bottom: 0.15rem;
+    }
+
     /* The question box: labelled "Chat" and outlined so it's obvious where to type */
     .esc-chat-label {
         font-size: 1.35rem;
@@ -1212,9 +1222,21 @@ Ask questions about the Swayne family database in plain English — I'll query 1
     with st.expander("💡 How to ask", expanded=False):
         st.markdown(welcome.split("\n", 1)[1].lstrip() if welcome.startswith("###") else welcome)
 
+    def who_label(message: dict | None, role: str = "assistant"):
+        """Plain-words speaker label on every bubble ("You asked:" / "Answer:")."""
+        if role == "user":
+            text = "You asked:"
+        elif message and (message.get("choice_kind") == "which"
+                          or message.get("content", "").startswith("Who do you mean by")):
+            text = "Question for you:"
+        else:
+            text = "Answer:"
+        st.markdown(f'<div class="esc-who">{text}</div>', unsafe_allow_html=True)
+
     def render_message(msg_idx, message):
         is_latest = msg_idx == len(st.session_state.messages) - 1
         with st.chat_message(message["role"]):
+            who_label(message, message["role"])
             if message["role"] == "user":
                 st.markdown(message.get("display") or message["content"])
             elif message.get("is_magazine"):
@@ -1265,6 +1287,7 @@ Ask questions about the Swayne family database in plain English — I'll query 1
     if st.session_state.get("pending_prompt"):
         prompt = st.session_state.pop("pending_prompt")
         with st.chat_message("assistant"):
+            label_slot = st.empty()   # filled once we know if it's an answer or a question back
             with st.spinner(spinner_text):
                 history = [
                     {"role": m["role"], "content": m["content"]}
@@ -1289,6 +1312,8 @@ Ask questions about the Swayne family database in plain English — I'll query 1
                         "trip_choices": result.get("trip_choices", []),
                     }
 
+                    with label_slot.container():
+                        who_label(new_msg)
                     if is_magazine:
                         if new_msg["choice_kind"] == "assumed" and new_msg["choices"]:
                             render_assumed_choices(new_msg_idx, new_msg["choices"])
