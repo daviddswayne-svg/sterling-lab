@@ -5,7 +5,7 @@
 //     -> a floating "Ask AI David" bubble; everything loads on first open.
 (function () {
   "use strict";
-  const V = "6";
+  const V = "7";
   const script = document.currentScript;
   const context = (script && script.dataset.context) || "home";
 

@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 from ollama import Client
 import hashlib
 import hmac
+import random
 import re
 import threading
 import requests
@@ -152,6 +153,11 @@ DAVID_VIDEO_URL = os.getenv("DAVID_VIDEO_URL", "http://10.0.0.1:9140")
 DAVID_VIDEO_FPS = int(os.getenv("DAVID_VIDEO_FPS", "10"))
 # >0: voice/render the first few words (about this many characters) on their own so video starts sooner.
 DAVID_FIRST_CHUNK = int(os.getenv("DAVID_FIRST_CHUNK", "0"))
+# Short spoken openers: the code picks one at random per reply (never the same twice in a row) and Gemma starts
+# with it unless it would sound odd. The opener is voiced/rendered on its own, so video starts sooner and the only
+# pause comes after a complete little sentence.
+DAVID_OPENERS_ON = os.getenv("DAVID_OPENERS", "0") == "1"
+DAVID_OPENERS = ["Good question.", "Sure thing.", "Oh, that's a fun one.", "Let me think.", "Happy to tell you."]
 DAVID_PER_VISITOR = int(os.getenv("DAVID_PER_VISITOR", "20"))  # questions per IP per UTC day
 DAVID_DAILY_CAP = int(os.getenv("DAVID_DAILY_CAP", "300"))      # site-wide, keeps the M3 from being swamped
 _david_usage = {"day": None, "ips": defaultdict(int), "total": 0}
@@ -246,10 +252,14 @@ def _echoes_visitor(message, reply, n=6):
     return any(tuple(r[i:i + n]) in grams for i in range(len(r) - n + 1))
 
 
-def _sentences(text, min_len=40, max_len=70):
+def _sentences(text, min_len=40, max_len=70, opener=True):
     """Split a reply into speakable chunks: sentence by sentence, very short ones merged forward, long ones
     cut at a comma (else a space). Each chunk is voiced a bit faster than real time, so keeping chunks
     short and even means the next one is ready before the current one finishes playing: no gaps."""
+    if DAVID_OPENERS_ON and opener:
+        m = re.match(r"^(.{3,32}?[.!?])\s+(\S.*)$", text, re.S)
+        if m:  # a short opening sentence ("Good question.") is its own chunk; the rest is chunked as usual
+            return [m.group(1)] + _sentences(m.group(2), min_len, max_len, opener=False)
     parts, buf = [], ""
     for sent in re.split(r"(?<=[.!?])\s+", text):
         buf = f"{buf} {sent}".strip()
@@ -315,6 +325,15 @@ def david_chat():
         return jsonify({"error": msg, "remaining": remaining}), 429
 
     system = DAVID_PERSONA + _david_facts()
+    # Openers only for real questions/requests: never for greetings, thanks or goodbyes (Gemma ignored "skip it").
+    is_request = ("?" in message or len(message.split()) >= 4) and not re.match(
+        r"^\W*(hi|hello|hey|thanks|thank you|thx|bye|goodbye|good morning|good evening)\b", message, re.I)
+    if DAVID_OPENERS_ON and is_request:
+        last = next((t.get("content", "") for t in reversed(data.get("history") or [])
+                     if isinstance(t, dict) and t.get("role") == "assistant"), "")
+        opener = random.choice([o for o in DAVID_OPENERS if not last.startswith(o)] or DAVID_OPENERS)
+        system += (f'\n\nOPENER: Start your reply with exactly "{opener}" as its own short sentence, then answer. '
+                   "Skip it only if it would sound odd for this message (a greeting, thanks, or goodbye).")
     if data.get("context") == "esc":
         system += _david_esc_help()
     messages = [{"role": "system", "content": system}]

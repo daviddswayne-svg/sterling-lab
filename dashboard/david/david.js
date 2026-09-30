@@ -202,6 +202,19 @@
       return { segs: [], sources: [], endAt: 0, done: false, current: "rest", since: 0, videos: [], vplaying: false };
     }
 
+    // While he "thinks", a silent idle loop (head sway + blink) plays so the face looks alive.
+    function showIdle() {
+      video.loop = true;
+      video.muted = true;
+      video.src = "/david/idle.mp4?v=1";
+      video.hidden = false;
+      video.play().catch(() => { video.hidden = true; });
+    }
+
+    function hideIdle() {
+      if (video.loop) { video.pause(); video.loop = false; video.hidden = true; }
+    }
+
     function stopSpeaking() {
       talkId++;
       if (talk) talk.sources.forEach((src) => { try { src.stop(); } catch (e) { /* already stopped */ } });
@@ -247,6 +260,7 @@
       talk.endAt = t0 + buffer.duration;
       if (!speaking) {
         speaking = true;
+        hideIdle();  // still-frame fallback: no video this reply
         setStatus("");
         root.classList.add("aid-talking");
         requestAnimationFrame(() => tick(id));
@@ -272,6 +286,7 @@
       }
       talk.vplaying = true;
       if (!speaking) { speaking = true; setStatus(""); root.classList.add("aid-talking"); }
+      video.loop = false;
       video.src = url;
       video.muted = muted;
       video.hidden = false;
@@ -319,6 +334,7 @@
       input.value = "";
       say("user", text);
       setStatus("thinking…");
+      showIdle();
       send.disabled = true;
       root.classList.add("aid-busy");
       let reply = null;
@@ -334,7 +350,7 @@
         });
         if (!r.ok) {
           const data = await r.json().catch(() => ({}));
-          setStatus("");
+          setStatus(""); hideIdle();
           if (typeof data.remaining === "number") remainingText(data.remaining);
           say("assistant", data.error || "Something went wrong. Try again in a minute.");
           if (r.status === 429) { input.disabled = true; send.disabled = true; }
@@ -352,7 +368,7 @@
             spoken.textContent = reply;
             if (typeof d.remaining === "number") remainingText(d.remaining);
             history.push({ role: "user", content: text }, { role: "assistant", content: reply });
-            if (d.voice === "withheld") { voiceOk = false; setStatus(""); showText("(not spoken: I don't read out words people hand me)"); }
+            if (d.voice === "withheld") { voiceOk = false; setStatus(""); hideIdle(); showText("(not spoken: I don't read out words people hand me)"); }
             else if (muted) showText("(sound is off)");
           } else if (d.video_b64 && voiceOk) {
             enqueueVideo(id, d.video_b64);
@@ -360,7 +376,7 @@
             await enqueue(id, d.audio_b64, d.alignment).catch(() => {});
           } else if (d.voice === "error") {
             voiceOk = false;
-            if (!talk) setStatus("");
+            if (!talk) setStatus(""); hideIdle();
             showText("(voice unavailable right now)");
           } else if (d.done) {
             if (talk && id === talkId) {
@@ -382,10 +398,10 @@
         }
         if (buf.trim()) await handle(buf.trim());
         if (talk && id === talkId) talk.done = true;
-        if (!talk) setStatus("");
+        if (!talk) setStatus(""); hideIdle();
         if (!reply) say("assistant", "Something went wrong. Try again in a minute.");
       } catch (e) {
-        setStatus("");
+        setStatus(""); hideIdle();
         say("assistant", "I can't reach the server right now. Try again in a minute.");
       } finally {
         root.classList.remove("aid-busy");
