@@ -97,6 +97,66 @@ st.markdown("""
         box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
     }
 
+    /* Choice buttons (which person / pick another / trips): an even grid of
+       outlined cards - as many columns as fit, one column on a phone */
+    [class*="st-key-chips_"] {
+        display: grid !important;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 0.5rem !important;
+        align-items: stretch;
+    }
+    [class*="st-key-chips_"] > div,
+    [class*="st-key-chips_"] .stButton {
+        width: 100% !important;
+        height: 100%;
+    }
+    [class*="st-key-chips_"] .stButton > button {
+        background: rgba(99, 102, 241, 0.08) !important;
+        border: 1px solid rgba(129, 140, 248, 0.55) !important;
+        border-radius: 10px !important;
+        padding: 0.5rem 2rem 0.5rem 0.8rem !important;
+        font-weight: 500 !important;
+        width: 100% !important;
+        height: 100%;
+        min-height: 2.9rem;
+        justify-content: flex-start !important;
+        text-align: left !important;
+        position: relative;
+        cursor: pointer;
+        transition: background 0.15s, border-color 0.15s, transform 0.15s;
+    }
+    [class*="st-key-chips_"] .stButton > button > div,
+    [class*="st-key-chips_"] .stButton > button [data-testid="stMarkdownContainer"] {
+        width: 100%;
+        justify-content: flex-start !important;
+        text-align: left !important;
+    }
+    [class*="st-key-chips_"] .stButton > button p {
+        text-align: left !important;
+        font-size: 0.95rem !important;
+        line-height: 1.35 !important;
+        margin: 0 !important;
+    }
+    [class*="st-key-chips_"] .stButton > button p span {
+        font-size: 0.8rem;
+        font-weight: 400;
+    }
+    [class*="st-key-chips_"] .stButton > button::after {
+        content: "›";
+        position: absolute;
+        right: 0.8rem;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 1.3rem;
+        color: #a5b4fc;
+    }
+    [class*="st-key-chips_"] .stButton > button:hover {
+        background: rgba(99, 102, 241, 0.28) !important;
+        border-color: #a5b4fc !important;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+    }
+
     /* Expander for SQL trace */
     .stExpander {
         background: rgba(99, 102, 241, 0.05) !important;
@@ -1045,7 +1105,8 @@ Ask questions about the Swayne family database in plain English — I'll query 1
         st.rerun()
 
     def _choice_button(c: dict, key: str):
-        label = f"{c['label']}  ·  {c['detail']}" if c.get("detail") else c["label"]
+        # Name on the first line, counts/dates smaller and gray underneath
+        label = f"{c['label']}  \n:gray[{c['detail']}]" if c.get("detail") else c["label"]
         st.button(label, key=key, width="stretch", on_click=submit,
                   args=(c["reply"], c.get("display") or (c["label"] if c["reply"].isdigit() or c["reply"] == "all" else None)),
                   disabled=bool(st.session_state.get("pending_prompt")))
@@ -1054,13 +1115,13 @@ Ask questions about the Swayne family database in plain English — I'll query 1
         """Buttons for "which Don did you mean?" - clicking one answers the question."""
         top = [c for c in choices if not c.get("more")]
         rest = [c for c in choices if c.get("more")]
-        for n, c in enumerate(top):
-            _choice_button(c, f"which_{msg_idx}_{n}")
+        with st.container(key=f"chips_which_{msg_idx}"):
+            for n, c in enumerate(top):
+                _choice_button(c, f"which_{msg_idx}_{n}")
         if rest:
             with st.expander(f"{len(rest)} more people named {rest[0]['group']} (fewer photos)"):
-                cols = st.columns(2)
-                for n, c in enumerate(rest):
-                    with cols[n % 2]:
+                with st.container(key=f"chips_which_more_{msg_idx}"):
+                    for n, c in enumerate(rest):
                         _choice_button(c, f"which_{msg_idx}_more_{n}")
         st.caption("Or type their full name in the question box.")
 
@@ -1071,8 +1132,9 @@ Ask questions about the Swayne family database in plain English — I'll query 1
             groups.setdefault((c["group"], c.get("assumed", "")), []).append(c)
         for g, ((name, assumed), cs) in enumerate(groups.items()):
             with st.expander(f"Not {assumed}? Pick another {name}"):
-                for n, c in enumerate(cs):
-                    _choice_button(c, f"alt_{msg_idx}_{g}_{n}")
+                with st.container(key=f"chips_alt_{msg_idx}_{g}"):
+                    for n, c in enumerate(cs):
+                        _choice_button(c, f"alt_{msg_idx}_{g}_{n}")
 
     def render_trip_choices(msg_idx: int, choices: list[dict]):
         """One button per trip in the answer - opens its photos / map / journal directly."""
@@ -1084,15 +1146,13 @@ Ask questions about the Swayne family database in plain English — I'll query 1
         st.caption("Click a trip to " + " or ".join(verbs) + ":")
         top = [c for c in choices if not c.get("more")]
         rest = [c for c in choices if c.get("more")]
-        cols = st.columns(2)
-        for n, c in enumerate(top):
-            with cols[n % 2]:
+        with st.container(key=f"chips_trip_{msg_idx}"):
+            for n, c in enumerate(top):
                 _choice_button(c, f"trip_{msg_idx}_{n}")
         if rest:
             with st.expander(f"{len(rest)} more trips"):
-                cols = st.columns(2)
-                for n, c in enumerate(rest):
-                    with cols[n % 2]:
+                with st.container(key=f"chips_trip_more_{msg_idx}"):
+                    for n, c in enumerate(rest):
                         _choice_button(c, f"trip_{msg_idx}_more_{n}")
 
     def render_answer_text(msg_idx: int, message: dict, is_latest: bool):
