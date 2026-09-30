@@ -1047,7 +1047,7 @@ Ask questions about the Swayne family database in plain English — I'll query 1
     def _choice_button(c: dict, key: str):
         label = f"{c['label']}  ·  {c['detail']}" if c.get("detail") else c["label"]
         st.button(label, key=key, width="stretch", on_click=submit,
-                  args=(c["reply"], c["label"] if c["reply"].isdigit() or c["reply"] == "all" else None),
+                  args=(c["reply"], c.get("display") or (c["label"] if c["reply"].isdigit() or c["reply"] == "all" else None)),
                   disabled=bool(st.session_state.get("pending_prompt")))
 
     def render_which_choices(msg_idx: int, choices: list[dict]):
@@ -1073,6 +1073,27 @@ Ask questions about the Swayne family database in plain English — I'll query 1
             with st.expander(f"Not {assumed}? Pick another {name}"):
                 for n, c in enumerate(cs):
                     _choice_button(c, f"alt_{msg_idx}_{g}_{n}")
+
+    def render_trip_choices(msg_idx: int, choices: list[dict]):
+        """One button per trip in the answer - opens its photos / map / journal directly."""
+        if not choices:
+            return
+        action = {"📷": "see its photos", "🗺️": "open its map", "📖": "read its journal"}
+        icons = {c["label"].split(" ", 1)[0] for c in choices}
+        verbs = [action[i] for i in action if i in icons]
+        st.caption("Click a trip to " + " or ".join(verbs) + ":")
+        top = [c for c in choices if not c.get("more")]
+        rest = [c for c in choices if c.get("more")]
+        cols = st.columns(2)
+        for n, c in enumerate(top):
+            with cols[n % 2]:
+                _choice_button(c, f"trip_{msg_idx}_{n}")
+        if rest:
+            with st.expander(f"{len(rest)} more trips"):
+                cols = st.columns(2)
+                for n, c in enumerate(rest):
+                    with cols[n % 2]:
+                        _choice_button(c, f"trip_{msg_idx}_more_{n}")
 
     def render_answer_text(msg_idx: int, message: dict, is_latest: bool):
         """The answer's text, with name buttons where they belong."""
@@ -1120,11 +1141,13 @@ Ask questions about the Swayne family database in plain English — I'll query 1
                 )
             else:
                 render_answer_text(msg_idx, message, is_latest)
+                render_trip_choices(msg_idx, message.get("trip_choices") or [])
                 if message.get("image_data"):
                     render_photo_browser(message["image_data"], msg_idx)
                 if message.get("map_trip_id"):
                     _render_map_link(message["map_trip_id"])
-                if mode == "journals" and not message.get("is_magazine") and "(TripID:" in message.get("content", ""):
+                if (mode == "journals" and not message.get("is_magazine") and not message.get("trip_choices")
+                        and "(TripID:" in message.get("content", "")):
                     st.info("💡 To open a journal as a photo magazine, ask about a specific trip — e.g. *\"Tell me about the [trip name]\"*")
 
             # Show SQL trace if present
@@ -1176,6 +1199,7 @@ Ask questions about the Swayne family database in plain English — I'll query 1
                         "choices": result.get("choices", []),
                         "choice_kind": result.get("choice_kind", ""),
                         "display_text": result.get("display_text", ""),
+                        "trip_choices": result.get("trip_choices", []),
                     }
 
                     if is_magazine:
@@ -1186,13 +1210,15 @@ Ask questions about the Swayne family database in plain English — I'll query 1
                         )
                     else:
                         render_answer_text(new_msg_idx, new_msg, True)
+                        render_trip_choices(new_msg_idx, new_msg["trip_choices"])
                         if image_data:
                             render_photo_browser(image_data, new_msg_idx)
                         if map_trip_id:
                             _render_map_link(map_trip_id)
                         # In journals mode, if the response is a search list (not a full journal),
                         # prompt the user to ask about a specific trip to open the photo magazine
-                        if mode == "journals" and not is_magazine and "(TripID:" in result.get("response", ""):
+                        if (mode == "journals" and not is_magazine and not new_msg["trip_choices"]
+                                and "(TripID:" in result.get("response", "")):
                             st.info("💡 To open a journal as a photo magazine, ask about a specific trip — e.g. *\"Tell me about the [trip name]\"*")
 
                     sql_trace = result.get("sql_trace", [])
