@@ -156,7 +156,7 @@ DAVID_FIRST_CHUNK = int(os.getenv("DAVID_FIRST_CHUNK", "0"))
 # Spoken openers: five pre-recorded clips (dashboard/david/openers/). The page picks one at random for real questions
 # and sends its text; Gemma is told it was already said. The server sends {"cue": true} when the answer's first
 # chunk is voiced and goes to render, so the page plays the opener then and it ends about when the answer starts.
-DAVID_OPENERS_ON = os.getenv("DAVID_OPENERS", "0") == "1"
+DAVID_OPENERS_ON = os.getenv("DAVID_OPENERS", "1") == "1"
 DAVID_OPENERS = {"Good question.": 0.9, "Sure thing.": 0.9, "Oh, that's a fun one.": 2.0,   # text: clip seconds
                  "Let me think.": 0.9, "Happy to tell you.": 1.1}
 DAVID_RENDER_RATE = 0.85   # 10 fps on the 3060: render time ~ 0.85 x the clip's audio length (+ ~0.3 s transfer)
