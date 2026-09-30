@@ -9,9 +9,9 @@ from datetime import datetime, timedelta
 from ollama import Client
 import hashlib
 import hmac
-import random
 import re
 import threading
+from concurrent.futures import ThreadPoolExecutor
 import requests
 
 app = Flask(__name__)
@@ -153,11 +153,13 @@ DAVID_VIDEO_URL = os.getenv("DAVID_VIDEO_URL", "http://10.0.0.1:9140")
 DAVID_VIDEO_FPS = int(os.getenv("DAVID_VIDEO_FPS", "10"))
 # >0: voice/render the first few words (about this many characters) on their own so video starts sooner.
 DAVID_FIRST_CHUNK = int(os.getenv("DAVID_FIRST_CHUNK", "0"))
-# Short spoken openers: the code picks one at random per reply (never the same twice in a row) and Gemma starts
-# with it unless it would sound odd. The opener is voiced/rendered on its own, so video starts sooner and the only
-# pause comes after a complete little sentence.
+# Spoken openers: five pre-recorded clips (dashboard/david/openers/). The page picks one at random for real questions
+# and sends its text; Gemma is told it was already said. The server sends {"cue": true} when the answer's first
+# chunk is voiced and goes to render, so the page plays the opener then and it ends about when the answer starts.
 DAVID_OPENERS_ON = os.getenv("DAVID_OPENERS", "0") == "1"
-DAVID_OPENERS = ["Good question.", "Sure thing.", "Oh, that's a fun one.", "Let me think.", "Happy to tell you."]
+DAVID_OPENERS = {"Good question.": 0.9, "Sure thing.": 0.9, "Oh, that's a fun one.": 2.0,   # text: clip seconds
+                 "Let me think.": 0.9, "Happy to tell you.": 1.1}
+DAVID_RENDER_RATE = 0.85   # 10 fps on the 3060: render time ~ 0.85 x the clip's audio length (+ ~0.3 s transfer)
 DAVID_PER_VISITOR = int(os.getenv("DAVID_PER_VISITOR", "20"))  # questions per IP per UTC day
 DAVID_DAILY_CAP = int(os.getenv("DAVID_DAILY_CAP", "300"))      # site-wide, keeps the M3 from being swamped
 _david_usage = {"day": None, "ips": defaultdict(int), "total": 0}
@@ -252,14 +254,10 @@ def _echoes_visitor(message, reply, n=6):
     return any(tuple(r[i:i + n]) in grams for i in range(len(r) - n + 1))
 
 
-def _sentences(text, min_len=40, max_len=70, opener=True):
+def _sentences(text, min_len=40, max_len=70):
     """Split a reply into speakable chunks: sentence by sentence, very short ones merged forward, long ones
     cut at a comma (else a space). Each chunk is voiced a bit faster than real time, so keeping chunks
     short and even means the next one is ready before the current one finishes playing: no gaps."""
-    if DAVID_OPENERS_ON and opener:
-        m = re.match(r"^(.{3,32}?[.!?])\s+(\S.*)$", text, re.S)
-        if m:  # a short opening sentence ("Good question.") is its own chunk; the rest is chunked as usual
-            return [m.group(1)] + _sentences(m.group(2), min_len, max_len, opener=False)
     parts, buf = [], ""
     for sent in re.split(r"(?<=[.!?])\s+", text):
         buf = f"{buf} {sent}".strip()
@@ -296,6 +294,9 @@ def _speakable(text):
     return re.sub(r"\s+", " ", text).strip()
 
 
+_render_pool = ThreadPoolExecutor(max_workers=4)   # lets a render run while the reply stream waits to cue the opener
+
+
 def _david_video_ready():
     """True if the PC's render service is up and idle (checked per reply; a quick 1.5 s timeout)."""
     if not DAVID_VIDEO_URL:
@@ -325,15 +326,10 @@ def david_chat():
         return jsonify({"error": msg, "remaining": remaining}), 429
 
     system = DAVID_PERSONA + _david_facts()
-    # Openers only for real questions/requests: never for greetings, thanks or goodbyes (Gemma ignored "skip it").
-    is_request = ("?" in message or len(message.split()) >= 4) and not re.match(
-        r"^\W*(hi|hello|hey|thanks|thank you|thx|bye|goodbye|good morning|good evening)\b", message, re.I)
-    if DAVID_OPENERS_ON and is_request:
-        last = next((t.get("content", "") for t in reversed(data.get("history") or [])
-                     if isinstance(t, dict) and t.get("role") == "assistant"), "")
-        opener = random.choice([o for o in DAVID_OPENERS if not last.startswith(o)] or DAVID_OPENERS)
-        system += (f'\n\nOPENER: Start your reply with exactly "{opener}" as its own short sentence, then answer. '
-                   "Skip it only if it would sound odd for this message (a greeting, thanks, or goodbye).")
+    opener = data.get("opener") if DAVID_OPENERS_ON and data.get("opener") in DAVID_OPENERS else None
+    if opener:
+        system += (f'\n\nThe visitor has already heard you say "{opener}" out loud. Do not start with any lead-in '
+                   "(no \"Good question\", \"Sure\" or similar): go straight into the answer.")
     if data.get("context") == "esc":
         system += _david_esc_help()
     messages = [{"role": "system", "content": system}]
@@ -372,11 +368,15 @@ def david_chat():
     def stream():
         yield json.dumps({"reply": reply, "remaining": remaining, "voice": voice}) + "\n"
         use_video = voice == "on" and _david_video_ready()
+        cue = opener is not None   # tell the page when to play its pre-recorded opener (once, before the answer)
         if voice == "on" and not use_video:
             for i, seg in voiced_chunks():
                 if seg is None:
                     yield json.dumps({"voice": "error"}) + "\n"
                     break
+                if cue:
+                    yield json.dumps({"cue": True}) + "\n"
+                    cue = False
                 yield json.dumps({"seg": i, "audio_b64": seg["audio_b64"], "alignment": seg["alignment"]}) + "\n"
         elif voice == "on":
             # The M3 voices chunk i+1 while the PC renders chunk i (a thread feeds a queue).
@@ -396,8 +396,15 @@ def david_chat():
                     break
                 if video_ok:
                     try:
-                        r = requests.post(f"{DAVID_VIDEO_URL}/render", timeout=(3, 30),
-                                          json={"audio_b64": seg["audio_b64"], "fps": DAVID_VIDEO_FPS, "start_frame": frame})
+                        job = _render_pool.submit(requests.post, f"{DAVID_VIDEO_URL}/render", timeout=(3, 30),
+                                                  json={"audio_b64": seg["audio_b64"], "fps": DAVID_VIDEO_FPS,
+                                                        "start_frame": frame})
+                        if cue:  # time the opener so it ends about when this first clip is ready
+                            expect = DAVID_RENDER_RATE * float(seg.get("seconds") or 3) + 0.3
+                            time.sleep(max(0.0, expect - DAVID_OPENERS[opener] - 0.2))
+                            yield json.dumps({"cue": True}) + "\n"
+                            cue = False
+                        r = job.result()
                         r.raise_for_status()
                         v = r.json()
                         frame = v["next_frame"]
@@ -406,6 +413,9 @@ def david_chat():
                     except Exception as e:  # busy / slow / down: still frames for the rest of this reply
                         print(f"⚠️ AI David video error: {e}")
                         video_ok = False
+                if cue:  # render failed before the opener was cued: play it now, the audio waits for it
+                    yield json.dumps({"cue": True}) + "\n"
+                    cue = False
                 yield json.dumps({"seg": i, "audio_b64": seg["audio_b64"], "alignment": seg["alignment"]}) + "\n"
         yield json.dumps({"done": True}) + "\n"
 

@@ -19,6 +19,13 @@
   const ENV_STEP = 0.02;   // loudness envelope resolution (s)
   const HOLD = 0.09;       // minimum time a mouth shape stays up (s)
   const VOWEL_SHAPE = { a: "aa", e: "ee", i: "ee", y: "ee", o: "oh", u: "oo" };
+  // Pre-recorded openers (dashboard/david/openers/). One is picked at random for real questions (never twice in a
+  // row) and played when the server cues it, so it ends about when the answer's first clip is ready.
+  const OPENERS = [
+    ["good-question", "Good question."], ["sure-thing", "Sure thing."], ["fun-one", "Oh, that's a fun one."],
+    ["let-me-think", "Let me think."], ["happy-to-tell", "Happy to tell you."],
+  ];
+  const NOT_A_QUESTION = /^\W*(hi|hello|hey|thanks|thank you|thx|bye|goodbye|good morning|good evening)\b/i;
   const HINTS = {
     home: "Ask me about my work, the projects on this site, or anything really. I'll answer out loud.",
     esc: "Ask me how to use the Family History Explorer: photos, journals, trip maps, the family tree, or signing in.",
@@ -199,7 +206,46 @@
     }
 
     function newTalk() {
-      return { segs: [], sources: [], endAt: 0, done: false, current: "rest", since: 0, videos: [], vplaying: false };
+      return { segs: [], sources: [], endAt: 0, done: false, current: "rest", since: 0, videos: [], vplaying: false,
+               ticking: false, openerDone: null };
+    }
+
+    let lastOpener = null;
+    function pickOpener(text) {
+      if (!("?" === text.slice(-1) || text.includes("?") || text.split(/\s+/).length >= 4) || NOT_A_QUESTION.test(text)) return null;
+      const choices = OPENERS.filter((o) => o[0] !== lastOpener);
+      const o = choices[Math.floor(Math.random() * choices.length)];
+      lastOpener = o[0];
+      return { slug: o[0], text: o[1], url: fetch("/david/openers/" + o[0] + ".mp4?v=1")
+        .then((r) => r.blob()).then((b) => URL.createObjectURL(b)).catch(() => null) };
+    }
+
+    // Play the opener clip when the server cues it. While it plays, answer clips queue behind it (vplaying);
+    // still-frame audio waits for it (openerDone). Afterwards the idle loop covers any wait for the answer.
+    async function playOpener(id, opener) {
+      const url = opener && await opener.url;
+      if (!url || id !== talkId) return;
+      if (!talk) talk = newTalk();
+      if (talk.vplaying || talk.segs.length) return;   // the answer already started: skip the opener
+      let done;
+      talk.openerDone = new Promise((r) => { done = r; });
+      talk.vplaying = true;
+      if (!speaking) { speaking = true; setStatus(""); root.classList.add("aid-talking"); }
+      video.loop = false;
+      video.src = url;
+      video.muted = muted;
+      video.hidden = false;
+      const after = () => {
+        done();
+        if (id !== talkId || !talk) return;
+        talk.openerDone = null;
+        if (talk.videos.length) { playNextVideo(id); return; }
+        talk.vplaying = false;
+        if (talk.done && !talk.segs.length) finishTalking();
+        else if (!talk.pendingAudio) showIdle();
+      };
+      video.onended = after;
+      video.play().catch(after);
     }
 
     // While he "thinks", a silent idle loop (head sway + blink) plays so the face looks alive.
@@ -243,6 +289,9 @@
       const buffer = await audioCtx.decodeAudioData(bytes.buffer);
       if (id !== talkId) return;
       if (!talk) talk = newTalk();
+      talk.pendingAudio = true;
+      if (talk.openerDone) await talk.openerDone;   // let the opener finish first
+      if (id !== talkId || !talk) return;
       const t0 = Math.max(audioCtx.currentTime + 0.05, talk.endAt);
       const src = audioCtx.createBufferSource();
       src.buffer = buffer;
@@ -258,9 +307,11 @@
         vowel: vowelShapes(chars),
       });
       talk.endAt = t0 + buffer.duration;
-      if (!speaking) {
+      if (!talk.ticking) {
+        talk.ticking = true;
         speaking = true;
         hideIdle();  // still-frame fallback: no video this reply
+        if (!video.loop) video.hidden = true;
         setStatus("");
         root.classList.add("aid-talking");
         requestAnimationFrame(() => tick(id));
@@ -335,6 +386,7 @@
       say("user", text);
       setStatus("thinking…");
       showIdle();
+      const opener = pickOpener(text);
       send.disabled = true;
       root.classList.add("aid-busy");
       let reply = null;
@@ -346,7 +398,8 @@
         const r = await fetch("/api/david/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: text, history: history.slice(-MAX_HISTORY), context }),
+          body: JSON.stringify({ message: text, history: history.slice(-MAX_HISTORY), context,
+            opener: opener ? opener.text : null }),
         });
         if (!r.ok) {
           const data = await r.json().catch(() => ({}));
@@ -370,6 +423,8 @@
             history.push({ role: "user", content: text }, { role: "assistant", content: reply });
             if (d.voice === "withheld") { voiceOk = false; setStatus(""); hideIdle(); showText("(not spoken: I don't read out words people hand me)"); }
             else if (muted) showText("(sound is off)");
+          } else if (d.cue) {
+            playOpener(id, opener);
           } else if (d.video_b64 && voiceOk) {
             enqueueVideo(id, d.video_b64);
           } else if (d.audio_b64 && d.alignment && voiceOk) {
