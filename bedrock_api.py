@@ -159,6 +159,9 @@ DAVID_FIRST_CHUNK = int(os.getenv("DAVID_FIRST_CHUNK", "0"))
 # chunk is voiced and goes to render, so the page plays the opener then and it ends about when the answer starts.
 DAVID_OPENERS_ON = os.getenv("DAVID_OPENERS", "1") == "1"
 DAVID_OPENERS = {"Good question.": 0.9, "One moment.": 1.0, "Let me pull that up.": 1.1}   # text: clip seconds
+# How long before the answer's first clip is ready the opener should END. 0.2 felt like the answer came right on
+# top of the opener (David, 2026-09-30); 1.2 starts it a second sooner, and the idle loop covers the gap.
+DAVID_OPENER_LEAD = float(os.getenv("DAVID_OPENER_LEAD", "1.2"))
 DAVID_RENDER_RATE = 1.0    # starting guess: render time / clip length at 10 fps on the 3060 (+ ~0.3 s transfer)
 # The real rate drifts (GPU busy with other apps, warm-up after a restart), so it is learned from every render
 # (moving average) and the opener is timed with it - a fixed guess left dead air after the opener on slow days.
@@ -413,7 +416,7 @@ def david_chat():
                                                         "start_frame": frame})
                         if cue:  # time the opener so it ends about when this first clip is ready
                             expect = _david_rate["rate"] * float(seg.get("seconds") or 3) + 0.3
-                            time.sleep(max(0.0, expect - DAVID_OPENERS[opener] - 0.2))
+                            time.sleep(max(0.0, expect - DAVID_OPENERS[opener] - DAVID_OPENER_LEAD))
                             yield json.dumps({"cue": True}) + "\n"
                             cue = False
                         r = job.result()
