@@ -7,6 +7,7 @@ from functools import wraps
 from collections import defaultdict
 from datetime import datetime, timedelta
 from ollama import Client
+import base64
 import hashlib
 import hmac
 import re
@@ -147,11 +148,11 @@ DAVID_FACTS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "dav
 DAVID_ESC_HELP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "david", "esc_help.txt")
 DAVID_VOICE_URL = os.getenv("DAVID_VOICE_URL", "http://10.0.0.1:9102")
 # Lip-synced video per chunk from MuseTalk on the PC's RTX 3060 (D:\ai-david\render_service.py, reached via the
-# M3's david-video-tunnel and the sterling tunnel as 10.0.0.1:9140). "" turns video off. 12 fps renders at ~0.82x
-# real time since the 2026-09-30 render speed-up (15 fps is ~1.0x = gaps between sentences); if the PC is off,
-# busy with another visitor or slow, the reply uses the still frames.
+# M3's david-video-tunnel and the sterling tunnel as 10.0.0.1:9140). "" turns video off. 10 fps renders at ~0.75x
+# real time (12 fps ~0.87x: tried 2026-09-30, slower first answers); if the PC is off, busy with another visitor or
+# slow, the reply uses the still frames.
 DAVID_VIDEO_URL = os.getenv("DAVID_VIDEO_URL", "http://10.0.0.1:9140")
-DAVID_VIDEO_FPS = int(os.getenv("DAVID_VIDEO_FPS", "12"))
+DAVID_VIDEO_FPS = int(os.getenv("DAVID_VIDEO_FPS", "10"))
 # >0: voice/render the first few words (about this many characters) on their own so video starts sooner.
 DAVID_FIRST_CHUNK = int(os.getenv("DAVID_FIRST_CHUNK", "0"))
 # Spoken openers: three pre-recorded clips (dashboard/david/openers/). The page picks one at random for real questions
@@ -352,6 +353,48 @@ def _david_video_ready():
         return False
 
 
+# Warm-up when a visitor clicks into AI David's box (david.js): they take a few seconds to type, and in that time
+# the first answer's cold costs go away - Ollama re-reading the long persona + fact sheet (~0.8 s; it caches the
+# prompt prefix) and the PC's first render after idle (~0.9 s: ffmpeg reloads, GPU wakes). Each part is skipped if
+# it ran in the last 2 minutes, and the endpoint does nothing more than once per 90 s, whoever calls it.
+DAVID_WARM_SILENCE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "david", "warm_silence.mp3")
+_david_warm = {"called": 0.0, "llm": 0.0, "video": 0.0}
+_david_warm_lock = threading.Lock()
+
+
+def _david_warm_up(context):
+    now = time.time()
+    if now - _david_warm["llm"] > 120:
+        _david_warm["llm"] = now
+        try:
+            system = DAVID_PERSONA + _david_facts() + (_david_esc_help() if context == "esc" else "")
+            Client(host=OLLAMA_HOST, timeout=30).chat(model=MODEL, think=False, options={"num_predict": 1},
+                                                      messages=[{"role": "system", "content": system},
+                                                                {"role": "user", "content": "Hi"}])
+        except Exception as e:
+            print(f"⚠️ AI David warm-up (LLM) failed: {e}")
+    if DAVID_VIDEO_URL and now - _david_warm["video"] > 120 and _david_video_ready():
+        _david_warm["video"] = now
+        try:
+            with open(DAVID_WARM_SILENCE, "rb") as f:
+                audio = base64.b64encode(f.read()).decode()
+            requests.post(f"{DAVID_VIDEO_URL}/render", timeout=(3, 15),
+                          json={"audio_b64": audio, "fps": DAVID_VIDEO_FPS, "start_frame": 0})
+        except Exception as e:
+            print(f"⚠️ AI David warm-up (video) failed: {e}")
+
+
+@app.route('/api/david/warm', methods=['POST'])
+def david_warm():
+    with _david_warm_lock:
+        if time.time() - _david_warm["called"] < 90:
+            return ("", 204)
+        _david_warm["called"] = time.time()
+    context = "esc" if (request.get_json(silent=True) or {}).get("context") == "esc" else "home"
+    threading.Thread(target=_david_warm_up, args=(context,), daemon=True).start()
+    return ("", 204)
+
+
 @app.route('/api/david/chat', methods=['POST'])
 def david_chat():
     data = request.get_json(silent=True) or {}
@@ -452,6 +495,7 @@ def david_chat():
                         r.raise_for_status()
                         v = r.json()
                         _learn_render_rate(v)
+                        _david_warm["video"] = time.time()
                         frame = v["next_frame"]
                         yield json.dumps({"seg": i, "video_b64": v["video_b64"]}) + "\n"
                         continue

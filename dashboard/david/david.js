@@ -374,6 +374,16 @@
       left.textContent = n + " question" + (n === 1 ? "" : "s") + " left today";
     }
 
+    // Warm up the server side while the visitor types (their first answer then skips the cold costs: the LLM
+    // re-reading the persona, the PC's first render after idle). Fire-and-forget; the server throttles too.
+    let lastWarm = 0;
+    input.addEventListener("focus", () => {
+      if (Date.now() - lastWarm < 90000) return;
+      lastWarm = Date.now();
+      fetch("/api/david/warm", { method: "POST", headers: { "Content-Type": "application/json" },
+                                 body: JSON.stringify({ context }), keepalive: true }).catch(() => {});
+    });
+
     form.addEventListener("submit", async (ev) => {
       ev.preventDefault();
       const text = input.value.trim();
