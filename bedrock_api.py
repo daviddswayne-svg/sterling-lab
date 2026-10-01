@@ -238,6 +238,35 @@ def _client_ip():
     return (request.headers.get("X-Real-IP") or request.remote_addr or "?").strip()
 
 
+# Visitor country for the homepage greeting (dashboard/greeting.js). DB-IP Lite country database
+# (geo/dbip-country-lite.mmdb, CC BY 4.0 - the footer credits db-ip.com; same source as the TRMNL board).
+# Only the country code is returned; nothing is stored. Refresh the file now and then (country data changes
+# slowly): https://download.db-ip.com/free/dbip-country-lite-YYYY-MM.mmdb.gz
+_GEO_DB = os.path.join(os.path.dirname(os.path.abspath(__file__)), "geo", "dbip-country-lite.mmdb")
+_geo = {"reader": None, "failed": False}
+
+
+@app.route('/api/geo', methods=['GET'])
+def visitor_geo():
+    country = None
+    if _geo["reader"] is None and not _geo["failed"]:
+        try:
+            import maxminddb
+            _geo["reader"] = maxminddb.open_database(_GEO_DB)
+        except Exception as e:
+            _geo["failed"] = True
+            print(f"⚠️ geo database unavailable: {e}")
+    if _geo["reader"] is not None:
+        try:
+            rec = _geo["reader"].get(_client_ip())
+            country = (rec or {}).get("country", {}).get("iso_code")
+        except (ValueError, TypeError):   # not an IP address ("?")
+            country = None
+    resp = jsonify({"country": country})
+    resp.headers["Cache-Control"] = "private, max-age=3600"
+    return resp
+
+
 def _david_take_slot(ip):
     """Reserve one question for this IP. Returns (ok, remaining, reason)."""
     today = datetime.utcnow().date()

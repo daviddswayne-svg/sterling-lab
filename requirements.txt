@@ -34,3 +34,4 @@ numpy
 
 # === HTTP ===
 requests
+maxminddb  # visitor country for the homepage greeting (geo/dbip-country-lite.mmdb)

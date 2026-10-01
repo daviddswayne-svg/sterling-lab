@@ -1,6 +1,7 @@
 // Visitor greeting in the homepage header: "👋 Hello, visitor from Ireland 🇮🇪" + Seattle time vs theirs.
-// The country comes from the browser's own time zone (no IP lookup, nothing sent anywhere); the name from
-// the browser (Intl.DisplayNames) and the flag from the country code. Unknown zone -> plain Seattle greeting.
+// Country: first from the visitor's IP (/api/geo - DB-IP Lite, the same source as the TRMNL visitor stats),
+// else from the browser's time zone (a fallback: a Windows PC or a laptop set to another country's time can
+// report the wrong one). Name via Intl.DisplayNames, flag from the code. No country -> plain Seattle greeting.
 (function () {
   "use strict";
   // IANA time zone -> ISO country, from tzdata zone.tab plus legacy names browsers still report
@@ -27,10 +28,20 @@
     return new Intl.DateTimeFormat("en-US", { hour: "numeric", minute: "2-digit", timeZone: tz }).format(new Date());
   }
 
-  function render(el) {
+  function ipCountry() {   // country code from the server, or null (no answer within 2 s = null)
+    const ctrl = typeof AbortController === "function" ? new AbortController() : null;
+    const timer = setTimeout(() => ctrl && ctrl.abort(), 2000);
+    return fetch("/api/geo", { signal: ctrl ? ctrl.signal : undefined, credentials: "same-origin" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => (d && /^[A-Z]{2}$/.test(d.country || "") ? d.country : null))
+      .catch(() => null)
+      .finally(() => clearTimeout(timer));
+  }
+
+  function render(el, fromIp) {
     let tz = null;
     try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone; } catch (e) { /* very old browser */ }
-    const cc = tz && countryOf(tz);
+    const cc = fromIp || (tz && countryOf(tz));
     let name = null;
     try { name = cc && new Intl.DisplayNames(["en"], { type: "region" }).of(cc); } catch (e) { /* no DisplayNames */ }
     const seattle = timeIn(HOME_TZ);
@@ -53,11 +64,12 @@
     el.hidden = false;
   }
 
-  function start() {
+  async function start() {
     const el = document.getElementById("visitorGreeting");
     if (!el) return;
-    render(el);
-    setInterval(() => render(el), 30000);   // keep the clocks current
+    const fromIp = await ipCountry();
+    render(el, fromIp);
+    setInterval(() => render(el, fromIp), 30000);   // keep the clocks current
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start);

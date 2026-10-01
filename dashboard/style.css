@@ -538,6 +538,16 @@ body {
     font-size: 0.875rem;
 }
 
+.footer-credit {
+    margin-top: 0.35rem;
+    font-size: 0.75rem;
+    opacity: 0.7;
+}
+
+.footer-credit a {
+    color: inherit;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .container {
