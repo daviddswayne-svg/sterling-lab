@@ -153,12 +153,11 @@ DAVID_VIDEO_URL = os.getenv("DAVID_VIDEO_URL", "http://10.0.0.1:9140")
 DAVID_VIDEO_FPS = int(os.getenv("DAVID_VIDEO_FPS", "10"))
 # >0: voice/render the first few words (about this many characters) on their own so video starts sooner.
 DAVID_FIRST_CHUNK = int(os.getenv("DAVID_FIRST_CHUNK", "0"))
-# Spoken openers: five pre-recorded clips (dashboard/david/openers/). The page picks one at random for real questions
+# Spoken openers: three pre-recorded clips (dashboard/david/openers/). The page picks one at random for real questions
 # and sends its text; Gemma is told it was already said. The server sends {"cue": true} when the answer's first
 # chunk is voiced and goes to render, so the page plays the opener then and it ends about when the answer starts.
 DAVID_OPENERS_ON = os.getenv("DAVID_OPENERS", "1") == "1"
-DAVID_OPENERS = {"Good question.": 0.9, "Sure thing.": 0.9, "Oh, that's a fun one.": 2.0,   # text: clip seconds
-                 "Let me think.": 0.9, "Happy to tell you.": 1.1}
+DAVID_OPENERS = {"Good question.": 0.9, "One moment.": 1.0, "Let me pull that up.": 1.1}   # text: clip seconds
 DAVID_RENDER_RATE = 1.0    # starting guess: render time / clip length at 10 fps on the 3060 (+ ~0.3 s transfer)
 # The real rate drifts (GPU busy with other apps, warm-up after a restart), so it is learned from every render
 # (moving average) and the opener is timed with it - a fixed guess left dead air after the opener on slow days.

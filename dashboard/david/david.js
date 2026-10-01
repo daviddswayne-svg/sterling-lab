@@ -22,8 +22,7 @@
   // Pre-recorded openers (dashboard/david/openers/). One is picked at random for real questions (never twice in a
   // row) and played when the server cues it, so it ends about when the answer's first clip is ready.
   const OPENERS = [
-    ["good-question", "Good question."], ["sure-thing", "Sure thing."], ["fun-one", "Oh, that's a fun one."],
-    ["let-me-think", "Let me think."], ["happy-to-tell", "Happy to tell you."],
+    ["good-question", "Good question."], ["one-moment", "One moment."], ["pull-that-up", "Let me pull that up."],
   ];
   const NOT_A_QUESTION = /^\W*(hi|hello|hey|thanks|thank you|thx|bye|goodbye|good morning|good evening)\b/i;
   const HINTS = {
@@ -216,7 +215,7 @@
       const choices = OPENERS.filter((o) => o[0] !== lastOpener);
       const o = choices[Math.floor(Math.random() * choices.length)];
       lastOpener = o[0];
-      return { slug: o[0], text: o[1], url: fetch("/david/openers/" + o[0] + ".mp4?v=1")
+      return { slug: o[0], text: o[1], url: fetch("/david/openers/" + o[0] + ".mp4?v=2")
         .then((r) => r.blob()).then((b) => URL.createObjectURL(b)).catch(() => null) };
     }
 
