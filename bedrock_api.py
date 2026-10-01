@@ -147,10 +147,11 @@ DAVID_FACTS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "dav
 DAVID_ESC_HELP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "david", "esc_help.txt")
 DAVID_VOICE_URL = os.getenv("DAVID_VOICE_URL", "http://10.0.0.1:9102")
 # Lip-synced video per chunk from MuseTalk on the PC's RTX 3060 (D:\ai-david\render_service.py, reached via the
-# M3's david-video-tunnel and the sterling tunnel as 10.0.0.1:9140). "" turns video off. 10 fps renders a bit faster
-# than the speech plays; if the PC is off, busy with another visitor or slow, the reply uses the still frames.
+# M3's david-video-tunnel and the sterling tunnel as 10.0.0.1:9140). "" turns video off. 12 fps renders at ~0.82x
+# real time since the 2026-09-30 render speed-up (15 fps is ~1.0x = gaps between sentences); if the PC is off,
+# busy with another visitor or slow, the reply uses the still frames.
 DAVID_VIDEO_URL = os.getenv("DAVID_VIDEO_URL", "http://10.0.0.1:9140")
-DAVID_VIDEO_FPS = int(os.getenv("DAVID_VIDEO_FPS", "10"))
+DAVID_VIDEO_FPS = int(os.getenv("DAVID_VIDEO_FPS", "12"))
 # >0: voice/render the first few words (about this many characters) on their own so video starts sooner.
 DAVID_FIRST_CHUNK = int(os.getenv("DAVID_FIRST_CHUNK", "0"))
 # Spoken openers: three pre-recorded clips (dashboard/david/openers/). The page picks one at random for real questions
