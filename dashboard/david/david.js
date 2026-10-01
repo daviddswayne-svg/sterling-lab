@@ -241,7 +241,7 @@
         if (talk.videos.length) { playNextVideo(id); return; }
         talk.vplaying = false;
         if (talk.done && !talk.segs.length) finishTalking();
-        else if (!talk.pendingAudio) showIdle();
+        else if (!talk.pendingAudio) { showIdle(); setStatus("Thinking…"); }   // waiting for the answer
       };
       video.onended = after;
       video.play().catch(after);
@@ -273,6 +273,7 @@
     }
 
     function finishTalking() {
+      setStatus("");
       video.pause();
       video.hidden = true;
       talk = null;
@@ -335,7 +336,8 @@
         return;
       }
       talk.vplaying = true;
-      if (!speaking) { speaking = true; setStatus(""); root.classList.add("aid-talking"); }
+      setStatus("");   // also after the opener, when "Thinking…" came back
+      if (!speaking) { speaking = true; root.classList.add("aid-talking"); }
       video.loop = false;
       video.src = url;
       video.muted = muted;
@@ -393,7 +395,7 @@
       const id = talkId;
       input.value = "";
       say("user", text);
-      setStatus("thinking…");
+      setStatus("Thinking…");
       showIdle();
       const opener = pickOpener(text);
       send.disabled = true;

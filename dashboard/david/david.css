@@ -166,6 +166,7 @@
   opacity: 0;
   transition: opacity 150ms;
   pointer-events: none;
+  z-index: 3;   /* above the video (z-index 2) - the idle loop hid it from 2026-09-29 */
 }
 .aid-status.on { opacity: 1; animation: aid-pulse 1.2s ease-in-out infinite; }
 .aid-hint { margin: 0; font-size: 13px; color: var(--aid-dim); }
