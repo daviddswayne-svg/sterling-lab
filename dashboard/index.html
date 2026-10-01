@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=5">
+    <link rel="stylesheet" href="style.css?v=6">
     <link rel="stylesheet" href="featured-portfolio.css">
 </head>
 
@@ -31,6 +31,11 @@
             <div class="status-indicator" id="systemStatus" hidden style="display:none">
                 <span class="status-dot"></span>
                 <span class="status-text">Checking Systems...</span>
+            </div>
+            <!-- Greeting by the visitor's country (from their browser's time zone) - greeting.js -->
+            <div class="visitor-greeting" id="visitorGreeting" hidden>
+                <span class="vg-hello"></span>
+                <span class="vg-times"></span>
             </div>
         </header>
 
@@ -276,6 +281,7 @@
         setInterval(checkSystemStatus, 30000);
     </script>
     <script src="/david/widget.js?v=8" defer></script>
+    <script src="greeting.js?v=1" defer></script>
 </body>
 
 </html>
