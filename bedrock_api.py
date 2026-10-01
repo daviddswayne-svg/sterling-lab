@@ -159,7 +159,19 @@ DAVID_FIRST_CHUNK = int(os.getenv("DAVID_FIRST_CHUNK", "0"))
 DAVID_OPENERS_ON = os.getenv("DAVID_OPENERS", "1") == "1"
 DAVID_OPENERS = {"Good question.": 0.9, "Sure thing.": 0.9, "Oh, that's a fun one.": 2.0,   # text: clip seconds
                  "Let me think.": 0.9, "Happy to tell you.": 1.1}
-DAVID_RENDER_RATE = 0.85   # 10 fps on the 3060: render time ~ 0.85 x the clip's audio length (+ ~0.3 s transfer)
+DAVID_RENDER_RATE = 1.0    # starting guess: render time / clip length at 10 fps on the 3060 (+ ~0.3 s transfer)
+# The real rate drifts (GPU busy with other apps, warm-up after a restart), so it is learned from every render
+# (moving average) and the opener is timed with it - a fixed guess left dead air after the opener on slow days.
+_david_rate = {"rate": DAVID_RENDER_RATE}
+
+
+def _learn_render_rate(v):
+    try:
+        r = float(v["render_s"]) / float(v["seconds"])
+    except (KeyError, TypeError, ValueError, ZeroDivisionError):
+        return
+    if 0.3 < r < 4:
+        _david_rate["rate"] = 0.7 * _david_rate["rate"] + 0.3 * r
 DAVID_PER_VISITOR = int(os.getenv("DAVID_PER_VISITOR", "20"))  # questions per IP per UTC day
 DAVID_DAILY_CAP = int(os.getenv("DAVID_DAILY_CAP", "300"))      # site-wide, keeps the M3 from being swamped
 _david_usage = {"day": None, "ips": defaultdict(int), "total": 0}
@@ -400,13 +412,14 @@ def david_chat():
                                                   json={"audio_b64": seg["audio_b64"], "fps": DAVID_VIDEO_FPS,
                                                         "start_frame": frame})
                         if cue:  # time the opener so it ends about when this first clip is ready
-                            expect = DAVID_RENDER_RATE * float(seg.get("seconds") or 3) + 0.3
+                            expect = _david_rate["rate"] * float(seg.get("seconds") or 3) + 0.3
                             time.sleep(max(0.0, expect - DAVID_OPENERS[opener] - 0.2))
                             yield json.dumps({"cue": True}) + "\n"
                             cue = False
                         r = job.result()
                         r.raise_for_status()
                         v = r.json()
+                        _learn_render_rate(v)
                         frame = v["next_frame"]
                         yield json.dumps({"seg": i, "video_b64": v["video_b64"]}) + "\n"
                         continue
