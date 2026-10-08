@@ -1,13 +1,15 @@
 {
-  "date": "2026-10-07T06:02:44",
-  "theme": "Navigating The Era of Algorithmic Sovereignty",
-  "duration_s": 158.5,
-  "image": "/assets/bedrock_20261007-0602.png",
+  "date": "2026-10-08T06:01:30",
+  "theme": "Securing Wealth Against Synthetic Identity Erosion",
+  "duration_s": 84.7,
+  "image": "/assets/bedrock_20261008-0601.png",
   "brief": {
-    "headline": "Navigating The Era of Algorithmic Sovereignty",
+    "headline": "Securing Wealth Against Synthetic Identity Erosion",
     "market_sentiment": "Cautious",
-    "briefing_body": "While the S&P 500 maintains a defiant record at <b>779.09</b> and market volatility remains low, we are entering a phase of profound structural instability. The escalating attacks in the Strait of Hormuz threaten energy security, even as the 10-year Treasury yield climbs to <b>5.34%</b>. We must look beyond traditional volatility to the rise of <b>'Algorithmic Sovereignty'</b>\u2014the risk of autonomous, decentralized agents executing large-scale, un-auditable financial or physical disruptions. As noted in the <b>Swiss Re Institute sigma No 2/2026 (July 2026)</b>, we are operating in a 'fragmenting world' where inflation remains sticky at <b>3.7%</b>. For our clients, asset resilience now requires shielding against non-human actors that operate outside legal jurisdictions. Protecting wealth today means insuring not just against physical catastrophe, but against the irreversible logic of rogue autonomous systems.",
-    "date": "2026-10-07",
+    "briefing_body": {
+      "text": "The macro landscape remains deceptively stable, with the S&P 500 hovering near <b>777.22</b> and market volatility at a low <b>15.71</b>. However, beneath this surface, a profound shift in the nature of liability is emerging. As we witness the rise of digital doppelgangers and AI-driven impersonation\u2014exemplified by recent breaches at major retailers\u2014the primary threat to your clients' estate is no longer just physical, but ontological. While the <b>Swiss Re Institute US Property & Casualty Outlook (July 2026)</b> notes that underwriting margins are compressing in some sectors, we are entering an era where 'trust' is the most vulnerable asset. With the 10-year Treasury yield climbing to <b>5.33%</b> and inflation rising to <b>3.7%</b>, the cost of verifying identity is skyrocketing. We must pivot our strategies from traditional asset protection to <b>biometric and cryptographic sovereignty</b>, ensuring our clients' digital essences are as insulated as their physical holdings."
+    },
+    "date": "2026-10-08",
     "source": "Swiss Re sigma 2/2026 \u2022 Swiss Re H1 2026 cat-loss report \u2022 Swiss Re US P&C Outlook (Jul 2026) \u2022 Yahoo Finance \u2022 FRED \u2022 Insurance Journal, CNBC",
     "sigma": [
       {
@@ -61,43 +63,43 @@
     },
     {
       "agent": "director",
-      "message": "Theme selected: Navigating The Era of Algorithmic Sovereignty",
-      "t": 9.6
+      "message": "Theme selected: Securing Wealth Against Synthetic Identity Erosion",
+      "t": 8.3
     },
     {
       "agent": "designer",
       "message": "Composing high-fidelity imagery...",
-      "t": 9.6
+      "t": 8.3
     },
     {
       "agent": "developer",
       "message": "Coding responsive HTML structure...",
-      "t": 9.6
+      "t": 8.3
     },
     {
       "agent": "developer",
       "message": "Page copy ready (16 fields; market tiles from live data).",
-      "t": 16.0
+      "t": 14.7
     },
     {
       "agent": "designer",
-      "message": "Image rendered: bedrock_20261007-0602.png",
-      "t": 158.5
+      "message": "Image rendered: bedrock_20261008-0601.png",
+      "t": 84.7
     },
     {
       "agent": "publisher",
       "message": "Applying updates to the page...",
-      "t": 158.5
+      "t": 84.7
     },
     {
       "agent": "publisher",
       "message": "Page updated (17 changes).",
-      "t": 158.5
+      "t": 84.7
     },
     {
       "agent": "system",
       "message": "Meeting Adjourned",
-      "t": 158.5
+      "t": 84.7
     }
   ]
 }
