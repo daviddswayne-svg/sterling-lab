@@ -1,13 +1,13 @@
 {
-  "date": "2026-10-14T06:01:35",
-  "theme": "Securing Assets Amidst Fragmenting Global Markets",
-  "duration_s": 89.2,
-  "image": "/assets/bedrock_20261014-0601.png",
+  "date": "2026-10-15T06:01:57",
+  "theme": "Securing Wealth Amidst Algorithmic Fragility",
+  "duration_s": 111.1,
+  "image": "/assets/bedrock_20261015-0601.png",
   "brief": {
-    "headline": "Securing Assets Amidst Fragmenting Global Markets",
+    "headline": "Securing Wealth Amidst Algorithmic Fragility",
     "market_sentiment": "Cautious",
-    "briefing_body": "The current landscape is defined by a paradox of low volatility and rising structural pressures. While the <b>S&P 500</b> remains stable and the <b>VIX</b> sits at a tranquil <b>15.75</b>, the underlying foundations are shifting. We observe a rise in the <b>10-year Treasury yield</b> to <b>5.31%</b>, signaling a 'higher-for-longer' interest rate regime. As noted in the <b>Swiss Re Institute sigma No 2/2026 (July 2026)</b>, this environment acts as a stabilizer for investment income, even as inflation shows signs of upward movement toward <b>3.7%</b>. While headline profitability in the P&C sector remains strong, we must prepare clients for the 'tail risk' of catastrophic events. Despite recent losses being below trend, the long-term trajectory of increasing exposure and rising asset values necessitates a more sophisticated approach to <b>Asset Resilience</b> against the inevitability of large-scale loss events.",
-    "date": "2026-10-14",
+    "briefing_body": "As we navigate the morning of October 15, the financial landscape reveals a complex duality. While the <b>S&P 500</b> shows a slight decline of <b>1.08%</b>, the <b>VIX</b> has surged <b>3.79%</b>, signaling a rise in moderate market volatility. We are observing a critical emergence of <b>'Algorithmic Integrity Risk'</b>; as evidenced by Bank of America's massive undertaking to patch flaws exposed by Anthropic's Mythos, the very software guarding capital is becoming a primary vector for systemic failure. Per the <b>Swiss Re Institute US Property & Casualty Outlook (July 2026)</b>, while the industry remains highly profitable, we are entering a more competitive phase with compressing margins. For our clients, the priority must shift from mere capital accumulation to <b>'Computational Resilience'</b>\u2014insuring not just physical assets, but the integrity of the autonomous logic governing their global estates.",
+    "date": "2026-10-15",
     "source": "Swiss Re sigma 2/2026 \u2022 Swiss Re H1 2026 cat-loss report \u2022 Swiss Re US P&C Outlook (Jul 2026) \u2022 Yahoo Finance \u2022 FRED \u2022 Insurance Journal, CNBC",
     "sigma": [
       {
@@ -61,43 +61,43 @@
     },
     {
       "agent": "director",
-      "message": "Theme selected: Securing Assets Amidst Fragmenting Global Markets",
-      "t": 6.4
+      "message": "Theme selected: Securing Wealth Amidst Algorithmic Fragility",
+      "t": 9.6
     },
     {
       "agent": "designer",
       "message": "Composing high-fidelity imagery...",
-      "t": 6.4
+      "t": 9.6
     },
     {
       "agent": "developer",
       "message": "Coding responsive HTML structure...",
-      "t": 6.4
+      "t": 9.6
     },
     {
       "agent": "developer",
       "message": "Page copy ready (16 fields; market tiles from live data).",
-      "t": 12.9
+      "t": 15.6
     },
     {
       "agent": "designer",
-      "message": "Image rendered: bedrock_20261014-0601.png",
-      "t": 89.2
+      "message": "Image rendered: bedrock_20261015-0601.png",
+      "t": 111.1
     },
     {
       "agent": "publisher",
       "message": "Applying updates to the page...",
-      "t": 89.2
+      "t": 111.1
     },
     {
       "agent": "publisher",
       "message": "Page updated (17 changes).",
-      "t": 89.2
+      "t": 111.1
     },
     {
       "agent": "system",
       "message": "Meeting Adjourned",
-      "t": 89.2
+      "t": 111.1
     }
   ]
 }
