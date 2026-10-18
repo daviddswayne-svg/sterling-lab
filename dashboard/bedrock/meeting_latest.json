@@ -1,13 +1,15 @@
 {
-  "date": "2026-10-17T06:01:52",
-  "theme": "Navigating the Creeping Fragility of Assets",
-  "duration_s": 104.9,
-  "image": "/assets/bedrock_20261017-0601.png",
+  "date": "2026-10-18T06:01:35",
+  "theme": "Securing Wealth Against Synthetic Cognitive Drift",
+  "duration_s": 90.0,
+  "image": "/assets/bedrock_20261018-0601.png",
   "brief": {
-    "headline": "Navigating the Creeping Fragility of Assets",
+    "headline": "Securing Wealth Against Synthetic Cognitive Drift",
     "market_sentiment": "Cautious",
-    "briefing_body": "The global landscape is manifesting a paradox of stability and mounting systemic tension. While the <b>S&P 500</b> shows a slight decline of <b>1.11%</b> and the <b>VIX</b> has surged by <b>21.45%</b>, suggesting rising uncertainty, the underlying economic drivers remain complex. As noted in the <b>Swiss Re Institute sigma No 2/2026 (July 2026)</b>, we are navigating a 'fragmenting world' where higher-for-longer interest rates\u2014reflected in the <b>10-year Treasury yield</b> climbing to <b>5.1%</b>\u2014act as a stabilizer despite inflationary pressures. While <b>US CPI inflation</b> has risen to <b>4.0%</b>, our focus must shift beyond traditional volatility toward the rising severity of liability and property risks. As the <b>Swiss Re Institute US Property & Casualty Outlook (July 2026)</b> indicates, we are entering a more competitive phase where underwriting margins face pressure. Protecting client portfolios now requires anticipating the transition from moderate market fluctuations to high-impact, low-probability tail risks.",
-    "date": "2026-10-17",
+    "briefing_body": {
+      "text": "The global landscape is shifting beneath us. While the S&P 500 shows a slight decline of <b>1.11%</b> and the VIX has surged <b>21.45%</b>, we must look beyond traditional volatility. As we navigate a world of fragmented markets and rising inflation at <b>4.0%</b>, a new frontier of risk emerges: <b>Cognitive Drift</b>\u2014the erosion of truth through hyper-realistic, AI-generated deepfake personas targeting estate legacies. While the <b>Swiss Re Institute US Property & Casualty Outlook (July 2026)</b> notes that underwriting margins are compressing and premium growth has slowed to below <b>3%</b>, the danger lies in the intangible. We must protect not just physical assets, but the integrity of the digital identities that command them. As the <b>10-year Treasury yield</b> holds at <b>5.1%</b>, your clients' resilience depends on securing the biological and digital proofs of ownership against increasingly sophisticated algorithmic manipulation."
+    },
+    "date": "2026-10-18",
     "source": "Swiss Re sigma 2/2026 \u2022 Swiss Re H1 2026 cat-loss report \u2022 Swiss Re US P&C Outlook (Jul 2026) \u2022 Yahoo Finance \u2022 FRED \u2022 Insurance Journal, CNBC",
     "sigma": [
       {
@@ -61,43 +63,43 @@
     },
     {
       "agent": "director",
-      "message": "Theme selected: Navigating the Creeping Fragility of Assets",
-      "t": 6.9
+      "message": "Theme selected: Securing Wealth Against Synthetic Cognitive Drift",
+      "t": 7.6
     },
     {
       "agent": "designer",
       "message": "Composing high-fidelity imagery...",
-      "t": 6.9
+      "t": 7.6
     },
     {
       "agent": "developer",
       "message": "Coding responsive HTML structure...",
-      "t": 6.9
+      "t": 7.6
     },
     {
       "agent": "developer",
       "message": "Page copy ready (16 fields; market tiles from live data).",
-      "t": 13.3
+      "t": 14.0
     },
     {
       "agent": "designer",
-      "message": "Image rendered: bedrock_20261017-0601.png",
-      "t": 104.9
+      "message": "Image rendered: bedrock_20261018-0601.png",
+      "t": 90.0
     },
     {
       "agent": "publisher",
       "message": "Applying updates to the page...",
-      "t": 104.9
+      "t": 90.0
     },
     {
       "agent": "publisher",
       "message": "Page updated (17 changes).",
-      "t": 104.9
+      "t": 90.0
     },
     {
       "agent": "system",
       "message": "Meeting Adjourned",
-      "t": 104.9
+      "t": 90.0
     }
   ]
 }
