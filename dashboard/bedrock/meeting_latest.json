@@ -1,13 +1,13 @@
 {
-  "date": "2026-10-20T06:01:38",
-  "theme": "Securing Wealth Against Fragmenting Digital Borders",
-  "duration_s": 92.1,
-  "image": "/assets/bedrock_20261020-0601.png",
+  "date": "2026-10-21T06:02:05",
+  "theme": "Securing Wealth Against Cognitive Infrastructure Fragility",
+  "duration_s": 118.3,
+  "image": "/assets/bedrock_20261021-0602.png",
   "brief": {
-    "headline": "Securing Wealth Against Fragmenting Digital Borders",
+    "headline": "Securing Wealth Against Cognitive Infrastructure Fragility",
     "market_sentiment": "Cautious",
-    "briefing_body": "The dawn of October 20, 2026, reveals a world of deepening fractures. While the S&P 500 shows modest gains, a rising 10-year Treasury yield of <b>5.1%</b> and an uptick in the VIX suggest mounting uncertainty. As the US bans DeepSeek from government systems, we are entering an era of 'technological sovereignty' where digital assets face unprecedented geopolitical scrutiny. According to the <b>Swiss Re Institute sigma No 2/2026 (July 2026)</b>, the world is navigating a 'fragmenting world' with higher-for-longer interest rates and persistent inflation. While US personal auto premiums are turning negative, our clients must prioritize <b>asset resilience</b> against rising liability costs and the <b>3.2%</b> projected growth in US liability premiums. In this landscape of shifting borders and AI trade restrictions, traditional coverage must evolve into a comprehensive shield against both physical catastrophe and algorithmic volatility.",
-    "date": "2026-10-20",
+    "briefing_body": "As we navigate a landscape of moderate volatility with the <b>VIX at 17.18</b>, a new frontier of risk is emerging: <b>Algorithmic Integrity Decay</b>. While the <b>S&P 500</b> shows resilience at <b>769.05</b>, the sudden premium on AI-driven capital\u2014evidenced by the anticipated <b>Anthropic IPO</b>\u2014masks a growing vulnerability in the logic-layers of our global financial systems. According to the <b>Swiss Re Institute sigma No 2/2026 (July 2026)</b>, we are operating in a 'fragmenting world' where <b>US core CPI is expected to peak at 3%</b>, yet the underlying risk lies in the reliance on automated data center campuses that may not sustain the current boom. For our clients, asset resilience now requires auditing not just physical holdings, but the <b>computational veracity</b> of the automated agents managing their portfolios against the rising tide of <b>4.0% inflation</b>.",
+    "date": "2026-10-21",
     "source": "Swiss Re sigma 2/2026 \u2022 Swiss Re H1 2026 cat-loss report \u2022 Swiss Re US P&C Outlook (Jul 2026) \u2022 Yahoo Finance \u2022 FRED \u2022 Insurance Journal, CNBC",
     "sigma": [
       {
@@ -61,43 +61,43 @@
     },
     {
       "agent": "director",
-      "message": "Theme selected: Securing Wealth Against Fragmenting Digital Borders",
-      "t": 6.6
+      "message": "Theme selected: Securing Wealth Against Cognitive Infrastructure Fragility",
+      "t": 7.7
     },
     {
       "agent": "designer",
       "message": "Composing high-fidelity imagery...",
-      "t": 6.6
+      "t": 7.7
     },
     {
       "agent": "developer",
       "message": "Coding responsive HTML structure...",
-      "t": 6.6
+      "t": 7.7
     },
     {
       "agent": "developer",
       "message": "Page copy ready (16 fields; market tiles from live data).",
-      "t": 12.5
+      "t": 13.9
     },
     {
       "agent": "designer",
-      "message": "Image rendered: bedrock_20261020-0601.png",
-      "t": 92.1
+      "message": "Image rendered: bedrock_20261021-0602.png",
+      "t": 118.2
     },
     {
       "agent": "publisher",
       "message": "Applying updates to the page...",
-      "t": 92.1
+      "t": 118.2
     },
     {
       "agent": "publisher",
       "message": "Page updated (17 changes).",
-      "t": 92.1
+      "t": 118.3
     },
     {
       "agent": "system",
       "message": "Meeting Adjourned",
-      "t": 92.1
+      "t": 118.3
     }
   ]
 }
