@@ -1,13 +1,13 @@
 {
-  "date": "2026-10-21T06:02:05",
-  "theme": "Securing Wealth Against Cognitive Infrastructure Fragility",
-  "duration_s": 118.3,
-  "image": "/assets/bedrock_20261021-0602.png",
+  "date": "2026-10-22T06:01:32",
+  "theme": "Securing Wealth Amidst Algorithmic Fragility",
+  "duration_s": 85.3,
+  "image": "/assets/bedrock_20261022-0601.png",
   "brief": {
-    "headline": "Securing Wealth Against Cognitive Infrastructure Fragility",
+    "headline": "Securing Wealth Amidst Algorithmic Fragility",
     "market_sentiment": "Cautious",
-    "briefing_body": "As we navigate a landscape of moderate volatility with the <b>VIX at 17.18</b>, a new frontier of risk is emerging: <b>Algorithmic Integrity Decay</b>. While the <b>S&P 500</b> shows resilience at <b>769.05</b>, the sudden premium on AI-driven capital\u2014evidenced by the anticipated <b>Anthropic IPO</b>\u2014masks a growing vulnerability in the logic-layers of our global financial systems. According to the <b>Swiss Re Institute sigma No 2/2026 (July 2026)</b>, we are operating in a 'fragmenting world' where <b>US core CPI is expected to peak at 3%</b>, yet the underlying risk lies in the reliance on automated data center campuses that may not sustain the current boom. For our clients, asset resilience now requires auditing not just physical holdings, but the <b>computational veracity</b> of the automated agents managing their portfolios against the rising tide of <b>4.0% inflation</b>.",
-    "date": "2026-10-21",
+    "briefing_body": "As we navigate a landscape of moderate volatility, the 10-year Treasury yield stands at <b>5.04%</b>, while the S&P 500 maintains a position of <b>773.09</b>. While current market indicators suggest stability, we are monitoring a burgeoning threat: <b>Synthetic Identity Cascades</b>. As AI-driven deepfakes evolve to bypass biometric authentication, the very concept of digital personhood is under siege, threatening the integrity of high-value estates. This systemic vulnerability aligns with the <b>Swiss Re Institute sigma No 2/2026 (July 2026)</b> finding that the world is navigating a 'fragmenting world' with persistent inflationary impulses. With US inflation rising to <b>4.0%</b>, our strategy must shift from mere asset protection to <b>identity-resilience underwriting</b>. We must prepare clients for a reality where the greatest risk to their legacy is not the loss of physical property, but the algorithmic hijacking of their digital existence.",
+    "date": "2026-10-22",
     "source": "Swiss Re sigma 2/2026 \u2022 Swiss Re H1 2026 cat-loss report \u2022 Swiss Re US P&C Outlook (Jul 2026) \u2022 Yahoo Finance \u2022 FRED \u2022 Insurance Journal, CNBC",
     "sigma": [
       {
@@ -61,43 +61,43 @@
     },
     {
       "agent": "director",
-      "message": "Theme selected: Securing Wealth Against Cognitive Infrastructure Fragility",
-      "t": 7.7
+      "message": "Theme selected: Securing Wealth Amidst Algorithmic Fragility",
+      "t": 9.0
     },
     {
       "agent": "designer",
       "message": "Composing high-fidelity imagery...",
-      "t": 7.7
+      "t": 9.0
     },
     {
       "agent": "developer",
       "message": "Coding responsive HTML structure...",
-      "t": 7.7
+      "t": 9.0
     },
     {
       "agent": "developer",
       "message": "Page copy ready (16 fields; market tiles from live data).",
-      "t": 13.9
+      "t": 15.0
     },
     {
       "agent": "designer",
-      "message": "Image rendered: bedrock_20261021-0602.png",
-      "t": 118.2
+      "message": "Image rendered: bedrock_20261022-0601.png",
+      "t": 85.3
     },
     {
       "agent": "publisher",
       "message": "Applying updates to the page...",
-      "t": 118.2
+      "t": 85.3
     },
     {
       "agent": "publisher",
       "message": "Page updated (17 changes).",
-      "t": 118.3
+      "t": 85.3
     },
     {
       "agent": "system",
       "message": "Meeting Adjourned",
-      "t": 118.3
+      "t": 85.3
     }
   ]
 }
