@@ -1,13 +1,13 @@
 {
-  "date": "2026-10-28T06:01:33",
-  "theme": "Securing Value Amidst Fragmenting Global Geopolitics",
-  "duration_s": 89.6,
-  "image": "/assets/bedrock_20261028-0601.png",
+  "date": "2026-10-29T06:01:29",
+  "theme": "Securing Wealth Against Algorithmic Erosion",
+  "duration_s": 83.5,
+  "image": "/assets/bedrock_20261029-0601.png",
   "brief": {
-    "headline": "Securing Value Amidst Fragmenting Global Geopolitics",
+    "headline": "Securing Wealth Against Algorithmic Erosion",
     "market_sentiment": "Cautious",
-    "briefing_body": "The dawn of October 28 brings a landscape of tempered volatility and persistent inflationary pressure. While the S&P 500 maintains a steady climb, the 10-year Treasury yield has retreated from recent highs, signaling a complex pivot in the credit markets. We observe a significant divergence in risk: while the VIX remains at moderate levels, geopolitical tensions in the Strait of Hormuz necessitate heightened vigilance for maritime and energy assets. According to the <b>Swiss Re Institute sigma No 2/2026 (July 2026)</b>, we are operating in a 'fragmenting world' where higher-for-longer interest rates act as a stabilizer for investment income, even as casualty pricing faces upward pressure from large jury verdicts. For our clients, the strategy must shift from mere accumulation to <b>asset resilience</b>, insulating portfolios against the rising litigation costs and the expanding natural catastrophe exposure noted in the current economic climate.",
-    "date": "2026-10-28",
+    "briefing_body": "As we navigate a landscape of moderate volatility, the S&P 500 remains resilient at <b>772.31</b>, yet a deeper structural shift is emerging. While the Big Three banks dominate AI-driven equity trading, a new frontier of risk\u2014<b>Synthetic Identity Devaluation</b>\u2014threatens the very concept of asset provenance. As generative models achieve unprecedented fidelity, the risk is no longer just data theft, but the systemic corruption of digital ownership records. According to the <b>Swiss Re Institute sigma No 2/2026 (July 2026)</b>, we are operating in a 'fragmenting world' where inflationary impulses persist, with US CPI climbing to <b>4.0%</b>. For our clients, protecting physical estates against catastrophe is only half the battle; we must now engineer <b>cryptographic resilience</b> to ensure that as AI scales, their digital legacies remain untainted by algorithmic forgery.",
+    "date": "2026-10-29",
     "source": "Swiss Re sigma 2/2026 \u2022 Swiss Re H1 2026 cat-loss report \u2022 Swiss Re US P&C Outlook (Jul 2026) \u2022 Yahoo Finance \u2022 FRED \u2022 Insurance Journal, CNBC",
     "sigma": [
       {
@@ -61,43 +61,43 @@
     },
     {
       "agent": "director",
-      "message": "Theme selected: Securing Value Amidst Fragmenting Global Geopolitics",
-      "t": 6.6
+      "message": "Theme selected: Securing Wealth Against Algorithmic Erosion",
+      "t": 7.1
     },
     {
       "agent": "designer",
       "message": "Composing high-fidelity imagery...",
-      "t": 6.6
+      "t": 7.1
     },
     {
       "agent": "developer",
       "message": "Coding responsive HTML structure...",
-      "t": 6.6
+      "t": 7.1
     },
     {
       "agent": "developer",
       "message": "Page copy ready (16 fields; market tiles from live data).",
-      "t": 12.5
+      "t": 13.0
     },
     {
       "agent": "designer",
-      "message": "Image rendered: bedrock_20261028-0601.png",
-      "t": 89.6
+      "message": "Image rendered: bedrock_20261029-0601.png",
+      "t": 83.5
     },
     {
       "agent": "publisher",
       "message": "Applying updates to the page...",
-      "t": 89.6
+      "t": 83.5
     },
     {
       "agent": "publisher",
       "message": "Page updated (17 changes).",
-      "t": 89.6
+      "t": 83.5
     },
     {
       "agent": "system",
       "message": "Meeting Adjourned",
-      "t": 89.6
+      "t": 83.5
     }
   ]
 }
