@@ -118,7 +118,7 @@
 <!-- DYNAMIC AGENT UPDATE ZONE -->
 <div class="bento-grid">
 <div class="bento-visual card-glow">
-<img alt="Safe Haven" class="hero-image" id="hero-image" src="/assets/bedrock_20261105-0601.png" style="display: block;"/>
+<img alt="Safe Haven" class="hero-image" id="hero-image" src="/assets/bedrock_20261106-0601.png" style="display: block;"/>
 </div>
 <!-- 2. Data Zone (Right) - PREVIOUSLY GRAPH, NOW INFO TEXT -->
 <div class="bento-data card-glow" style="background: linear-gradient(135deg, rgba(16, 24, 39, 0.8), rgba(0, 0, 0, 0.9)); border: 1px solid rgba(74, 144, 226, 0.2); padding: 1.5rem; display: flex; flex-direction: column; justify-content: center; gap: 1rem;">
@@ -132,11 +132,11 @@
 </div>
 <div class="vital-row" style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
 <span style="color: rgba(255,255,255,0.6); font-size: 0.9rem;">Catastrophe Risk</span>
-<span id="market-risk-val" style="color: #fbbf24; font-weight: 700;">ELEVATED</span>
+<span id="market-risk-val" style="color: #fbbf24; font-weight: 700;">SEVERE</span>
 </div>
 <div class="vital-row" style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
 <span style="color: rgba(255,255,255,0.6); font-size: 0.9rem;">Yield (10Y)</span>
-<span id="market-yield-val" style="color: #34d399; font-weight: 700;">4.90%</span>
+<span id="market-yield-val" style="color: #34d399; font-weight: 700;">4.87%</span>
 </div>
 <div class="vital-row" style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
 <span style="color: rgba(255,255,255,0.6); font-size: 0.9rem;">Sector Alpha</span>
@@ -144,11 +144,11 @@
 </div>
 <div class="vital-row" style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
 <span style="color: rgba(255,255,255,0.6); font-size: 0.9rem;">S&amp;P 500</span>
-<span id="market-sp500-val" style="color: #34d399; font-weight: 700;">+1.65% $766.81</span>
+<span id="market-sp500-val" style="color: #34d399; font-weight: 700;">-4.41% $733.00</span>
 </div>
 <div class="vital-row" style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
 <span style="color: rgba(255,255,255,0.6); font-size: 0.9rem;">Volatility (VIX)</span>
-<span id="market-volatility-val" style="color: #f87171; font-weight: 700;">16.7 (MODERATE)</span>
+<span id="market-volatility-val" style="color: #f87171; font-weight: 700;">26.9 (HIGH)</span>
 </div>
 <div class="vital-row" style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
 <span style="color: rgba(255,255,255,0.6); font-size: 0.9rem;">Reinsurance</span>
@@ -176,8 +176,8 @@
 <div class="bento-strategy card-glow" style="margin-top: 1.5rem;">
 <!-- Left Content -->
 <div style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
-<h2 class="hero-title" id="strategy-title">Preserving Capital in a Fragmenting World</h2>
-<div class="hero-description" id="strategy-desc">As global markets experience structural shifts and rising volatility, Bedrock Insurance provides the sophisticated coverage necessary to insulate high-value assets. We specialize in neutralizing the 'inflationary impulse' and protecting your estate from the growing complexities of a fragmented geopolitical landscape.</div>
+<h2 class="hero-title" id="strategy-title">Securing Wealth Amidst Structural Volatility</h2>
+<div class="hero-description" id="strategy-desc">In an era of widening market divergence and surging VIX levels, Bedrock Insurance provides the sophisticated coverage necessary to protect high-net-worth portfolios from systemic uncertainty and inflationary impulses.</div>
 <div class="cta-row">
 <button class="cta-button" onclick="openInsuranceChat()">Get a Quote</button>
 <button class="cta-button secondary-cta">Contact Advisor</button>
@@ -186,10 +186,10 @@
 <!-- Right: live market snapshot. Rewritten by every staff meeting from real data (replaces a static mock chart). -->
 <div class="market-table-wrap">
 <div class="market-table-card">
-<div class="mt-head"><span>Market snapshot</span><span id="market-table-asof">As of Nov 5, 2026</span></div>
+<div class="mt-head"><span>Market snapshot</span><span id="market-table-asof">As of Nov 6, 2026</span></div>
 <table class="market-table">
 <thead><tr><th>Instrument</th><th class="mt-num">Level</th><th class="mt-num">1 day</th><th class="mt-num">1 month</th></tr></thead>
-<tbody id="market-table-body"><tr><td class="mt-name">S&amp;P 500<span class="mt-sym"> SPY</span></td><td class="mt-num">$766.81</td><td class="mt-num up">+1.65%</td><td class="mt-num down">-1.04%</td></tr><tr><td class="mt-name">Insurance sector<span class="mt-sym"> KIE</span></td><td class="mt-num">$65.78</td><td class="mt-num up">+2.19%</td><td class="mt-num up">+10.44%</td></tr><tr><td class="mt-name">Chubb<span class="mt-sym"> CB</span></td><td class="mt-num">$374.17</td><td class="mt-num up">+2.08%</td><td class="mt-num up">+13.22%</td></tr><tr><td class="mt-name">Progressive<span class="mt-sym"> PGR</span></td><td class="mt-num">$234.82</td><td class="mt-num up">+2.49%</td><td class="mt-num up">+10.44%</td></tr><tr><td class="mt-name">Aon<span class="mt-sym"> AON</span></td><td class="mt-num">$344.67</td><td class="mt-num up">+4.39%</td><td class="mt-num up">+27.02%</td></tr><tr><td class="mt-name">VIX (volatility)<span class="mt-sym"> VIX</span></td><td class="mt-num">16.72</td><td class="mt-num flat">+0.66%</td><td class="mt-num flat">+7.73%</td></tr><tr><td class="mt-name">10-yr Treasury yield<span class="mt-sym"> TNX</span></td><td class="mt-num">4.90%</td><td class="mt-num flat">+1 bps</td><td class="mt-num flat">-41 bps</td></tr><tr><td class="mt-name">Insurers vs S&amp;P 500<span class="mt-sym"> 1-MONTH</span></td><td class="mt-num">—</td><td class="mt-num na">—</td><td class="mt-num up">+11.5 pts</td></tr></tbody>
+<tbody id="market-table-body"><tr><td class="mt-name">S&amp;P 500<span class="mt-sym"> SPY</span></td><td class="mt-num">$733.00</td><td class="mt-num down">-4.41%</td><td class="mt-num down">-5.92%</td></tr><tr><td class="mt-name">Insurance sector<span class="mt-sym"> KIE</span></td><td class="mt-num">$65.41</td><td class="mt-num down">-0.56%</td><td class="mt-num up">+9.44%</td></tr><tr><td class="mt-name">Chubb<span class="mt-sym"> CB</span></td><td class="mt-num">$371.63</td><td class="mt-num down">-0.68%</td><td class="mt-num up">+11.20%</td></tr><tr><td class="mt-name">Progressive<span class="mt-sym"> PGR</span></td><td class="mt-num">$233.18</td><td class="mt-num down">-0.70%</td><td class="mt-num up">+9.96%</td></tr><tr><td class="mt-name">Aon<span class="mt-sym"> AON</span></td><td class="mt-num">$344.40</td><td class="mt-num down">-0.08%</td><td class="mt-num up">+26.02%</td></tr><tr><td class="mt-name">VIX (volatility)<span class="mt-sym"> VIX</span></td><td class="mt-num">26.91</td><td class="mt-num flat">-4.51%</td><td class="mt-num flat">+79.28%</td></tr><tr><td class="mt-name">10-yr Treasury yield<span class="mt-sym"> TNX</span></td><td class="mt-num">4.87%</td><td class="mt-num flat">+3 bps</td><td class="mt-num flat">-40 bps</td></tr><tr><td class="mt-name">Insurers vs S&amp;P 500<span class="mt-sym"> 1-MONTH</span></td><td class="mt-num">—</td><td class="mt-num na">—</td><td class="mt-num up">+15.4 pts</td></tr></tbody>
 </table>
 <div class="mt-foot">Source: Yahoo Finance. Refreshed by the staff meeting; not investment advice.</div>
 </div>
@@ -198,16 +198,16 @@
 <!-- 4. Editorial Zone (Bottom Cards) -->
 <div class="bento-editorial" style="margin-top: 1.5rem;">
 <div class="editorial-card">
-<h3 id="risk-title">Mitigating Inflationary &amp; Litigation Exposure</h3>
-<p id="risk-desc">With US inflation nudging toward 4.0% and rising reconstruction costs, traditional protection is no longer sufficient. Our bespoke policies are engineered to account for escalating litigation costs and the persistent upward trend in insured losses, ensuring your net worth remains shielded from systemic economic shifts.</p>
+<h3 id="risk-title">Digital Identity &amp; Synthetic Arbitrage</h3>
+<p id="risk-desc">As agentic AI and deepfake biological data threaten the very concept of verifiable personhood, we offer specialized protection against the rising tide of identity-based fraud. We move beyond physical assets to secure the integrity of your digital and biological signatures against autonomous actors.</p>
 </div>
 <div class="editorial-card">
-<h3 id="opp-title">Strategic Asset Resilience</h3>
-<p id="opp-desc">While the VIX signals growing unease, we identify opportunities to strengthen your portfolio through proactive catastrophe management. We help clients navigate expanding natural catastrophe exposure by implementing robust risk-transfer mechanisms that safeguard long-term liquidity.</p>
+<h3 id="opp-title">Yield Optimization in High-Rate Regimes</h3>
+<p id="opp-desc">The current 'higher-for-longer' interest rate environment, characterized by 10-year Treasury yields at 4.87%, presents a unique opportunity to stabilize investment income. Our strategies leverage this macro shift to enhance liquidity while maintaining robust underwriting safeguards.</p>
 </div>
 <div class="editorial-card">
-<h3 id="insight-title">Navigating Market Divergence</h3>
-<p id="insight-desc">The current landscape shows a stark divergence between resilient equity indices and rising underlying volatility. Our advisors leverage real-time data from the Swiss Re Institute to help you look beyond traditional market dips and prepare for the structural shifts defining the 2026 economic era.</p>
+<h3 id="insight-title">Institutional Resilience &amp; Asset Integrity</h3>
+<p id="insight-desc">Drawing from the latest Swiss Re Institute intelligence, we help clients navigate a fragmenting world where traditional property risks are being superseded by complex systemic shocks. Our bespoke approach ensures your global asset base remains resilient against both climate-driven catastrophes and unprecedented technological shifts.</p>
 </div>
 <div class="editorial-card" onclick="window.location.href='/audit/'" style="cursor:pointer; border-top-color: #f59e0b;">
 <h3 style="color: #f59e0b;">Forensic Audit Lab</h3>
