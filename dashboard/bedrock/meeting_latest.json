@@ -1,13 +1,13 @@
 {
-  "date": "2026-11-11T06:01:41",
-  "theme": "Navigating the Era of Algorithmic Sovereignty",
-  "duration_s": 95.7,
-  "image": "/assets/bedrock_20261111-0601.png",
+  "date": "2026-11-12T06:01:47",
+  "theme": "Securing Wealth Against Cognitive Sovereignty Risks",
+  "duration_s": 99.9,
+  "image": "/assets/bedrock_20261112-0601.png",
   "brief": {
-    "headline": "Navigating the Era of Algorithmic Sovereignty",
+    "headline": "Securing Wealth Against Cognitive Sovereignty Risks",
     "market_sentiment": "Cautious",
-    "briefing_body": "The current landscape presents a paradox of stability and underlying fragility. While the <b>S&P 500</b> shows a slight decline and the <b>VIX</b> has dropped to <b>18.39</b>, we must not mistake low volatility for low risk. As noted in the <b>Swiss Re Institute US Property & Casualty Outlook (July 2026)</b>, the industry is entering a competitive phase where underwriting margins are compressing. For our clients, the true frontier of risk lies in 'Algorithmic Sovereignty'\u2014the rising threat of automated, high-frequency litigation and autonomous legal agents capable of triggering massive liability claims. With <b>US liability premiums</b> projected to grow by <b>3.2%</b> due to increasing claims severity, our strategy must pivot from protecting physical assets to securing the digital and legal frameworks that govern them. We recommend reinforcing coverage for intellectual property and automated decision-making systems against this new wave of litigation-as-a-service.",
-    "date": "2026-11-11",
+    "briefing_body": "The current landscape presents a paradox of stability and emerging fragility. While the S&P 500 shows a recent decline of <b>2.35%</b> and the VIX has surged <b>23.41%</b> over the last month, indicating heightened anxiety, the 10-year Treasury yield remains elevated at <b>5.05%</b>. According to the <b>Swiss Re Institute US Property & Casualty Outlook (July 2026)</b>, the industry is entering a competitive phase as underwriting margins gradually compress. Beyond traditional volatility, we are monitoring the rise of 'Cognitive Sovereignty' risks\u2014the unauthorized deep-fake manipulation of biometric identity. As AI regulation debates intensify, the threat to high-net-worth digital legacies grows. While catastrophe losses in the first half of 2026 remained <b>below trend</b>, the long-term upward trend in exposure is intact. We must pivot from protecting physical assets to insuring the integrity of the self.",
+    "date": "2026-11-12",
     "source": "Swiss Re sigma 2/2026 \u2022 Swiss Re H1 2026 cat-loss report \u2022 Swiss Re US P&C Outlook (Jul 2026) \u2022 Yahoo Finance \u2022 FRED \u2022 Insurance Journal, CNBC",
     "sigma": [
       {
@@ -61,43 +61,43 @@
     },
     {
       "agent": "director",
-      "message": "Theme selected: Navigating the Era of Algorithmic Sovereignty",
-      "t": 9.9
+      "message": "Theme selected: Securing Wealth Against Cognitive Sovereignty Risks",
+      "t": 7.5
     },
     {
       "agent": "designer",
       "message": "Composing high-fidelity imagery...",
-      "t": 9.9
+      "t": 7.5
     },
     {
       "agent": "developer",
       "message": "Coding responsive HTML structure...",
-      "t": 9.9
+      "t": 7.5
     },
     {
       "agent": "developer",
       "message": "Page copy ready (16 fields; market tiles from live data).",
-      "t": 16.2
+      "t": 13.9
     },
     {
       "agent": "designer",
-      "message": "Image rendered: bedrock_20261111-0601.png",
-      "t": 95.7
+      "message": "Image rendered: bedrock_20261112-0601.png",
+      "t": 99.9
     },
     {
       "agent": "publisher",
       "message": "Applying updates to the page...",
-      "t": 95.7
+      "t": 99.9
     },
     {
       "agent": "publisher",
       "message": "Page updated (17 changes).",
-      "t": 95.7
+      "t": 99.9
     },
     {
       "agent": "system",
       "message": "Meeting Adjourned",
-      "t": 95.7
+      "t": 99.9
     }
   ]
 }
