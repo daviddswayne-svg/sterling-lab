@@ -28,6 +28,7 @@ exec /opt/homebrew/bin/autossh -M 0 \
   -R 0.0.0.0:9101:localhost:9101 \
   -R 0.0.0.0:9102:localhost:9102 \
   -R 0.0.0.0:9140:localhost:9140 \
+  -R 0.0.0.0:9160:localhost:9160 \
   -o ServerAliveInterval=30 \
   -o ServerAliveCountMax=3 \
   -o ExitOnForwardFailure=yes \
