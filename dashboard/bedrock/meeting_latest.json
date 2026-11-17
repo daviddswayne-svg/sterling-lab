@@ -1,16 +1,13 @@
 {
-  "date": "2026-11-16T06:03:03",
-  "theme": "Securing Assets Against Synthetic Identity Drift",
-  "duration_s": 178.4,
-  "image": "/assets/bedrock_20261116-0603.png",
+  "date": "2026-11-17T06:01:39",
+  "theme": "Securing Assets Amidst Fragmenting Global Order",
+  "duration_s": 93.4,
+  "image": "/assets/bedrock_20261117-0601.png",
   "brief": {
-    "headline": "Securing Assets Against Synthetic Identity Drift",
+    "headline": "Securing Assets Amidst Fragmenting Global Order",
     "market_sentiment": "Cautious",
-    "briefing_body": {
-      "text": "As the S&P 500 experiences a slight contraction of <b>1.98%</b> over the last month, we are observing a profound shift in the risk landscape: the emergence of <b>'Cognitive Spoofing'</b>. While the VIX remains at a moderate <b>20.59</b>, the recent Nvidia espionage scandal underscores a new era of high-stakes intelligence theft. This risk is compounded by the <b>4.1%</b> US inflation rate and the <b>Swiss Re Institute sigma No 2/2026 (July 2026)</b> finding that higher-for-longer interest rates are stabilizing investment income but pressuring underwriting margins. We must advise clients that as AI-driven deepfakes reach parity with biological reality, traditional biometric and digital identity safeguards are becoming obsolete. Protecting the family office now requires 'Biological Verification' protocols to defend against the erosion of truth. We must transition from securing physical borders to securing the integrity of the personhood itself.",
-      "date": "2026-11-16"
-    },
-    "date": "2026-11-16",
+    "briefing_body": "The current landscape is defined by a widening divergence between market performance and emerging structural vulnerabilities. While the <b>S&P 500</b> has faced recent headwinds, the <b>VIX</b> reflects moderate volatility. We are observing a critical 'fragility paradox': as <b>US inflation</b> climbs to <b>4.1%</b> and the <b>10-year Treasury yield</b> settles at <b>5.14%</b>, the very systems designed to monitor our planet are being defunded, creating unprecedented 'blind spots' in climate predictability. According to the <b>Swiss Re Institute sigma No 2/2026 (July 2026)</b>, we are navigating a 'fragmenting world' where higher-for-longer interest rates act as a stabilizer despite rising pressures. For our clients, the priority is not merely capital preservation, but <b>algorithmic resilience</b>. As geopolitical tensions strain the U.S.-China tech corridor, protecting the continuity of high-value, cyber-physical assets against unobservable environmental and geopolitical shifts is the new frontier of wealth stewardship.",
+    "date": "2026-11-17",
     "source": "Swiss Re sigma 2/2026 \u2022 Swiss Re H1 2026 cat-loss report \u2022 Swiss Re US P&C Outlook (Jul 2026) \u2022 Yahoo Finance \u2022 FRED \u2022 Insurance Journal, CNBC",
     "sigma": [
       {
@@ -45,62 +42,62 @@
     {
       "agent": "director",
       "message": "Read Swiss Re Institute sigma No 2/2026 (July 2026): 8 key findings.",
-      "t": 0.1
+      "t": 0.0
     },
     {
       "agent": "director",
       "message": "Read Swiss Re Institute first-half 2026 insured catastrophe losses (August 2026): 5 key findings.",
-      "t": 0.1
+      "t": 0.0
     },
     {
       "agent": "director",
       "message": "Loaded the public abstract of Swiss Re Institute US Property & Casualty Outlook (July 2026): 4 key findings.",
-      "t": 0.1
+      "t": 0.0
     },
     {
       "agent": "director",
       "message": "Analyzing market trends & drafting brief...",
-      "t": 0.1
+      "t": 0.0
     },
     {
       "agent": "director",
-      "message": "Theme selected: Securing Assets Against Synthetic Identity Drift",
-      "t": 8.3
+      "message": "Theme selected: Securing Assets Amidst Fragmenting Global Order",
+      "t": 7.5
     },
     {
       "agent": "designer",
       "message": "Composing high-fidelity imagery...",
-      "t": 8.3
+      "t": 7.5
     },
     {
       "agent": "developer",
       "message": "Coding responsive HTML structure...",
-      "t": 8.3
+      "t": 7.5
     },
     {
       "agent": "developer",
       "message": "Page copy ready (16 fields; market tiles from live data).",
-      "t": 14.5
+      "t": 13.8
     },
     {
       "agent": "designer",
-      "message": "Image rendered: bedrock_20261116-0603.png",
-      "t": 178.3
+      "message": "Image rendered: bedrock_20261117-0601.png",
+      "t": 93.3
     },
     {
       "agent": "publisher",
       "message": "Applying updates to the page...",
-      "t": 178.3
+      "t": 93.3
     },
     {
       "agent": "publisher",
       "message": "Page updated (17 changes).",
-      "t": 178.4
+      "t": 93.4
     },
     {
       "agent": "system",
       "message": "Meeting Adjourned",
-      "t": 178.4
+      "t": 93.4
     }
   ]
 }
