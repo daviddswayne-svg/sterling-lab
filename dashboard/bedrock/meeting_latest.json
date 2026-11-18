@@ -1,13 +1,13 @@
 {
-  "date": "2026-11-17T06:01:39",
-  "theme": "Securing Assets Amidst Fragmenting Global Order",
-  "duration_s": 93.4,
-  "image": "/assets/bedrock_20261117-0601.png",
+  "date": "2026-11-18T06:03:02",
+  "theme": "Navigating Fragile Geopolitics and Algorithmic Vulnerabilities",
+  "duration_s": 175.5,
+  "image": "/assets/bedrock_20261118-0603.png",
   "brief": {
-    "headline": "Securing Assets Amidst Fragmenting Global Order",
+    "headline": "Navigating Fragile Geopolitics and Algorithmic Vulnerabilities",
     "market_sentiment": "Cautious",
-    "briefing_body": "The current landscape is defined by a widening divergence between market performance and emerging structural vulnerabilities. While the <b>S&P 500</b> has faced recent headwinds, the <b>VIX</b> reflects moderate volatility. We are observing a critical 'fragility paradox': as <b>US inflation</b> climbs to <b>4.1%</b> and the <b>10-year Treasury yield</b> settles at <b>5.14%</b>, the very systems designed to monitor our planet are being defunded, creating unprecedented 'blind spots' in climate predictability. According to the <b>Swiss Re Institute sigma No 2/2026 (July 2026)</b>, we are navigating a 'fragmenting world' where higher-for-longer interest rates act as a stabilizer despite rising pressures. For our clients, the priority is not merely capital preservation, but <b>algorithmic resilience</b>. As geopolitical tensions strain the U.S.-China tech corridor, protecting the continuity of high-value, cyber-physical assets against unobservable environmental and geopolitical shifts is the new frontier of wealth stewardship.",
-    "date": "2026-11-17",
+    "briefing_body": "The global landscape is currently defined by a delicate tension between geopolitical realignment and systemic cyber-fragility. As leaders meet in Shenzhen, the market shows moderate volatility with the <b>VIX at 23.99</b>, reflecting uncertainty surrounding US-China-Russia relations. While the <b>S&P 500 sits at 732.44</b>, a recent <b>4.44% monthly decline</b> suggests a period of consolidation. We must address the rising threat of 'Logic-Bomb' vulnerabilities, as recent Java flaws highlight how legacy code can destabilize modern digital estates. Per the <b>Swiss Re Institute US Property & Casualty Outlook (July 2026)</b>, while profitability remains exceptionally strong, we are entering a more competitive phase where underwriting margins are gradually compressing. For our clients, the strategy must shift from mere capital accumulation to <b>algorithmic resilience</b>\u2014securing not just physical assets, but the integrity of the automated systems that manage them.",
+    "date": "2026-11-18",
     "source": "Swiss Re sigma 2/2026 \u2022 Swiss Re H1 2026 cat-loss report \u2022 Swiss Re US P&C Outlook (Jul 2026) \u2022 Yahoo Finance \u2022 FRED \u2022 Insurance Journal, CNBC",
     "sigma": [
       {
@@ -61,43 +61,43 @@
     },
     {
       "agent": "director",
-      "message": "Theme selected: Securing Assets Amidst Fragmenting Global Order",
-      "t": 7.5
+      "message": "Theme selected: Navigating Fragile Geopolitics and Algorithmic Vulnerabilities",
+      "t": 8.3
     },
     {
       "agent": "designer",
       "message": "Composing high-fidelity imagery...",
-      "t": 7.5
+      "t": 8.3
     },
     {
       "agent": "developer",
       "message": "Coding responsive HTML structure...",
-      "t": 7.5
+      "t": 8.3
     },
     {
       "agent": "developer",
       "message": "Page copy ready (16 fields; market tiles from live data).",
-      "t": 13.8
+      "t": 14.3
     },
     {
       "agent": "designer",
-      "message": "Image rendered: bedrock_20261117-0601.png",
-      "t": 93.3
+      "message": "Image rendered: bedrock_20261118-0603.png",
+      "t": 175.5
     },
     {
       "agent": "publisher",
       "message": "Applying updates to the page...",
-      "t": 93.3
+      "t": 175.5
     },
     {
       "agent": "publisher",
       "message": "Page updated (17 changes).",
-      "t": 93.4
+      "t": 175.5
     },
     {
       "agent": "system",
       "message": "Meeting Adjourned",
-      "t": 93.4
+      "t": 175.5
     }
   ]
 }
