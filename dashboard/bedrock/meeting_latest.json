@@ -1,13 +1,13 @@
 {
-  "date": "2026-11-18T06:03:02",
-  "theme": "Navigating Fragile Geopolitics and Algorithmic Vulnerabilities",
-  "duration_s": 175.5,
-  "image": "/assets/bedrock_20261118-0603.png",
+  "date": "2026-11-19T06:01:14",
+  "theme": "Shielding Wealth Against Cognitive Sovereignty Risks",
+  "duration_s": 72.0,
+  "image": "/assets/bedrock_20261119-0601.png",
   "brief": {
-    "headline": "Navigating Fragile Geopolitics and Algorithmic Vulnerabilities",
+    "headline": "Shielding Wealth Against Cognitive Sovereignty Risks",
     "market_sentiment": "Cautious",
-    "briefing_body": "The global landscape is currently defined by a delicate tension between geopolitical realignment and systemic cyber-fragility. As leaders meet in Shenzhen, the market shows moderate volatility with the <b>VIX at 23.99</b>, reflecting uncertainty surrounding US-China-Russia relations. While the <b>S&P 500 sits at 732.44</b>, a recent <b>4.44% monthly decline</b> suggests a period of consolidation. We must address the rising threat of 'Logic-Bomb' vulnerabilities, as recent Java flaws highlight how legacy code can destabilize modern digital estates. Per the <b>Swiss Re Institute US Property & Casualty Outlook (July 2026)</b>, while profitability remains exceptionally strong, we are entering a more competitive phase where underwriting margins are gradually compressing. For our clients, the strategy must shift from mere capital accumulation to <b>algorithmic resilience</b>\u2014securing not just physical assets, but the integrity of the automated systems that manage them.",
-    "date": "2026-11-18",
+    "briefing_body": "The global landscape is shifting toward a fragmented reality. While the 10-year Treasury yield sits at <b>5.09%</b> and the S&P 500 shows a monthly decline of <b>4.73%</b>, our focus must transcend traditional volatility. As noted in the <b>Swiss Re Institute sigma No 2/2026 (July 2026)</b>, we are navigating a world of <b>higher-for-longer interest rates</b> and <b>rising casualty pricing</b>. Today, we address the emergence of <b>'Neural Identity Hijacking'</b>\u2014the risk of unauthorized algorithmic manipulation of a client's digital consciousness and biometric legacy. As AI-driven inflation persists at <b>4.1%</b>, the cost of securing one's cognitive estate is rising. We must advise clients to move beyond physical property insurance and toward <b>Neural-Sovereignty Indemnity</b>, ensuring their digital personas and intellectual legacies remain uncompromised by the predatory automation currently destabilizing our global infrastructure.",
+    "date": "2026-11-19",
     "source": "Swiss Re sigma 2/2026 \u2022 Swiss Re H1 2026 cat-loss report \u2022 Swiss Re US P&C Outlook (Jul 2026) \u2022 Yahoo Finance \u2022 FRED \u2022 Insurance Journal, CNBC",
     "sigma": [
       {
@@ -61,43 +61,43 @@
     },
     {
       "agent": "director",
-      "message": "Theme selected: Navigating Fragile Geopolitics and Algorithmic Vulnerabilities",
-      "t": 8.3
+      "message": "Theme selected: Shielding Wealth Against Cognitive Sovereignty Risks",
+      "t": 11.4
     },
     {
       "agent": "designer",
       "message": "Composing high-fidelity imagery...",
-      "t": 8.3
+      "t": 11.4
     },
     {
       "agent": "developer",
       "message": "Coding responsive HTML structure...",
-      "t": 8.3
+      "t": 11.4
     },
     {
       "agent": "developer",
       "message": "Page copy ready (16 fields; market tiles from live data).",
-      "t": 14.3
+      "t": 17.3
     },
     {
       "agent": "designer",
-      "message": "Image rendered: bedrock_20261118-0603.png",
-      "t": 175.5
+      "message": "Image rendered: bedrock_20261119-0601.png",
+      "t": 72.0
     },
     {
       "agent": "publisher",
       "message": "Applying updates to the page...",
-      "t": 175.5
+      "t": 72.0
     },
     {
       "agent": "publisher",
       "message": "Page updated (17 changes).",
-      "t": 175.5
+      "t": 72.0
     },
     {
       "agent": "system",
       "message": "Meeting Adjourned",
-      "t": 175.5
+      "t": 72.0
     }
   ]
 }
