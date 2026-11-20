@@ -1,13 +1,15 @@
 {
-  "date": "2026-11-19T06:01:14",
-  "theme": "Shielding Wealth Against Cognitive Sovereignty Risks",
-  "duration_s": 72.0,
-  "image": "/assets/bedrock_20261119-0601.png",
+  "date": "2026-11-20T06:01:19",
+  "theme": "Navigating High Volatility and Geopolitical Realignments",
+  "duration_s": 72.6,
+  "image": "/assets/bedrock_20261120-0601.png",
   "brief": {
-    "headline": "Shielding Wealth Against Cognitive Sovereignty Risks",
-    "market_sentiment": "Cautious",
-    "briefing_body": "The global landscape is shifting toward a fragmented reality. While the 10-year Treasury yield sits at <b>5.09%</b> and the S&P 500 shows a monthly decline of <b>4.73%</b>, our focus must transcend traditional volatility. As noted in the <b>Swiss Re Institute sigma No 2/2026 (July 2026)</b>, we are navigating a world of <b>higher-for-longer interest rates</b> and <b>rising casualty pricing</b>. Today, we address the emergence of <b>'Neural Identity Hijacking'</b>\u2014the risk of unauthorized algorithmic manipulation of a client's digital consciousness and biometric legacy. As AI-driven inflation persists at <b>4.1%</b>, the cost of securing one's cognitive estate is rising. We must advise clients to move beyond physical property insurance and toward <b>Neural-Sovereignty Indemnity</b>, ensuring their digital personas and intellectual legacies remain uncompromised by the predatory automation currently destabilizing our global infrastructure.",
-    "date": "2026-11-19",
+    "headline": "Navigating High Volatility and Geopolitical Realignments",
+    "market_sentiment": "Volatile",
+    "briefing_body": [
+      "The current market landscape is defined by heightened uncertainty, as evidenced by the <b>9.88% surge in the VIX</b> and a <b>1.96% decline in the S&P 500</b>. While the <b>10-year Treasury yield remains at 4.97%</b>, the geopolitical theater is shifting rapidly following high-profile trilateral engagements between the U.S., Russia, and China. As noted in the <b>Swiss Re Institute sigma No 2/2026 (July 2026)</b>, we are operating in a 'fragmenting world' where higher-for-longer interest rates and inflationary impulses continue to pressure underwriting margins. While <b>US CPI inflation has nudged upward to 4.1%</b>, asset resilience remains paramount. We must prepare clients for a regime where <b>US liability premiums are projected to grow by 3.2%</b> due to rising litigation costs, even as broader P&C profitability faces potential compression. Strategy must focus on shielding long-term wealth from both macroeconomic friction and intensifying casualty risks."
+    ],
+    "date": "2026-11-20",
     "source": "Swiss Re sigma 2/2026 \u2022 Swiss Re H1 2026 cat-loss report \u2022 Swiss Re US P&C Outlook (Jul 2026) \u2022 Yahoo Finance \u2022 FRED \u2022 Insurance Journal, CNBC",
     "sigma": [
       {
@@ -61,43 +63,43 @@
     },
     {
       "agent": "director",
-      "message": "Theme selected: Shielding Wealth Against Cognitive Sovereignty Risks",
-      "t": 11.4
+      "message": "Theme selected: Navigating High Volatility and Geopolitical Realignments",
+      "t": 8.4
     },
     {
       "agent": "designer",
       "message": "Composing high-fidelity imagery...",
-      "t": 11.4
+      "t": 8.4
     },
     {
       "agent": "developer",
       "message": "Coding responsive HTML structure...",
-      "t": 11.4
+      "t": 8.4
     },
     {
       "agent": "developer",
       "message": "Page copy ready (16 fields; market tiles from live data).",
-      "t": 17.3
+      "t": 14.4
     },
     {
       "agent": "designer",
-      "message": "Image rendered: bedrock_20261119-0601.png",
-      "t": 72.0
+      "message": "Image rendered: bedrock_20261120-0601.png",
+      "t": 72.6
     },
     {
       "agent": "publisher",
       "message": "Applying updates to the page...",
-      "t": 72.0
+      "t": 72.6
     },
     {
       "agent": "publisher",
       "message": "Page updated (17 changes).",
-      "t": 72.0
+      "t": 72.6
     },
     {
       "agent": "system",
       "message": "Meeting Adjourned",
-      "t": 72.0
+      "t": 72.6
     }
   ]
 }
