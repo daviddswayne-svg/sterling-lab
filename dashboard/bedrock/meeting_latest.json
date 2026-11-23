@@ -1,13 +1,13 @@
 {
-  "date": "2026-11-22T06:01:48",
-  "theme": "Navigating Volatility in an Era of Fragmentation",
-  "duration_s": 102.8,
-  "image": "/assets/bedrock_20261122-0601.png",
+  "date": "2026-11-23T06:01:42",
+  "theme": "Navigating the Fragile Era of Volatility",
+  "duration_s": 95.4,
+  "image": "/assets/bedrock_20261123-0601.png",
   "brief": {
-    "headline": "Navigating Volatility in an Era of Fragmentation",
+    "headline": "Navigating the Fragile Era of Volatility",
     "market_sentiment": "Volatile",
-    "briefing_body": "The global landscape is currently defined by extreme tension. While the 10-year Treasury yield has declined to <b>4.91%</b>, equity markets are experiencing a significant shock; the S&P 500 has retreated by <b>3.64%</b> recently, contributing to a massive surge in market volatility, with the VIX climbing <b>26.2%</b> today. As we navigate this instability, the <b>Swiss Re Institute sigma No 2/2026 (July 2026)</b> highlights a 'fragmenting world' where higher-for-longer interest rates remain a stabilizer despite inflationary impulses. For our clients, the risk is shifting from traditional market fluctuations to structural shifts. While personal auto premiums are falling, we must focus on the 'tail risk' of catastrophe-exposed markets. As noted in the <b>Swiss Re Institute first-half 2026 insured catastrophe losses (August 2026)</b>, the long-term upward trend in insured losses remains intact due to growing exposure and changing hazard patterns. We recommend prioritizing asset resilience in property holdings.",
-    "date": "2026-11-22",
+    "briefing_body": "The global markets are currently navigating a period of intense friction. While the 10-year Treasury yield has edged up to <b>4.92%</b>, the S&P 500 has faced a significant contraction of <b>10.77%</b> over the past month, mirrored by a surge in the VIX to <b>31.49</b>. This volatility is compounded by persistent inflationary pressures, with US CPI rising to <b>4.1%</b>. According to the <b>Swiss Re Institute US Property & Casualty Outlook (July 2026)</b>, the industry is entering a more competitive phase where underwriting margins are gradually compressing. We see a divergence in risk: while personal auto premiums have fallen, homeowners insurance remains firm due to expanding catastrophe exposure and construction-cost inflation. As we witness rising litigation costs and large jury awards, our focus must remain on reinforcing asset resilience against these mounting structural pressures.",
+    "date": "2026-11-23",
     "source": "Swiss Re sigma 2/2026 \u2022 Swiss Re H1 2026 cat-loss report \u2022 Swiss Re US P&C Outlook (Jul 2026) \u2022 Yahoo Finance \u2022 FRED \u2022 Insurance Journal, CNBC",
     "sigma": [
       {
@@ -61,43 +61,43 @@
     },
     {
       "agent": "director",
-      "message": "Theme selected: Navigating Volatility in an Era of Fragmentation",
-      "t": 7.5
+      "message": "Theme selected: Navigating the Fragile Era of Volatility",
+      "t": 9.5
     },
     {
       "agent": "designer",
       "message": "Composing high-fidelity imagery...",
-      "t": 7.5
+      "t": 9.5
     },
     {
       "agent": "developer",
       "message": "Coding responsive HTML structure...",
-      "t": 7.5
+      "t": 9.5
     },
     {
       "agent": "developer",
       "message": "Page copy ready (16 fields; market tiles from live data).",
-      "t": 14.0
+      "t": 15.5
     },
     {
       "agent": "designer",
-      "message": "Image rendered: bedrock_20261122-0601.png",
-      "t": 102.8
+      "message": "Image rendered: bedrock_20261123-0601.png",
+      "t": 95.4
     },
     {
       "agent": "publisher",
       "message": "Applying updates to the page...",
-      "t": 102.8
+      "t": 95.4
     },
     {
       "agent": "publisher",
       "message": "Page updated (17 changes).",
-      "t": 102.8
+      "t": 95.4
     },
     {
       "agent": "system",
       "message": "Meeting Adjourned",
-      "t": 102.8
+      "t": 95.4
     }
   ]
 }
