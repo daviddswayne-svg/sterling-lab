@@ -585,10 +585,31 @@ def render_journal_magazine(response: str, day_photos: list[dict],
         )
 
 
+@st.cache_data(ttl=300, show_spinner=False)
+def _replay_trip_ids() -> frozenset:
+    """Trips that have a 3D trip replay (built on the M3 by replay/build_package.py)."""
+    try:
+        r = _api.get(f"{ESC_API_URL}/replay/trips", timeout=5)
+        if r.status_code == 200:
+            return frozenset(r.json().get("trips", []))
+    except Exception:
+        pass
+    return frozenset()
+
+
 def _render_map_link(trip_id: int):
-    """Render map buttons: 2D Leaflet map + 3D terrain viewer."""
+    """Render map buttons: 2D Leaflet map + 3D terrain viewer (+ ▶ Play Trip when the trip has a replay)."""
     map_url   = f"{ESC_MAP_URL}/map/{trip_id}"
     map3d_url = f"{ESC_MAP_URL}/map3d/{trip_id}"
+    replay_btn = ""
+    if trip_id in _replay_trip_ids():
+        replay_btn = (
+            f'<a href="{ESC_MAP_URL}/map3d/{trip_id}/replay" target="_blank" rel="noopener" style="'
+            'display:inline-block;padding:10px 22px;'
+            'background:rgba(255,138,61,0.18);border:1px solid rgba(255,138,61,0.6);'
+            'border-radius:8px;color:#ffc58f;text-decoration:none;font-weight:600;font-size:15px;'
+            '">▶ Play Trip</a>'
+        )
     st.markdown(
         f'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">'
         f'<a href="{map_url}" target="_blank" rel="noopener" style="'
@@ -601,6 +622,7 @@ def _render_map_link(trip_id: int):
         'background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.5);'
         'border-radius:8px;color:#c4b5fd;text-decoration:none;font-weight:600;font-size:15px;'
         '">🏔️ 3D Terrain</a>'
+        f'{replay_btn}'
         '</div>',
         unsafe_allow_html=True,
     )
