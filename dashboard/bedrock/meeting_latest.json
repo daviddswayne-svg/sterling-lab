@@ -1,13 +1,13 @@
 {
-  "date": "2026-11-26T06:02:01",
-  "theme": "Securing Wealth Amidst Cognitive Sovereignty Risks",
-  "duration_s": 115.2,
-  "image": "/assets/bedrock_20261126-0602.png",
+  "date": "2026-11-27T06:01:26",
+  "theme": "Securing Assets Against Synthetic Cognitive Erasure",
+  "duration_s": 81.4,
+  "image": "/assets/bedrock_20261127-0601.png",
   "brief": {
-    "headline": "Securing Wealth Amidst Cognitive Sovereignty Risks",
+    "headline": "Securing Assets Against Synthetic Cognitive Erasure",
     "market_sentiment": "Volatile",
-    "briefing_body": "As volatility surges with the <b>VIX climbing to 26.91</b>, we face a landscape where traditional assets are being reshaped by the silicon arms race. While semiconductor exports have overtaken oil as the world's vital commodity, a new frontier of risk emerges: <b>Algorithmic Identity Hijacking</b>. As humanoid robotics and advanced AI integrate into the domestic sphere, the theft of 'cognitive signatures'\u2014the biometric and behavioral data used to authorize high-value transactions\u2014threatens the very core of personal estate security. While the <b>S&P 500 has declined 6.36% over the last month</b>, we must look beyond market fluctuations. As noted in the <b>Swiss Re Institute US Property & Casualty Outlook (July 2026)</b>, the industry is entering a more competitive phase with compressing margins. For our clients, resilience means moving beyond physical bunkers to <b>biometric encryption protocols</b> that protect the digital essence of their legacy from increasingly autonomous actors.",
-    "date": "2026-11-26",
+    "briefing_body": "As we navigate a landscape of high volatility, evidenced by a <b>44.52%</b> surge in the VIX, our focus must shift beyond traditional market corrections. While the S&P 500 enters a correction and semiconductor exports now surpass oil as the world's vital commodity, a new frontier of risk emerges: <b>Cognitive Integrity Fraud</b>. As AI-driven deepfakes evolve into 'synthetic erasure'\u2014the ability to mathematically alter a client's digital identity and legal personhood\u2014traditional identity theft is rendered obsolete. Per the <b>Swiss Re Institute US Property & Casualty Outlook (July 2026)</b>, while underwriting margins may face compression, the necessity for bespoke protection of intangible assets is paramount. With US inflation at <b>4.1%</b> and litigation costs rising, we must move to insulate client legacies from the irreversible decay of digital truth, ensuring their digital and physical estates remain unassailable.",
+    "date": "2026-11-27",
     "source": "Swiss Re sigma 2/2026 \u2022 Swiss Re H1 2026 cat-loss report \u2022 Swiss Re US P&C Outlook (Jul 2026) \u2022 Yahoo Finance \u2022 FRED \u2022 Insurance Journal, CNBC",
     "sigma": [
       {
@@ -61,43 +61,43 @@
     },
     {
       "agent": "director",
-      "message": "Theme selected: Securing Wealth Amidst Cognitive Sovereignty Risks",
-      "t": 7.9
+      "message": "Theme selected: Securing Assets Against Synthetic Cognitive Erasure",
+      "t": 8.0
     },
     {
       "agent": "designer",
       "message": "Composing high-fidelity imagery...",
-      "t": 7.9
+      "t": 8.0
     },
     {
       "agent": "developer",
       "message": "Coding responsive HTML structure...",
-      "t": 7.9
+      "t": 8.0
     },
     {
       "agent": "developer",
       "message": "Page copy ready (16 fields; market tiles from live data).",
-      "t": 13.9
+      "t": 13.8
     },
     {
       "agent": "designer",
-      "message": "Image rendered: bedrock_20261126-0602.png",
-      "t": 115.2
+      "message": "Image rendered: bedrock_20261127-0601.png",
+      "t": 81.4
     },
     {
       "agent": "publisher",
       "message": "Applying updates to the page...",
-      "t": 115.2
+      "t": 81.4
     },
     {
       "agent": "publisher",
       "message": "Page updated (17 changes).",
-      "t": 115.2
+      "t": 81.4
     },
     {
       "agent": "system",
       "message": "Meeting Adjourned",
-      "t": 115.2
+      "t": 81.4
     }
   ]
 }
