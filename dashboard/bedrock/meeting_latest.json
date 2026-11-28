@@ -1,13 +1,13 @@
 {
-  "date": "2026-11-27T06:01:26",
-  "theme": "Securing Assets Against Synthetic Cognitive Erasure",
-  "duration_s": 81.4,
-  "image": "/assets/bedrock_20261127-0601.png",
+  "date": "2026-11-28T06:01:36",
+  "theme": "Navigating the Era of Synthetic Fragility",
+  "duration_s": 90.0,
+  "image": "/assets/bedrock_20261128-0601.png",
   "brief": {
-    "headline": "Securing Assets Against Synthetic Cognitive Erasure",
-    "market_sentiment": "Volatile",
-    "briefing_body": "As we navigate a landscape of high volatility, evidenced by a <b>44.52%</b> surge in the VIX, our focus must shift beyond traditional market corrections. While the S&P 500 enters a correction and semiconductor exports now surpass oil as the world's vital commodity, a new frontier of risk emerges: <b>Cognitive Integrity Fraud</b>. As AI-driven deepfakes evolve into 'synthetic erasure'\u2014the ability to mathematically alter a client's digital identity and legal personhood\u2014traditional identity theft is rendered obsolete. Per the <b>Swiss Re Institute US Property & Casualty Outlook (July 2026)</b>, while underwriting margins may face compression, the necessity for bespoke protection of intangible assets is paramount. With US inflation at <b>4.1%</b> and litigation costs rising, we must move to insulate client legacies from the irreversible decay of digital truth, ensuring their digital and physical estates remain unassailable.",
-    "date": "2026-11-27",
+    "headline": "Navigating the Era of Synthetic Fragility",
+    "market_sentiment": "Cautious",
+    "briefing_body": "As we observe a moderate uptick in market volatility, our focus shifts from traditional market corrections to the emerging risk of <b>algorithmic contagion</b>. While the S&P 500 has entered a correction, with a recent decline of <b>5.7%</b> over the last month, the real threat lies in the decoupling of physical assets from digital certainty. As semiconductor chips surpass oil as the world's most critical commodity, the vulnerability of our clients' silicon-dependent estates grows. According to the <b>Swiss Re Institute US Property & Casualty Outlook (July 2026)</b>, the industry is entering a more competitive phase with compressing underwriting margins. We must move beyond simple catastrophe coverage to protect against <b>neuro-synthetic spoofing</b>\u2014where AI-driven deepfakes manipulate smart-contract escrow. Resilience now requires securing not just property, but the cryptographic integrity of the digital identities managing them.",
+    "date": "2026-11-28",
     "source": "Swiss Re sigma 2/2026 \u2022 Swiss Re H1 2026 cat-loss report \u2022 Swiss Re US P&C Outlook (Jul 2026) \u2022 Yahoo Finance \u2022 FRED \u2022 Insurance Journal, CNBC",
     "sigma": [
       {
@@ -61,43 +61,43 @@
     },
     {
       "agent": "director",
-      "message": "Theme selected: Securing Assets Against Synthetic Cognitive Erasure",
-      "t": 8.0
+      "message": "Theme selected: Navigating the Era of Synthetic Fragility",
+      "t": 7.5
     },
     {
       "agent": "designer",
       "message": "Composing high-fidelity imagery...",
-      "t": 8.0
+      "t": 7.5
     },
     {
       "agent": "developer",
       "message": "Coding responsive HTML structure...",
-      "t": 8.0
+      "t": 7.5
     },
     {
       "agent": "developer",
       "message": "Page copy ready (16 fields; market tiles from live data).",
-      "t": 13.8
+      "t": 13.6
     },
     {
       "agent": "designer",
-      "message": "Image rendered: bedrock_20261127-0601.png",
-      "t": 81.4
+      "message": "Image rendered: bedrock_20261128-0601.png",
+      "t": 90.0
     },
     {
       "agent": "publisher",
       "message": "Applying updates to the page...",
-      "t": 81.4
+      "t": 90.0
     },
     {
       "agent": "publisher",
       "message": "Page updated (17 changes).",
-      "t": 81.4
+      "t": 90.0
     },
     {
       "agent": "system",
       "message": "Meeting Adjourned",
-      "t": 81.4
+      "t": 90.0
     }
   ]
 }
